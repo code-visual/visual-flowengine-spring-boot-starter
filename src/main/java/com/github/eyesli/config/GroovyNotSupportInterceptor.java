@@ -1,4 +1,4 @@
-package com.github.eyesli.groovy;
+package com.github.eyesli.config;
 
 import lombok.extern.slf4j.Slf4j;
 import org.kohsuke.groovy.sandbox.GroovyInterceptor;
