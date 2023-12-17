@@ -1,14 +1,12 @@
 package com.github.eyesli.groovy;
 
-import javafx.util.Pair;
 import lombok.extern.slf4j.Slf4j;
 import org.kohsuke.groovy.sandbox.GroovyInterceptor;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 
 @Slf4j
@@ -19,12 +17,15 @@ public class GroovyNotSupportInterceptor extends GroovyInterceptor {
             "notifyAll", "invokeMethod", "finalize", "execute");
 
 
-     static final Map<Class<?>, String> STATIC_METHOD_BLACK_LIST = Stream.of(
-                    new Pair<>(System.class, "exit,gc"),
-                    new Pair<>(Class.class, "forName"),
-                    new Pair<>(Runtime.class, ""))
-            .collect(Collectors.toMap(Pair::getKey, Pair::getValue));
+     static final Map<Class<?>, String> STATIC_METHOD_BLACK_LIST = createBlackList();
 
+    private static Map<Class<?>, String> createBlackList() {
+        Map<Class<?>, String> map = new HashMap<>();
+        map.put(System.class, "exit,gc");
+        map.put(Class.class, "forName");
+        map.put(Runtime.class, "");
+        return map;
+    }
 
     /**
      * 静态方法拦截
