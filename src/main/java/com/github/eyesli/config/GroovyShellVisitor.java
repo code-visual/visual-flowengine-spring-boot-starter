@@ -1,4 +1,4 @@
-package com.github.eyesli.groovy;
+package com.github.eyesli.config;
 
 import com.google.common.collect.ImmutableList;
 import org.codehaus.groovy.ast.ClassCodeVisitorSupport;

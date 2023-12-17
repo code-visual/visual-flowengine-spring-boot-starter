@@ -1,4 +1,4 @@
-package com.github.eyesli.groovy;
+package com.github.eyesli.config;
 
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.customizers.SecureASTCustomizer;
