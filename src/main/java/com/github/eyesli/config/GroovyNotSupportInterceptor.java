@@ -1,6 +1,5 @@
 package com.github.eyesli.config;
 
-import lombok.extern.slf4j.Slf4j;
 import org.kohsuke.groovy.sandbox.GroovyInterceptor;
 
 import java.util.Arrays;
@@ -9,7 +8,6 @@ import java.util.List;
 import java.util.Map;
 
 
-@Slf4j
 public class GroovyNotSupportInterceptor extends GroovyInterceptor {
 
 
@@ -34,7 +32,6 @@ public class GroovyNotSupportInterceptor extends GroovyInterceptor {
     public Object onStaticCall(GroovyInterceptor.Invoker invoker, Class receiver,
                                String method, Object... args) throws Throwable {
 
-        log.info("GroovyInterceptor:静态方法拦截类名->{},方法->{},参数->{}", receiver.getSimpleName(), method, args);
         String staticMethodBlackList = STATIC_METHOD_BLACK_LIST.get(receiver);
         if (staticMethodBlackList != null) {
 
@@ -56,7 +53,6 @@ public class GroovyNotSupportInterceptor extends GroovyInterceptor {
     @Override
     public Object onMethodCall(GroovyInterceptor.Invoker invoker, Object receiver, String method, Object... args)
             throws Throwable {
-        log.info("GroovyInterceptor:普通方法拦截->{},方法->{},参数->{}", receiver.getClass().getSimpleName(), method, args);
         if (defaultMethodBlacklist.contains(method)) {
             // 方法列表黑名单
             throw new SecurityException("Not support method: " + method);

@@ -11,8 +11,7 @@ import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.codehaus.groovy.control.SourceUnit;
 
 import java.util.*;
-import lombok.extern.slf4j.Slf4j;
-@Slf4j
+
 public class GroovyShellVisitor extends ClassCodeVisitorSupport implements GroovyClassVisitor {
 
     private static final List<String> EXCLUDE_IN_PARAM
@@ -44,7 +43,7 @@ public class GroovyShellVisitor extends ClassCodeVisitorSupport implements Groov
 
     @Override
     public void visitMethod(MethodNode methodNode) {
-        log.info("visitMethod = {}", methodNode.getName());
+        System.out.println("visitMethod = " + methodNode.getName());
 
     }
 
