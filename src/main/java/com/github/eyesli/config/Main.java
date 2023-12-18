@@ -1,5 +1,6 @@
 package com.github.eyesli.config;
 
+import com.github.eyesli.cache.Impl.ManageCacheServiceImpl;
 import groovy.lang.Binding;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.Script;
@@ -10,13 +11,14 @@ import org.codehaus.groovy.syntax.Types;
 import org.kohsuke.groovy.sandbox.SandboxTransformer;
 
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 @SuppressWarnings("unchecked")
 public class Main {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
 
         Binding binding = new Binding();
         binding.setVariable("requestNo", 1);
@@ -40,20 +42,16 @@ public class Main {
         config.addCompilationCustomizers(new SandboxTransformer());
 
 
-        try (GroovyClassLoader groovyClassLoader = new GroovyClassLoader(Thread.currentThread().getContextClassLoader(), config)) {
+        ManageCacheServiceImpl manageCacheService = new ManageCacheServiceImpl(config);
+        Script script = manageCacheService.parseScript("int i = 0\n" +
+                "while (i < 5) {\n" +
+                "    println \"Value of i is: $i\"\n" +
+                "    i++\n" +
+                "}\n", binding);
+        Object result = script.run();
+        System.out.println(result);
 
-            Class<? extends Script> aClass = groovyClassLoader.parseClass("// Groovy while loop example\n" +
-                    "int i = 0\n" +
-                    "while (i < 5) {\n" +
-                    "    println \"Value of i is: $i\"\n" +
-                    "    i++\n" +
-                    "}\n");
-            Script script = InvokerHelper.createScript(aClass, binding);
-            Object result = script.run();
-            System.out.println(result);
-        } catch (IOException ex) {
-            throw new RuntimeException(ex);
-        }
+
     }
 
 }
