@@ -1,7 +1,7 @@
-package com.github.eyesli.cache.Impl;
+package com.github.managetech.cache.Impl;
 
-import com.github.eyesli.cache.ScriptCacheService;
-import com.github.eyesli.config.GroovyNotSupportInterceptor;
+import com.github.managetech.cache.ScriptCacheService;
+import com.github.managetech.config.GroovyNotSupportInterceptor;
 import groovy.lang.Binding;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.Script;
