@@ -1,12 +1,12 @@
 package com.github.managetech.config;
 
-import com.github.managetech.cache.ScriptCachingEngine;
+import org.codehaus.groovy.ast.stmt.Statement;
+import org.codehaus.groovy.ast.stmt.WhileStatement;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.customizers.SecureASTCustomizer;
 import org.codehaus.groovy.syntax.Types;
 import org.kohsuke.groovy.sandbox.SandboxTransformer;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -25,8 +25,6 @@ import java.util.List;
 public class VisualFlowEngineAutoConfiguration {
 
 
-
-
     //这段代码需要找一下原因为什么不生效
     @Configuration
     static class GroovySecureConfig {
@@ -42,6 +40,9 @@ public class VisualFlowEngineAutoConfiguration {
             tokensBlacklist.add(Types.KEYWORD_WHILE); // 添加关键字黑名单 while和goto
             tokensBlacklist.add(Types.KEYWORD_GOTO);
             secure.setDisallowedTokens(tokensBlacklist);
+            List<Class<? extends Statement>> statementBlacklist = new ArrayList<>();
+            statementBlacklist.add(WhileStatement.class);
+            secure.setDisallowedStatements(statementBlacklist);
             secure.setIndirectImportCheckEnabled(true); // 设置为false, 可以在代码中定义并直接使用class, 否则需要在白名单中指定
             secure.setDisallowedImports(Arrays.asList("org.codehaus.groovy.runtime.*", "groovy.json.*"));
             return secure;
