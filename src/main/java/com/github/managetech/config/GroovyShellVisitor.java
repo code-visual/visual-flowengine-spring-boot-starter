@@ -12,7 +12,7 @@ import org.codehaus.groovy.control.SourceUnit;
 
 import java.util.*;
 
-public class GroovyShellVisitor extends ClassCodeVisitorSupport implements GroovyClassVisitor {
+public class GroovyShellVisitor extends ClassCodeVisitorSupport {
 
     private static final List<String> EXCLUDE_IN_PARAM
             = ImmutableList.of("args", "context", "this", "super");
