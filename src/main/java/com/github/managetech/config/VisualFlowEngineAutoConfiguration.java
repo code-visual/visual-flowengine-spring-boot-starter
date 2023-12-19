@@ -27,6 +27,7 @@ public class VisualFlowEngineAutoConfiguration {
 
 
 
+    //这段代码需要找一下原因为什么不生效
     @Configuration
     static class GroovySecureConfig {
 
