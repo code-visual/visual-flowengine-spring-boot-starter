@@ -8,6 +8,7 @@ import groovy.lang.Script;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
 
@@ -20,6 +21,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @since 09/18/2023
  */
 @Service
+@ConditionalOnMissingBean(ScriptCachingEngine.class)
 @SuppressWarnings("unchecked")
 public class ScriptCachingEngineImpl implements ScriptCachingEngine {
 
