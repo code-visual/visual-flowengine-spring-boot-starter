@@ -21,13 +21,13 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @Service
 @SuppressWarnings("unchecked")
-public class ManageCacheServiceImpl implements ScriptCacheService {
+public class ScriptCacheServiceImpl implements ScriptCacheService {
 
     private final CompilerConfiguration config;
     private final Map<String, Class<? extends Script>> parseScriptCache = new ConcurrentHashMap<>();
 
     @Autowired
-    public ManageCacheServiceImpl(CompilerConfiguration config) {
+    public ScriptCacheServiceImpl(CompilerConfiguration config) {
         this.config = config;
     }
 
