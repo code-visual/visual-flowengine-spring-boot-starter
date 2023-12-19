@@ -1,17 +1,14 @@
 package com.github.managetech.config;
 
-import com.github.managetech.cache.Impl.ManageCacheServiceImpl;
+import com.github.managetech.cache.Impl.ScriptCacheServiceImpl;
 import groovy.lang.Binding;
-import groovy.lang.GroovyClassLoader;
 import groovy.lang.Script;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.customizers.SecureASTCustomizer;
-import org.codehaus.groovy.runtime.InvokerHelper;
 import org.codehaus.groovy.syntax.Types;
 import org.kohsuke.groovy.sandbox.SandboxTransformer;
 
 import java.io.IOException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -42,7 +39,7 @@ public class Main {
         config.addCompilationCustomizers(new SandboxTransformer());
 
 
-        ManageCacheServiceImpl manageCacheService = new ManageCacheServiceImpl(config);
+        ScriptCacheServiceImpl manageCacheService = new ScriptCacheServiceImpl(config);
         Script script = manageCacheService.parseScript("int i = 0\n" +
                 "while (i < 5) {\n" +
                 "    println \"Value of i is: $i\"\n" +
