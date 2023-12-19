@@ -1,4 +1,4 @@
-package com.github.eyesli.config;
+package com.github.managetech.config;
 
 import java.lang.annotation.*;
 
