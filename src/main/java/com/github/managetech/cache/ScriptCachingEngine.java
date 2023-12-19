@@ -10,7 +10,7 @@ import java.io.IOException;
  * @author Levi Li
  * @since 09/18/2023
  */
-public interface ScriptCacheService {
+public interface ScriptCachingEngine {
 
 
     Script parseScript(String scriptText, Binding binding) throws IOException;
