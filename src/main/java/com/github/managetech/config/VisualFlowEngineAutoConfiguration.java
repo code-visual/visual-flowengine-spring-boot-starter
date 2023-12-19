@@ -6,6 +6,7 @@ import org.codehaus.groovy.control.customizers.SecureASTCustomizer;
 import org.codehaus.groovy.syntax.Types;
 import org.kohsuke.groovy.sandbox.SandboxTransformer;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -21,7 +22,6 @@ import java.util.List;
  */
 @AutoConfiguration
 @ComponentScan(basePackages = "com.github.managetech")
-//@ConditionalOnClass(MongoClient.class)
 public class VisualFlowEngineAutoConfiguration {
 
 
