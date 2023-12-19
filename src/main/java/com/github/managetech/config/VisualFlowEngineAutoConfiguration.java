@@ -23,9 +23,10 @@ import java.util.List;
 @AutoConfiguration
 @ComponentScan(basePackages = "com.github.managetech")
 public class VisualFlowEngineAutoConfiguration {
+    //添加些别的类
 
 
-    //这段代码需要找一下原因为什么不生效
+
     @Configuration
     static class GroovySecureConfig {
 
