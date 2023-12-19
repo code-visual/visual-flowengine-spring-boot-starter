@@ -1,6 +1,6 @@
 package com.github.managetech.cache.Impl;
 
-import com.github.managetech.cache.ScriptCacheService;
+import com.github.managetech.cache.ScriptCachingEngine;
 import com.github.managetech.config.GroovyNotSupportInterceptor;
 import groovy.lang.Binding;
 import groovy.lang.GroovyClassLoader;
@@ -21,13 +21,13 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @Service
 @SuppressWarnings("unchecked")
-public class ScriptCacheServiceImpl implements ScriptCacheService {
+public class ScriptCachingEngineImpl implements ScriptCachingEngine {
 
     private final CompilerConfiguration config;
     private final Map<String, Class<? extends Script>> parseScriptCache = new ConcurrentHashMap<>();
 
     @Autowired
-    public ScriptCacheServiceImpl(CompilerConfiguration config) {
+    public ScriptCachingEngineImpl(CompilerConfiguration config) {
         this.config = config;
     }
 
