@@ -49,7 +49,7 @@ public class VisualFlowEngineAutoConfiguration {
             public void addResourceHandlers(ResourceHandlerRegistry registry) {
                 // 为引入此依赖包的项目配置资源处理
                 registry.addResourceHandler("/**")
-                        .addResourceLocations("classpath:/META-INF/resources/admin/");
+                        .addResourceLocations("classpath:/META-INF/resources/visualflow/");
             }
         };
     }
