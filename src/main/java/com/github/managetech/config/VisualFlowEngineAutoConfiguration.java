@@ -49,6 +49,7 @@ public class VisualFlowEngineAutoConfiguration {
 //        }
 //        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Page not found");
 //    }
+    //考虑这个类会不会被覆盖
     @Bean
     public WebMvcConfigurer myLibraryWebConfigurer() {
         return new WebMvcConfigurer() {
