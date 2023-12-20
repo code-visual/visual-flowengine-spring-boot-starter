@@ -1,6 +1,7 @@
 package com.github.managetech.ruleengine
 
-
+import com.github.managetech.cache.ScriptCachingEngine
+import cn.hutool.extra.spring.SpringUtil
 class RuleParser {
     private List<Rule> rules = []
 
@@ -12,12 +13,14 @@ class RuleParser {
         rules.add(newRule)
     }
 
+
     def parse(String script) {
 
         def bindings = new Binding()
         bindings.setVariable("rule", this.&parseRule)
-//        def parseScript = SpringUtil.getBean(ManageCacheService.class).getParseScript(script, bindings)
-//        parseScript.run()
+
+        def parseScript = SpringUtil.getBean(ScriptCachingEngine.class).parseScript(script, bindings)
+        parseScript.run()
         return rules
 
     }
