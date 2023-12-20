@@ -8,9 +8,14 @@ import org.codehaus.groovy.syntax.Types;
 import org.kohsuke.groovy.sandbox.SandboxTransformer;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -22,10 +27,32 @@ import java.util.List;
  */
 @AutoConfiguration
 @ComponentScan(basePackages = "com.github.managetech")
+@ConditionalOnWebApplication
 public class VisualFlowEngineAutoConfiguration {
-    //添加些别的类
 
 
+    @Controller
+    public static class AdminUiController {
+
+        @GetMapping("/visualFlow.html")
+        public String adminUI() {
+            return "forward:/index.html";
+        }
+    }
+
+
+    @Bean
+    public WebMvcConfigurer myLibraryWebConfigurer() {
+        return new WebMvcConfigurer() {
+
+            @Override
+            public void addResourceHandlers(ResourceHandlerRegistry registry) {
+                // 为引入此依赖包的项目配置资源处理
+                registry.addResourceHandler("/**")
+                        .addResourceLocations("classpath:/META-INF/resources/admin/");
+            }
+        };
+    }
 
     @Configuration
     static class GroovySecureConfig {
