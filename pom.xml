@@ -83,7 +83,13 @@
             <version>5.2.25.RELEASE</version>
             <scope>provided</scope>
         </dependency>
+<!--        'cn.hutool:hutool-all:5.8.22'-->
 
+        <dependency>
+            <groupId>cn.hutool</groupId>
+            <artifactId>hutool-all</artifactId>
+            <version>5.8.22</version>
+        </dependency>
 
     </dependencies>
     <build>

@@ -21,7 +21,6 @@ import java.util.concurrent.ConcurrentHashMap;
  * @since 09/18/2023
  */
 @Service
-@ConditionalOnMissingBean(ScriptCachingEngine.class)
 @SuppressWarnings("unchecked")
 public class ScriptCachingEngineImpl implements ScriptCachingEngine {
 
