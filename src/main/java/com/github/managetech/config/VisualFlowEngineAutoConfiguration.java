@@ -14,6 +14,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -40,7 +41,14 @@ public class VisualFlowEngineAutoConfiguration {
         }
     }
 
-
+    //这里可以使用配置文件配置
+//    @GetMapping("/{uiPath}.html")
+//    public String adminUI(@PathVariable String uiPath) {
+//        if (uiPath.equals(properties.getPath())) {
+//            return "forward:/index.html";
+//        }
+//        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Page not found");
+//    }
     @Bean
     public WebMvcConfigurer myLibraryWebConfigurer() {
         return new WebMvcConfigurer() {
