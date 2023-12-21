@@ -1,4 +1,4 @@
-package com.github.managetech.cache;
+package com.github.managetech.scriptcache;
 
 
 import groovy.lang.Binding;

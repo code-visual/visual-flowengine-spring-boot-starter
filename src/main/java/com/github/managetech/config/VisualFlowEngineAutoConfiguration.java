@@ -9,12 +9,12 @@ import org.kohsuke.groovy.sandbox.SandboxTransformer;
 import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -29,6 +29,7 @@ import java.util.List;
 @AutoConfiguration
 @ComponentScan(basePackages = "com.github.managetech")
 @ConditionalOnWebApplication
+@EnableConfigurationProperties(VisualFlowEngineProperties.class)
 public class VisualFlowEngineAutoConfiguration {
 
 
@@ -80,7 +81,7 @@ public class VisualFlowEngineAutoConfiguration {
             List<Class<? extends Statement>> statementBlacklist = new ArrayList<>();
             statementBlacklist.add(WhileStatement.class);
             secure.setDisallowedStatements(statementBlacklist);
-            secure.setIndirectImportCheckEnabled(true); // 设置为false, 可以在代码中定义并直接使用class, 否则需要在白名单中指定
+            secure.setIndirectImportCheckEnabled(false); // 设置为false, 可以在代码中定义并直接使用class, 否则需要在白名单中指定
             secure.setDisallowedImports(Arrays.asList("org.codehaus.groovy.runtime.*", "groovy.json.*"));
             return secure;
         }

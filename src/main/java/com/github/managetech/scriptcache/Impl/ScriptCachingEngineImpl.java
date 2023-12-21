@@ -1,6 +1,6 @@
-package com.github.managetech.cache.Impl;
+package com.github.managetech.scriptcache.Impl;
 
-import com.github.managetech.cache.ScriptCachingEngine;
+import com.github.managetech.scriptcache.ScriptCachingEngine;
 import com.github.managetech.config.GroovyNotSupportInterceptor;
 import groovy.lang.Binding;
 import groovy.lang.GroovyClassLoader;
@@ -8,7 +8,6 @@ import groovy.lang.Script;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
 
