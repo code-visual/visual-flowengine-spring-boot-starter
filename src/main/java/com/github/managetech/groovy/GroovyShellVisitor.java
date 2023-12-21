@@ -1,4 +1,4 @@
-package com.github.managetech.config;
+package com.github.managetech.groovy;
 
 import com.google.common.collect.ImmutableList;
 import org.codehaus.groovy.ast.ClassCodeVisitorSupport;

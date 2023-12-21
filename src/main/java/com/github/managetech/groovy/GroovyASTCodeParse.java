@@ -1,4 +1,4 @@
-package com.github.managetech.config;
+package com.github.managetech.groovy;
 
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.control.CompilePhase;
