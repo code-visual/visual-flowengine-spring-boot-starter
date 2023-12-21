@@ -61,7 +61,7 @@ public class VisualFlowEngineAutoConfiguration {
 
             @Override
             public void addResourceHandlers(ResourceHandlerRegistry registry) {
-                // 为引入此依赖包的项目配置资源处理
+                // 资源文件路径都会走这里
                 registry.addResourceHandler("/**")
                         .addResourceLocations("classpath:/META-INF/resources/visualflow/");
             }
