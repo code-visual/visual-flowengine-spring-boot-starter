@@ -13,8 +13,11 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -34,22 +37,23 @@ public class VisualFlowEngineAutoConfiguration {
 
 
     @Controller
-    public static class AdminUiController {
+    public static class VisualFlowUIController {
 
-        @GetMapping("/visualFlow.html")
-        public String adminUI() {
-            return "forward:/index.html";
+        private final VisualFlowEngineProperties properties;
+
+        public VisualFlowUIController(VisualFlowEngineProperties properties) {
+            this.properties = properties;
+        }
+
+        @GetMapping("/{uiPath}-ui.html")
+        public String visualFlow(@PathVariable String uiPath) {
+            if (uiPath.equals(properties.getPath())) {
+                return "forward:/index.html";
+            }
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Page not found");
         }
     }
 
-    //这里可以使用配置文件配置
-//    @GetMapping("/{uiPath}.html")
-//    public String adminUI(@PathVariable String uiPath) {
-//        if (uiPath.equals(properties.getPath())) {
-//            return "forward:/index.html";
-//        }
-//        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Page not found");
-//    }
     //考虑这个类会不会被覆盖
     @Bean
     public WebMvcConfigurer myLibraryWebConfigurer() {
