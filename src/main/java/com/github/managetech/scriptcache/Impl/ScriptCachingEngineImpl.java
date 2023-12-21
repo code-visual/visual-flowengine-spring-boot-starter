@@ -1,7 +1,7 @@
 package com.github.managetech.scriptcache.Impl;
 
 import com.github.managetech.scriptcache.ScriptCachingEngine;
-import com.github.managetech.config.GroovyNotSupportInterceptor;
+import com.github.managetech.groovy.GroovyNotSupportInterceptor;
 import groovy.lang.Binding;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.Script;
