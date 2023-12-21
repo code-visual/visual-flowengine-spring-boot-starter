@@ -34,7 +34,7 @@ public class ScriptCachingEngineImpl implements ScriptCachingEngine {
 
     @Override
     public Script parseScript(String scriptText, Binding binding) throws IOException {
-        System.out.println("scriptText = " + scriptText);
+
         Class<? extends Script> script = parseScriptCache.get(DigestUtils.md5DigestAsHex(scriptText.getBytes()));
         GroovyClassLoader groovyClassLoader = null;
 
