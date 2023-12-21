@@ -8,7 +8,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
  */
 @ConfigurationProperties(prefix = "visual.flow.engine")
 public class VisualFlowEngineProperties {
-    private String path = "/visualflow";
+    private String path = "visualflow";
 
     public String getPath() {
         return path;
