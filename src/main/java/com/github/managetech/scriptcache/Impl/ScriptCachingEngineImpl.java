@@ -39,6 +39,7 @@ public class ScriptCachingEngineImpl implements ScriptCachingEngine {
         GroovyClassLoader groovyClassLoader = null;
 
         if (script == null) {
+            //假如我有多个呢。这样要做成配置的。提供GroovyInterceptor子类。然后全部执行
             new GroovyNotSupportInterceptor().register();
 
             try {
