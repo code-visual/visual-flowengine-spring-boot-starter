@@ -1,21 +1,23 @@
 package com.github.managetech.groovy;
 
-import com.google.common.collect.ImmutableList;
 import org.codehaus.groovy.ast.ClassCodeVisitorSupport;
 import org.codehaus.groovy.ast.DynamicVariable;
-import org.codehaus.groovy.ast.GroovyClassVisitor;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.expr.ClosureExpression;
 import org.codehaus.groovy.ast.expr.DeclarationExpression;
 import org.codehaus.groovy.ast.expr.VariableExpression;
 import org.codehaus.groovy.control.SourceUnit;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 public class GroovyShellVisitor extends ClassCodeVisitorSupport {
 
-    private static final List<String> EXCLUDE_IN_PARAM
-            = ImmutableList.of("args", "context", "this", "super");
+    private static final List<String> EXCLUDE_IN_PARAM = Arrays.asList("args", "context", "this", "super");
 
     private final Map<String, Class> dynamicVariables = new HashMap<>();
 

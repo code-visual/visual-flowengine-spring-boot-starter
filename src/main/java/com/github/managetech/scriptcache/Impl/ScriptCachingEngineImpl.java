@@ -1,17 +1,23 @@
 package com.github.managetech.scriptcache.Impl;
 
-import com.github.managetech.scriptcache.ScriptCachingEngine;
 import com.github.managetech.groovy.GroovyNotSupportInterceptor;
+import com.github.managetech.model.Diagnostic;
+import com.github.managetech.scriptcache.ScriptCachingEngine;
 import groovy.lang.Binding;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.Script;
 import org.codehaus.groovy.control.CompilerConfiguration;
+import org.codehaus.groovy.control.MultipleCompilationErrorsException;
+import org.codehaus.groovy.control.messages.Message;
+import org.codehaus.groovy.control.messages.SyntaxErrorMessage;
 import org.codehaus.groovy.runtime.InvokerHelper;
+import org.codehaus.groovy.syntax.SyntaxException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -39,7 +45,7 @@ public class ScriptCachingEngineImpl implements ScriptCachingEngine {
         GroovyClassLoader groovyClassLoader = null;
 
         if (script == null) {
-            //假如我有多个呢。这样要做成配置的。提供GroovyInterceptor子类。然后全部执行
+            //todo 假如我有多个呢。这样要做成配置的。提供GroovyInterceptor子类。然后全部执行
             new GroovyNotSupportInterceptor().register();
 
             try {
@@ -55,6 +61,38 @@ public class ScriptCachingEngineImpl implements ScriptCachingEngine {
         }
 
         return InvokerHelper.createScript(script, binding);
+    }
+
+    @Override
+    public Diagnostic compileGroovyScript(String code) {
+        new GroovyNotSupportInterceptor().register();
+
+        try (GroovyClassLoader groovyClassLoader = new GroovyClassLoader(Thread.currentThread().getContextClassLoader(), config)) {
+            groovyClassLoader.parseClass(code);
+            return null;
+        } catch (MultipleCompilationErrorsException | IOException e) {
+
+            if (e instanceof MultipleCompilationErrorsException) {
+                List<? extends Message> errors = ((MultipleCompilationErrorsException) e).getErrorCollector().getErrors();
+                for (Message error : errors) {
+                    if (error instanceof SyntaxErrorMessage) {
+                        SyntaxException cause = ((SyntaxErrorMessage) error).getCause();
+                        Diagnostic diagnostic = new Diagnostic();
+                        diagnostic.setMessage(cause.getMessage());
+                        diagnostic.setStartLineNumber(cause.getStartLine());
+                        diagnostic.setStartColumn(cause.getStartColumn());
+                        diagnostic.setEndLineNumber(cause.getEndLine());
+                        diagnostic.setEndColumn(cause.getEndColumn());
+                        return diagnostic;
+
+                    }
+                }
+            }
+            if (e instanceof IOException) {
+                throw new RuntimeException(e);
+            }
+        }
+        return null;
     }
 
 }

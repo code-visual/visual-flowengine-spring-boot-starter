@@ -1,6 +1,7 @@
 package com.github.managetech.scriptcache;
 
 
+import com.github.managetech.model.Diagnostic;
 import groovy.lang.Binding;
 import groovy.lang.Script;
 
@@ -16,4 +17,5 @@ public interface ScriptCachingEngine {
     Script parseScript(String scriptText, Binding binding) throws IOException;
 
 
+    Diagnostic compileGroovyScript(String code);
 }
