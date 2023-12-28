@@ -6,6 +6,7 @@ import groovy.lang.Binding;
 import groovy.lang.Script;
 
 import java.io.IOException;
+import java.util.List;
 
 /**
  * @author Levi Li
@@ -17,5 +18,5 @@ public interface ScriptCachingEngine {
     Script parseScript(String scriptText, Binding binding) throws IOException;
 
 
-    Diagnostic compileGroovyScript(String code);
+    Object compileGroovyScript(String code);
 }

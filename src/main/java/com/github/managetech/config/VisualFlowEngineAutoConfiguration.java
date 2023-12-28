@@ -45,12 +45,9 @@ public class VisualFlowEngineAutoConfiguration {
             this.properties = properties;
         }
 
-        @GetMapping("/{uiPath}-ui.html")
-        public String visualFlow(@PathVariable String uiPath) {
-            if (uiPath.equals(properties.getPath())) {
-                return "forward:/index.html";
-            }
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Page not found");
+        @GetMapping("/visualFlow-ui.html")
+        public String visualFlow() {
+            return "forward:/index.html";
         }
     }
 

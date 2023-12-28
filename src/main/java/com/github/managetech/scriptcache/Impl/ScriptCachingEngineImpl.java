@@ -64,35 +64,38 @@ public class ScriptCachingEngineImpl implements ScriptCachingEngine {
     }
 
     @Override
-    public Diagnostic compileGroovyScript(String code) {
+    public Object compileGroovyScript(String code) {
         new GroovyNotSupportInterceptor().register();
 
         try (GroovyClassLoader groovyClassLoader = new GroovyClassLoader(Thread.currentThread().getContextClassLoader(), config)) {
-            groovyClassLoader.parseClass(code);
-            return null;
+            Class aClass = groovyClassLoader.parseClass(code);
+            return InvokerHelper.createScript(aClass, new Binding()).run();
         } catch (MultipleCompilationErrorsException | IOException e) {
 
             if (e instanceof MultipleCompilationErrorsException) {
                 List<? extends Message> errors = ((MultipleCompilationErrorsException) e).getErrorCollector().getErrors();
-                for (Message error : errors) {
-                    if (error instanceof SyntaxErrorMessage) {
-                        SyntaxException cause = ((SyntaxErrorMessage) error).getCause();
-                        Diagnostic diagnostic = new Diagnostic();
-                        diagnostic.setMessage(cause.getMessage());
-                        diagnostic.setStartLineNumber(cause.getStartLine());
-                        diagnostic.setStartColumn(cause.getStartColumn());
-                        diagnostic.setEndLineNumber(cause.getEndLine());
-                        diagnostic.setEndColumn(cause.getEndColumn());
-                        return diagnostic;
-
-                    }
-                }
+                return getDiagnostics(errors);
             }
-            if (e instanceof IOException) {
-                throw new RuntimeException(e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static List<Diagnostic> getDiagnostics(List<? extends Message> errors) {
+        List<Diagnostic> diagnostics = new java.util.ArrayList<>();
+        for (Message error : errors) {
+            if (error instanceof SyntaxErrorMessage) {
+                SyntaxException cause = ((SyntaxErrorMessage) error).getCause();
+                Diagnostic diagnostic = new Diagnostic();
+                diagnostic.setMessage(cause.getMessage());
+                diagnostic.setStartLineNumber(cause.getStartLine());
+                diagnostic.setStartColumn(cause.getStartColumn());
+                diagnostic.setEndLineNumber(cause.getEndLine());
+                diagnostic.setEndColumn(cause.getEndColumn());
+                diagnostics.add(diagnostic);
+
             }
         }
-        return null;
+        return diagnostics;
     }
 
 }
