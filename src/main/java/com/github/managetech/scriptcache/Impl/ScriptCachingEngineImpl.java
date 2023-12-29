@@ -8,6 +8,7 @@ import groovy.lang.GroovyClassLoader;
 import groovy.lang.Script;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.MultipleCompilationErrorsException;
+import org.codehaus.groovy.control.messages.ExceptionMessage;
 import org.codehaus.groovy.control.messages.Message;
 import org.codehaus.groovy.control.messages.SyntaxErrorMessage;
 import org.codehaus.groovy.runtime.InvokerHelper;
@@ -79,7 +80,10 @@ public class ScriptCachingEngineImpl implements ScriptCachingEngine {
             groovyClassLoader = new GroovyClassLoader(Thread.currentThread().getContextClassLoader(), config);
             groovyClassLoader.parseClass(code);
             return new ArrayList<>();
-        } catch (MultipleCompilationErrorsException e) {
+        } catch (Exception e) {
+            if (!(e instanceof MultipleCompilationErrorsException)) {
+                throw new RuntimeException(e);
+            }
             List<? extends Message> errors = ((MultipleCompilationErrorsException) e).getErrorCollector().getErrors();
             return getDiagnostics(errors);
         } finally {
@@ -98,7 +102,10 @@ public class ScriptCachingEngineImpl implements ScriptCachingEngine {
             groovyClassLoader = new GroovyClassLoader(Thread.currentThread().getContextClassLoader(), config);
             Class aClass = groovyClassLoader.parseClass(code);
             return InvokerHelper.createScript(aClass, binding).run();
-        } catch (MultipleCompilationErrorsException e) {
+        } catch (Exception e) {
+            if (!(e instanceof MultipleCompilationErrorsException)) {
+                throw new RuntimeException(e);
+            }
             List<? extends Message> errors = ((MultipleCompilationErrorsException) e).getErrorCollector().getErrors();
             return getDiagnostics(errors);
 
@@ -123,6 +130,18 @@ public class ScriptCachingEngineImpl implements ScriptCachingEngine {
                 diagnostic.setEndColumn(cause.getEndColumn());
                 diagnostics.add(diagnostic);
 
+            }
+            if (error instanceof ExceptionMessage) {
+                Exception cause = ((ExceptionMessage) error).getCause();
+                Diagnostic diagnostic = new Diagnostic();
+                diagnostic.setMessage(cause.getMessage());
+                diagnostic.setStartLineNumber(cause.getStackTrace()[0].getLineNumber());
+                diagnostic.setEndLineNumber(cause.getStackTrace()[0].getLineNumber());
+                diagnostics.add(diagnostic);
+            }else {
+                Diagnostic diagnostic = new Diagnostic();
+                diagnostic.setMessage("unkonw error");
+                diagnostics.add(diagnostic);
             }
         }
         return diagnostics;
