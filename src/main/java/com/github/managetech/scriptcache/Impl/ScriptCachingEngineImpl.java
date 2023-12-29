@@ -129,7 +129,7 @@ public class ScriptCachingEngineImpl implements ScriptCachingEngine {
                 diagnostic.setEndLineNumber(cause.getEndLine());
                 diagnostic.setEndColumn(cause.getEndColumn());
                 diagnostics.add(diagnostic);
-
+                continue;
             }
             if (error instanceof ExceptionMessage) {
                 Exception cause = ((ExceptionMessage) error).getCause();
@@ -138,6 +138,7 @@ public class ScriptCachingEngineImpl implements ScriptCachingEngine {
                 diagnostic.setStartLineNumber(cause.getStackTrace()[0].getLineNumber());
                 diagnostic.setEndLineNumber(cause.getStackTrace()[0].getLineNumber());
                 diagnostics.add(diagnostic);
+                continue;
             }else {
                 Diagnostic diagnostic = new Diagnostic();
                 diagnostic.setMessage("unkonw error");
