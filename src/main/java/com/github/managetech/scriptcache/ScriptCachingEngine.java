@@ -18,5 +18,6 @@ public interface ScriptCachingEngine {
     Script parseScript(String scriptText, Binding binding) throws IOException;
 
 
-    Object compileGroovyScript(String code);
+    List<Diagnostic> compileGroovyScript(String code) throws IOException;
+    Object runGroovyScript(String code,Binding binding) throws IOException;
 }

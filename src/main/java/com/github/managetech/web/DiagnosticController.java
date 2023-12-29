@@ -34,26 +34,9 @@ public class DiagnosticController {
     }
 
     @PostMapping("/compileGroovyScript")
-    public Object compileGroovyScript(@RequestBody String code) {
+    public Object compileGroovyScript(@RequestBody String code) throws IOException {
         return scriptCachingEngine.compileGroovyScript(code);
     }
 
-    public static void main(String[] args) throws IOException {
-        String a = "def exampleMethod() {\n" +
-                "    int a = 10\n" +
-                "    int b = 10\n" +
-                "    a = \"thirty\"\n" +
-                "    return a + b\n" +
-                "}\n" +
-                "\n" +
-                "println exampleMethod()\n" +
-                "\n" +
-                "\n";
 
-        String b ="def exampleMethod() {\n    int a = 10\n    int b = \" \n    return a + b\n}\n\nprintln exampleMethod()\n\n\n\n\n\n\n\n";
-        ScriptCachingEngineImpl scriptCachingEngine1 = new ScriptCachingEngineImpl(null);
-        Object o = scriptCachingEngine1.compileGroovyScript(b);
-        System.out.println("o = " + o);
-
-    }
 }

@@ -8,6 +8,7 @@ import groovy.lang.GroovyClassLoader;
 import groovy.lang.Script;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.MultipleCompilationErrorsException;
+import org.codehaus.groovy.control.messages.ExceptionMessage;
 import org.codehaus.groovy.control.messages.Message;
 import org.codehaus.groovy.control.messages.SyntaxErrorMessage;
 import org.codehaus.groovy.runtime.InvokerHelper;
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -26,7 +28,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @since 09/18/2023
  */
 @Service
-@SuppressWarnings("unchecked")
+@SuppressWarnings("all")
 public class ScriptCachingEngineImpl implements ScriptCachingEngine {
 
     private final CompilerConfiguration config;
@@ -53,6 +55,13 @@ public class ScriptCachingEngineImpl implements ScriptCachingEngine {
                 Class<? extends Script> aClass = groovyClassLoader.parseClass(scriptText);
                 parseScriptCache.put(DigestUtils.md5DigestAsHex(scriptText.getBytes()), aClass);
                 script = aClass;
+            } catch (Exception e) {
+                if (e instanceof MultipleCompilationErrorsException) {
+                    List<? extends Message> errors = ((MultipleCompilationErrorsException) e).getErrorCollector().getErrors();
+                    List<Diagnostic> diagnostics = getDiagnostics(errors);
+                    throw new RuntimeException(diagnostics.toString());
+                }
+                throw new RuntimeException(e);
             } finally {
                 if (groovyClassLoader != null) {
                     groovyClassLoader.close();
@@ -64,20 +73,48 @@ public class ScriptCachingEngineImpl implements ScriptCachingEngine {
     }
 
     @Override
-    public Object compileGroovyScript(String code) {
+    public List<Diagnostic> compileGroovyScript(String code) throws IOException {
         new GroovyNotSupportInterceptor().register();
-
-        try (GroovyClassLoader groovyClassLoader = new GroovyClassLoader(Thread.currentThread().getContextClassLoader(), config)) {
-            Class aClass = groovyClassLoader.parseClass(code);
-            return InvokerHelper.createScript(aClass, new Binding()).run();
-        } catch (MultipleCompilationErrorsException | IOException e) {
-
-            if (e instanceof MultipleCompilationErrorsException) {
-                List<? extends Message> errors = ((MultipleCompilationErrorsException) e).getErrorCollector().getErrors();
-                return getDiagnostics(errors);
+        GroovyClassLoader groovyClassLoader = null;
+        try {
+            groovyClassLoader = new GroovyClassLoader(Thread.currentThread().getContextClassLoader(), config);
+            groovyClassLoader.parseClass(code);
+            return new ArrayList<>();
+        } catch (Exception e) {
+            if (!(e instanceof MultipleCompilationErrorsException)) {
+                throw new RuntimeException(e);
             }
-            throw new RuntimeException(e);
+            List<? extends Message> errors = ((MultipleCompilationErrorsException) e).getErrorCollector().getErrors();
+            return getDiagnostics(errors);
+        } finally {
+            if (groovyClassLoader != null) {
+                groovyClassLoader.close();
+            }
         }
+    }
+
+    @Override
+    public Object runGroovyScript(String code, Binding binding) throws IOException {
+        new GroovyNotSupportInterceptor().register();
+        GroovyClassLoader groovyClassLoader = null;
+
+        try {
+            groovyClassLoader = new GroovyClassLoader(Thread.currentThread().getContextClassLoader(), config);
+            Class aClass = groovyClassLoader.parseClass(code);
+            return InvokerHelper.createScript(aClass, binding).run();
+        } catch (Exception e) {
+            if (!(e instanceof MultipleCompilationErrorsException)) {
+                throw new RuntimeException(e);
+            }
+            List<? extends Message> errors = ((MultipleCompilationErrorsException) e).getErrorCollector().getErrors();
+            return getDiagnostics(errors);
+
+        } finally {
+            if (groovyClassLoader != null) {
+                groovyClassLoader.close();
+            }
+        }
+
     }
 
     private static List<Diagnostic> getDiagnostics(List<? extends Message> errors) {
@@ -92,7 +129,20 @@ public class ScriptCachingEngineImpl implements ScriptCachingEngine {
                 diagnostic.setEndLineNumber(cause.getEndLine());
                 diagnostic.setEndColumn(cause.getEndColumn());
                 diagnostics.add(diagnostic);
-
+                continue;
+            }
+            if (error instanceof ExceptionMessage) {
+                Exception cause = ((ExceptionMessage) error).getCause();
+                Diagnostic diagnostic = new Diagnostic();
+                diagnostic.setMessage(cause.getMessage());
+                diagnostic.setStartLineNumber(cause.getStackTrace()[0].getLineNumber());
+                diagnostic.setEndLineNumber(cause.getStackTrace()[0].getLineNumber());
+                diagnostics.add(diagnostic);
+                continue;
+            }else {
+                Diagnostic diagnostic = new Diagnostic();
+                diagnostic.setMessage("unkonw error");
+                diagnostics.add(diagnostic);
             }
         }
         return diagnostics;
