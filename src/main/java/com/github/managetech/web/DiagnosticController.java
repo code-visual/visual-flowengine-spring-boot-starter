@@ -34,7 +34,7 @@ public class DiagnosticController {
     }
 
     @PostMapping("/compileGroovyScript")
-    public Object compileGroovyScript(@RequestBody String code) {
+    public Object compileGroovyScript(@RequestBody String code) throws IOException {
         return scriptCachingEngine.compileGroovyScript(code);
     }
 
