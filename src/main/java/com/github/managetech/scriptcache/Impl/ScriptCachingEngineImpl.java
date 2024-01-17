@@ -117,6 +117,11 @@ public class ScriptCachingEngineImpl implements ScriptCachingEngine {
 
     }
 
+    @Override
+    public Object getScriptMetadataByName(String scriptName) {
+        return null;
+    }
+
     private static List<Diagnostic> getDiagnostics(List<? extends Message> errors) {
         List<Diagnostic> diagnostics = new java.util.ArrayList<>();
         for (Message error : errors) {

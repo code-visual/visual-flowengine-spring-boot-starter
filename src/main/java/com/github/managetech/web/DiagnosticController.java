@@ -12,11 +12,7 @@ import org.codehaus.groovy.control.messages.SyntaxErrorMessage;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.codehaus.groovy.syntax.SyntaxException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.List;
@@ -33,9 +29,13 @@ public class DiagnosticController {
         this.scriptCachingEngine = scriptCachingEngine;
     }
 
-    @PostMapping("/compileGroovyScript")
+    @PostMapping("/groovyScript/compile")
     public Object compileGroovyScript(@RequestBody String code) throws IOException {
         return scriptCachingEngine.compileGroovyScript(code);
+    }
+    @GetMapping("/groovyScript/{scriptName}")
+    public Object getScriptMetadataByName(@PathVariable String scriptName) {
+        return scriptCachingEngine.getScriptMetadataByName(scriptName);
     }
 
 
