@@ -2,6 +2,7 @@ package com.github.managetech.ruleengine
 
 import com.github.managetech.scriptcache.ScriptCachingEngine
 import com.github.managetech.utils.SpringContext
+
 class RuleParser {
     private List<Rule> rules = []
 

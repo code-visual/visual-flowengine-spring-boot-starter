@@ -19,7 +19,8 @@ public interface ScriptCachingEngine {
 
 
     List<Diagnostic> compileGroovyScript(String code) throws IOException;
-    Object runGroovyScript(String code,Binding binding) throws IOException;
+
+    Object runGroovyScript(String code, Binding binding) throws IOException;
 
     Object getScriptMetadataByName(String scriptName);
 }

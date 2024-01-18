@@ -15,7 +15,7 @@ public class GroovyNotSupportInterceptor extends GroovyInterceptor {
             "notifyAll", "invokeMethod", "finalize", "execute");
 
 
-     static final Map<Class<?>, String> STATIC_METHOD_BLACK_LIST = createBlackList();
+    static final Map<Class<?>, String> STATIC_METHOD_BLACK_LIST = createBlackList();
 
     private static Map<Class<?>, String> createBlackList() {
         Map<Class<?>, String> map = new HashMap<>();

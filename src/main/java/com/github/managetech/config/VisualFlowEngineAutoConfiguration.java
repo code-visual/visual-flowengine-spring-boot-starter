@@ -13,11 +13,10 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -46,8 +45,9 @@ public class VisualFlowEngineAutoConfiguration {
         }
 
         @GetMapping("/visualFlow-ui.html")
-        public String visualFlow() {
-            return "forward:/index.html";
+        public ModelAndView visualFlow(Model model) {
+            model.addAttribute("compileGroovyScriptPath", properties.getPath());
+            return new ModelAndView("index");
         }
     }
 

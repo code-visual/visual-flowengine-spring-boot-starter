@@ -144,7 +144,7 @@ public class ScriptCachingEngineImpl implements ScriptCachingEngine {
                 diagnostic.setEndLineNumber(cause.getStackTrace()[0].getLineNumber());
                 diagnostics.add(diagnostic);
                 continue;
-            }else {
+            } else {
                 Diagnostic diagnostic = new Diagnostic();
                 diagnostic.setMessage("unkonw error");
                 diagnostics.add(diagnostic);
