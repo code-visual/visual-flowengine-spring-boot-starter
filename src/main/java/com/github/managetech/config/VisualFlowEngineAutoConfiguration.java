@@ -6,7 +6,6 @@ import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.customizers.SecureASTCustomizer;
 import org.codehaus.groovy.syntax.Types;
 import org.kohsuke.groovy.sandbox.SandboxTransformer;
-import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -28,37 +27,34 @@ import java.util.List;
  * @author Levi Li
  * @since 12/19/2023
  */
-@AutoConfiguration
+@Configuration
 @ComponentScan(basePackages = "com.github.managetech")
 @ConditionalOnWebApplication
-@EnableConfigurationProperties(VisualFlowEngineProperties.class)
+@EnableConfigurationProperties(VisualFlowProperties.class)
 public class VisualFlowEngineAutoConfiguration {
 
 
     @Controller
     public static class VisualFlowUIController {
 
-        private final VisualFlowEngineProperties properties;
+        private final VisualFlowProperties visualFlowProperties;
 
-        public VisualFlowUIController(VisualFlowEngineProperties properties) {
-            this.properties = properties;
+        public VisualFlowUIController(VisualFlowProperties visualFlowProperties) {
+            this.visualFlowProperties = visualFlowProperties;
         }
 
-        @GetMapping("/visualFlow-ui.html")
+        @GetMapping("${visual.flow.webUIPath}")
         public ModelAndView visualFlow(Model model) {
-            model.addAttribute("compileGroovyScriptPath", properties.getPath());
+            model.addAttribute("visualFlowProperties", visualFlowProperties);
             return new ModelAndView("index");
         }
     }
 
-    //考虑这个类会不会被覆盖
-    @Bean
-    public WebMvcConfigurer myLibraryWebConfigurer() {
+    @Bean(name = "customLibraryWebConfigurer")
+    public WebMvcConfigurer customLibraryWebConfigurer() {
         return new WebMvcConfigurer() {
 
-            @Override
             public void addResourceHandlers(ResourceHandlerRegistry registry) {
-                // 资源文件路径都会走这里
                 registry.addResourceHandler("/**")
                         .addResourceLocations("classpath:/META-INF/resources/visualflow/");
             }
