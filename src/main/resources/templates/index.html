@@ -1,18 +1,18 @@
 <!doctype html>
 <html xmlns:th="http://www.thymeleaf.org" lang="en">
-<head>
-    <meta charset="UTF-8"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <script type="text/javascript" th:inline="javascript">
-        window.compileGroovyScript = [[${visualFlowProperties.webUIPath}]];
+      //在这里定义API的地址
+      window.compileGroovyScript = [[${visualFlowProperties.webUIPath}]];
 
     </script>
     <title>manage-man</title>
-    <script type="module" crossorigin th:src="${visualFlowProperties.getResourcePath('/assets/index-fZsoYozw.js')}"></script>
-    <link rel="stylesheet" crossorigin th:href="${visualFlowProperties.getResourcePath('/assets/index-lxFdxpmn.css')}">
-</head>
-<body>
-<div id="root"></div>
-
-</body>
+    <script type="module" crossorigin th:src="${visualFlowProperties.getResourcePath('/assets/index-NNd1li4O.js')}"></script>
+    <link rel="stylesheet" crossorigin th:href="${visualFlowProperties.getResourcePath('/assets/index-gAdqn6ma.css')}">
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
 </html>
