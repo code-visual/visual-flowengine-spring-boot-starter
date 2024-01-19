@@ -46,6 +46,7 @@ public class VisualFlowEngineAutoConfiguration {
         @GetMapping("${visual.flow.webUIPath}")
         public ModelAndView visualFlow(Model model) {
             model.addAttribute("visualFlowProperties", visualFlowProperties);
+            //好像页面需要的很多信息都可以直接传递到页面了。不用前端再去请求后端了
             return new ModelAndView("index");
         }
     }
