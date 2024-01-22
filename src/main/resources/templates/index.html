@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <script type="text/javascript" th:inline="javascript">
       //在这里定义API的地址
-      window.compileGroovyScript = [[${visualFlowProperties.webUIPath}]];
+      window.compileGroovyScript = [[${visualFlowProperties.compileScriptApiPath}]];
 
     </script>
     <title>manage-man</title>
@@ -13,6 +13,7 @@
     <link rel="stylesheet" crossorigin th:href="${visualFlowProperties.getResourcePath('/assets/index-gAdqn6ma.css')}">
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root"></div>
+
   </body>
 </html>
