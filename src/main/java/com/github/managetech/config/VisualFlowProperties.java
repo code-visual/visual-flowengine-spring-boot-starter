@@ -10,9 +10,26 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class VisualFlowProperties {
 
     private String webUIPath = "/visualFlow-ui";
+    private String compileScriptApiPath = "/groovyScript/compile";
     private String resourcePrefix = "";
+    private boolean enableDefaultApi;
 
 
+    public String getCompileScriptApiPath() {
+        return compileScriptApiPath;
+    }
+
+    public void setCompileScriptApiPath(String compileScriptApiPath) {
+        this.compileScriptApiPath = compileScriptApiPath;
+    }
+
+    public boolean isEnableDefaultApi() {
+        return enableDefaultApi;
+    }
+
+    public void setEnableDefaultApi(boolean enableDefaultApi) {
+        this.enableDefaultApi = enableDefaultApi;
+    }
 
     // Getter
     public String getResourcePath(String path) {
@@ -36,11 +53,4 @@ public class VisualFlowProperties {
         this.resourcePrefix = resourcePrefix;
     }
 
-    @Override
-    public String toString() {
-        return "VisualFlowProperties{" +
-                "webUIPath='" + webUIPath + '\'' +
-                ", resourcePrefix='" + resourcePrefix + '\'' +
-                '}';
-    }
 }
