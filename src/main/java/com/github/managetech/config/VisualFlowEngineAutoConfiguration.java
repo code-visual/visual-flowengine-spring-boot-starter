@@ -7,6 +7,7 @@ import org.codehaus.groovy.control.customizers.SecureASTCustomizer;
 import org.codehaus.groovy.syntax.Types;
 import org.kohsuke.groovy.sandbox.SandboxTransformer;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -43,7 +44,9 @@ public class VisualFlowEngineAutoConfiguration {
             this.visualFlowProperties = visualFlowProperties;
         }
 
+
         @GetMapping("${visual.flow.webUIPath}")
+        @ConditionalOnProperty(name = "visual.flow.enableWebUIPath",havingValue = "true", matchIfMissing = true)
         public ModelAndView visualFlow(Model model) {
             model.addAttribute("visualFlowProperties", visualFlowProperties);
             //好像页面需要的很多信息都可以直接传递到页面了。不用前端再去请求后端了

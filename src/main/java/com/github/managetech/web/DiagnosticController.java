@@ -16,7 +16,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/engine")
-@ConditionalOnProperty(name = "visual.flow.enableDefaultApi", havingValue = "true")
+@ConditionalOnProperty(name = "visual.flow.enableDefaultApi", havingValue = "true", matchIfMissing = true)
 public class DiagnosticController {
 
 
