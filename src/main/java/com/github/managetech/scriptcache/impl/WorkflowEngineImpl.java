@@ -2,6 +2,7 @@ package com.github.managetech.scriptcache.impl;
 
 import com.github.managetech.groovy.GroovyNotSupportInterceptor;
 import com.github.managetech.model.Diagnostic;
+import com.github.managetech.model.RunScriptRequest;
 import com.github.managetech.model.WorkflowMetadata;
 import com.github.managetech.scriptcache.WorkflowEngine;
 import com.github.managetech.scriptcache.repository.WorkflowMetadataRepository;
@@ -99,14 +100,14 @@ public class WorkflowEngineImpl implements WorkflowEngine {
     }
 
     @Override
-    public Object runGroovyScript(String code, Binding binding) throws IOException {
+    public Object runGroovyScript(RunScriptRequest runScriptRequest) throws IOException {
         new GroovyNotSupportInterceptor().register();
         GroovyClassLoader groovyClassLoader = null;
 
         try {
             groovyClassLoader = new GroovyClassLoader(Thread.currentThread().getContextClassLoader(), config);
-            Class aClass = groovyClassLoader.parseClass(code);
-            return InvokerHelper.createScript(aClass, binding).run();
+            Class aClass = groovyClassLoader.parseClass(runScriptRequest.getCode());
+            return InvokerHelper.createScript(aClass, new Binding(runScriptRequest.getInputValues())).run();
         } catch (Exception e) {
             if (!(e instanceof MultipleCompilationErrorsException)) {
                 throw new RuntimeException(e);
