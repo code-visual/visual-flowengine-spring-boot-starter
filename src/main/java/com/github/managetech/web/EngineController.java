@@ -1,7 +1,7 @@
 package com.github.managetech.web;
 
-import com.github.managetech.model.GroovyScript;
-import com.github.managetech.scriptcache.ScriptCachingEngine;
+import com.github.managetech.model.WorkflowMetadata;
+import com.github.managetech.scriptcache.WorkflowEngine;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -18,24 +18,24 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/engine")
 @ConditionalOnProperty(name = "visual.flow.enableDefaultApi", havingValue = "true", matchIfMissing = true)
-public class DiagnosticController {
+public class EngineController {
 
 
-    private final ScriptCachingEngine scriptCachingEngine;
+    private final WorkflowEngine workflowEngine;
 
     @Autowired
-    public DiagnosticController(ScriptCachingEngine scriptCachingEngine) {
-        this.scriptCachingEngine = scriptCachingEngine;
+    public EngineController(WorkflowEngine workflowEngine) {
+        this.workflowEngine = workflowEngine;
     }
 
     @PostMapping("/groovyScript")
-    public Object createGroovyScript(@RequestBody GroovyScript groovyScript) {
-        return scriptCachingEngine.createGroovyScript(groovyScript);
+    public Object createGroovyScript(@RequestBody WorkflowMetadata workflowMetadata) {
+        return workflowEngine.createGroovyScript(workflowMetadata);
     }
 
     @DeleteMapping("/groovyScript/{scriptId}")
     public Object deleteGroovyScript(@PathVariable String scriptId) {
-        return scriptCachingEngine.deleteGroovyScript(scriptId);
+        return workflowEngine.deleteGroovyScript(scriptId);
     }
 
     @GetMapping("/groovyScripts")
@@ -46,12 +46,12 @@ public class DiagnosticController {
 
     @PostMapping("/groovyScript/compile")
     public Object compileGroovyScript(@RequestBody String code) throws IOException {
-        return scriptCachingEngine.compileGroovyScript(code);
+        return workflowEngine.compileGroovyScript(code);
     }
 
     @GetMapping("/groovyScript/{scriptName}")
     public Object getScriptMetadataByName(@PathVariable String scriptName) {
-        return scriptCachingEngine.getScriptMetadataByName(scriptName);
+        return workflowEngine.getScriptMetadataByName(scriptName);
     }
 
 

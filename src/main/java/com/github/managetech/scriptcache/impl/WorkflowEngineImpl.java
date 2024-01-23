@@ -1,9 +1,10 @@
-package com.github.managetech.scriptcache.Impl;
+package com.github.managetech.scriptcache.impl;
 
 import com.github.managetech.groovy.GroovyNotSupportInterceptor;
 import com.github.managetech.model.Diagnostic;
-import com.github.managetech.model.GroovyScript;
-import com.github.managetech.scriptcache.ScriptCachingEngine;
+import com.github.managetech.model.WorkflowMetadata;
+import com.github.managetech.scriptcache.WorkflowEngine;
+import com.github.managetech.scriptcache.repository.WorkflowMetadataRepository;
 import groovy.lang.Binding;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.Script;
@@ -30,25 +31,28 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @Service
 @SuppressWarnings("all")
-public class ScriptCachingEngineImpl implements ScriptCachingEngine {
+public class WorkflowEngineImpl implements WorkflowEngine {
 
     private final CompilerConfiguration config;
+    private final WorkflowMetadataRepository workflowMetadataRepository;
     private final Map<String, Class<? extends Script>> parseScriptCache = new ConcurrentHashMap<>();
 
     @Autowired
-    public ScriptCachingEngineImpl(CompilerConfiguration config) {
+    public WorkflowEngineImpl(CompilerConfiguration config, WorkflowMetadataRepository workflowMetadataRepository) {
         this.config = config;
+        this.workflowMetadataRepository = workflowMetadataRepository;
     }
 
 
     @Override
-    public Script parseScript(String scriptText, Binding binding) throws IOException {
+    public Script parseGroovyScript(String scriptText, Binding binding) throws IOException {
 
         Class<? extends Script> script = parseScriptCache.get(DigestUtils.md5DigestAsHex(scriptText.getBytes()));
         GroovyClassLoader groovyClassLoader = null;
 
         if (script == null) {
             //todo 假如我有多个呢。这样要做成配置的。提供GroovyInterceptor子类。然后全部执行
+             //GroovyValueFilter 这个是默认执行的吗?
             new GroovyNotSupportInterceptor().register();
 
             try {
@@ -124,13 +128,13 @@ public class ScriptCachingEngineImpl implements ScriptCachingEngine {
     }
 
     @Override
-    public Object createGroovyScript(GroovyScript groovyScript) {
-        return null;
+    public Object createGroovyScript(WorkflowMetadata workflowMetadata) {
+        return workflowMetadataRepository.save(workflowMetadata);
     }
 
     @Override
     public Object deleteGroovyScript(String scriptId) {
-        return null;
+        return workflowMetadataRepository.deleteByScriptId(scriptId);
     }
 
     private static List<Diagnostic> getDiagnostics(List<? extends Message> errors) {

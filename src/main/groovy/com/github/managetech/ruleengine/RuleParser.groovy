@@ -1,6 +1,6 @@
 package com.github.managetech.ruleengine
 
-import com.github.managetech.scriptcache.ScriptCachingEngine
+import com.github.managetech.scriptcache.WorkflowEngine
 import com.github.managetech.utils.SpringContext
 
 class RuleParser {
@@ -20,7 +20,7 @@ class RuleParser {
         def bindings = new Binding()
         bindings.setVariable("rule", this.&parseRule)
 
-        def parseScript = SpringContext.getBean(ScriptCachingEngine.class).parseScript(script, bindings)
+        def parseScript = SpringContext.getBean(WorkflowEngine.class).parseGroovyScript(script, bindings)
         parseScript.run()
         return rules
 
