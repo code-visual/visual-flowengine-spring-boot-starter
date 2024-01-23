@@ -1,28 +1,24 @@
 package com.github.managetech.web;
 
+import com.github.managetech.config.VisualFlowProperties;
 import com.github.managetech.model.RunScriptRequest;
 import com.github.managetech.model.WorkflowMetadata;
 import com.github.managetech.scriptcache.WorkflowEngine;
-import groovy.lang.Binding;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 
 @RestController
-@RequestMapping("/api/engine")
 @ConditionalOnProperty(name = "visual.flow.enableDefaultApi", havingValue = "true", matchIfMissing = true)
 public class EngineController {
-
 
     private final WorkflowEngine workflowEngine;
 
@@ -31,34 +27,34 @@ public class EngineController {
         this.workflowEngine = workflowEngine;
     }
 
-    @PostMapping("/createWorkflow")
+    @PostMapping(VisualFlowProperties.DEFAULT_CREATE_WORKFLOW)
     public Object createWorkflow(@RequestBody WorkflowMetadata workflowMetadata) {
         return workflowEngine.createWorkflow(workflowMetadata);
     }
 
-    @DeleteMapping("/workflow/{workflowName}")
-    public Object deleteWorkflowMetadata(@PathVariable String workflowName) {
+    @DeleteMapping(VisualFlowProperties.DEFAULT_DELETE_WORKFLOW)
+    public Object deleteWorkflowMetadata(@RequestParam String workflowName) {
         return workflowEngine.deleteWorkflowMetadata(workflowName);
     }
 
-    @GetMapping("/workflowList")
+    @GetMapping(VisualFlowProperties.DEFAULT_LIST_WORKFLOWS)
     public List<String> listMenuWorkflow() {
         return workflowEngine.getMenuWorkflowNameList();
     }
 
-    @PostMapping("/groovyScript/compile")
+    @PostMapping(VisualFlowProperties.DEFAULT_COMPILE_GROOVY_SCRIPT)
     public Object compileGroovyScript(@RequestBody String code) throws IOException {
         return workflowEngine.compileGroovyScript(code);
     }
-    @PostMapping("/groovyScript/run")
+
+    @PostMapping(VisualFlowProperties.DEFAULT_RUN_GROOVY_SCRIPT)
     public Object runGroovyScript(@RequestBody RunScriptRequest runRequest) throws IOException {
         return workflowEngine.runGroovyScript(runRequest);
     }
 
-    @GetMapping("/workflow/{workflowName}")
-    public WorkflowMetadata getWorkflowMetadata(@PathVariable String workflowName) {
+    @GetMapping(VisualFlowProperties.DEFAULT_GET_WORKFLOW_METADATA)
+    public WorkflowMetadata getWorkflowMetadata(@RequestParam String workflowName) {
         return workflowEngine.getWorkflowMetadataByName(workflowName);
     }
-
-
 }
+

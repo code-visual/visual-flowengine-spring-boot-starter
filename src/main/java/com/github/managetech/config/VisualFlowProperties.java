@@ -9,11 +9,65 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "visual.flow")
 public class VisualFlowProperties {
 
+    public static final String DEFAULT_CREATE_WORKFLOW = "/api/engine/createWorkflow";
+    public static final String DEFAULT_DELETE_WORKFLOW = "/api/engine/workflow";
+    public static final String DEFAULT_LIST_WORKFLOWS = "/api/engine/workflowList";
+    public static final String DEFAULT_COMPILE_GROOVY_SCRIPT = "/api/engine/groovyScript/compile";
+    public static final String DEFAULT_RUN_GROOVY_SCRIPT = "/api/engine/groovyScript/run";
+    public static final String DEFAULT_GET_WORKFLOW_METADATA = "/api/engine/workflow";
+
+
     private String webUIPath = "/visualFlow-ui";
-    private String compileScriptApiPath = "/groovyScript/compile";
     private String resourcePrefix = "";
     private boolean enableDefaultApi;
 
+    private String createWorkflowApiPath = DEFAULT_CREATE_WORKFLOW;
+    private String deleteWorkflowApiPath = DEFAULT_DELETE_WORKFLOW;
+    private String listWorkflowsApiPath = DEFAULT_LIST_WORKFLOWS;
+    private String compileScriptApiPath = DEFAULT_COMPILE_GROOVY_SCRIPT;
+    private String runGroovyScriptApiPath = DEFAULT_RUN_GROOVY_SCRIPT;
+    private String getWorkflowMetadataApiPath = DEFAULT_GET_WORKFLOW_METADATA;
+
+
+    public String getCreateWorkflowApiPath() {
+        return createWorkflowApiPath;
+    }
+
+    public void setCreateWorkflowApiPath(String createWorkflowApiPath) {
+        this.createWorkflowApiPath = createWorkflowApiPath;
+    }
+
+    public String getDeleteWorkflowApiPath() {
+        return deleteWorkflowApiPath;
+    }
+
+    public void setDeleteWorkflowApiPath(String deleteWorkflowApiPath) {
+        this.deleteWorkflowApiPath = deleteWorkflowApiPath;
+    }
+
+    public String getListWorkflowsApiPath() {
+        return listWorkflowsApiPath;
+    }
+
+    public void setListWorkflowsApiPath(String listWorkflowsApiPath) {
+        this.listWorkflowsApiPath = listWorkflowsApiPath;
+    }
+
+    public String getRunGroovyScriptApiPath() {
+        return runGroovyScriptApiPath;
+    }
+
+    public void setRunGroovyScriptApiPath(String runGroovyScriptApiPath) {
+        this.runGroovyScriptApiPath = runGroovyScriptApiPath;
+    }
+
+    public String getGetWorkflowMetadataApiPath() {
+        return getWorkflowMetadataApiPath;
+    }
+
+    public void setGetWorkflowMetadataApiPath(String getWorkflowMetadataApiPath) {
+        this.getWorkflowMetadataApiPath = getWorkflowMetadataApiPath;
+    }
 
     public String getCompileScriptApiPath() {
         return compileScriptApiPath;

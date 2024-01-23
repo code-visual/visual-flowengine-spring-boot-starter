@@ -1,19 +1,25 @@
 <!doctype html>
 <html xmlns:th="http://www.thymeleaf.org" lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <script type="text/javascript" th:inline="javascript">
-      //在这里定义API的地址
-      window.compileGroovyScript = [[${visualFlowProperties.compileScriptApiPath}]];
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script type="text/javascript" th:inline="javascript">
 
-    </script>
-    <title>manage-man</title>
-    <script type="module" crossorigin th:src="${visualFlowProperties.getResourcePath('/assets/index-NNd1li4O.js')}"></script>
-    <link rel="stylesheet" crossorigin th:href="${visualFlowProperties.getResourcePath('/assets/index-gAdqn6ma.css')}">
-  </head>
-  <body>
-    <div id="root"></div>
+    window.compileScriptApiPath = [[${visualFlowProperties.compileScriptApiPath}]];
+    window.createWorkflowApiPath = [[${visualFlowProperties.createWorkflowApiPath}]];
+    window.deleteWorkflowApiPath = [[${visualFlowProperties.deleteWorkflowApiPath}]];
+    window.listWorkflowsApiPath = [[${visualFlowProperties.listWorkflowsApiPath}]];
+    window.runGroovyScriptApiPath = [[${visualFlowProperties.runGroovyScriptApiPath}]];
+    window.getWorkflowMetadataApiPath = [[${visualFlowProperties.getWorkflowMetadataApiPath}]];
 
-  </body>
+
+  </script>
+  <title>manage-man</title>
+  <script type="module" crossorigin th:src="${visualFlowProperties.getResourcePath('/assets/index-em1v2HrS.js')}"></script>
+  <link rel="stylesheet" crossorigin th:href="${visualFlowProperties.getResourcePath('/assets/index-gAdqn6ma.css')}">
+</head>
+<body>
+<div id="root"></div>
+
+</body>
 </html>
