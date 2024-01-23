@@ -6,11 +6,11 @@ import java.util.List;
 
 public interface WorkflowMetadataRepository {
 
-    WorkflowMetadata save(WorkflowMetadata workflowMetadata);
+    WorkflowMetadata create(WorkflowMetadata workflowMetadata);
 
-    Object deleteByScriptId(String scriptId);
+    Object deleteByScriptId(String workflowName);
 
-    WorkflowMetadata findById(String scriptId);
+    WorkflowMetadata findByWorkflowName(String workflowName);
 
-    List<WorkflowMetadata> findAll();
+    List<String> getMenuWorkflowList();
 }

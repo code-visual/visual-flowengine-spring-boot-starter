@@ -128,13 +128,18 @@ public class WorkflowEngineImpl implements WorkflowEngine {
     }
 
     @Override
-    public Object createGroovyScript(WorkflowMetadata workflowMetadata) {
-        return workflowMetadataRepository.save(workflowMetadata);
+    public Object createWorkflow(WorkflowMetadata workflowMetadata) {
+        return workflowMetadataRepository.create(workflowMetadata);
     }
 
     @Override
-    public Object deleteGroovyScript(String scriptId) {
-        return workflowMetadataRepository.deleteByScriptId(scriptId);
+    public Object deleteWorkflowMetadata(String workflowName) {
+        return workflowMetadataRepository.deleteByScriptId(workflowName);
+    }
+
+    @Override
+    public List<String> getMenuWorkflowNameList() {
+        return workflowMetadataRepository.getMenuWorkflowList();
     }
 
     private static List<Diagnostic> getDiagnostics(List<? extends Message> errors) {

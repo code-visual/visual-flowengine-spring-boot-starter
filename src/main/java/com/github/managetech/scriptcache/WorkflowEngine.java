@@ -15,9 +15,7 @@ import java.util.List;
  */
 public interface WorkflowEngine {
 
-
     Script parseGroovyScript(String scriptText, Binding binding) throws IOException;
-
 
     List<Diagnostic> compileGroovyScript(String code) throws IOException;
 
@@ -25,7 +23,8 @@ public interface WorkflowEngine {
 
     Object getScriptMetadataByName(String scriptName);
 
-    Object createGroovyScript(WorkflowMetadata workflowMetadata);
+    Object createWorkflow(WorkflowMetadata workflowMetadata);
 
-    Object deleteGroovyScript(String scriptId);
+    Object deleteWorkflowMetadata(String workflowName);
+    List<String> getMenuWorkflowNameList();
 }
