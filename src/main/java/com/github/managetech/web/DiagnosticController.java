@@ -1,5 +1,6 @@
 package com.github.managetech.web;
 
+import com.github.managetech.model.GroovyScript;
 import com.github.managetech.scriptcache.ScriptCachingEngine;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -28,13 +29,13 @@ public class DiagnosticController {
     }
 
     @PostMapping("/groovyScript")
-    public Object createGroovyScript(@RequestBody String code) {
-        return null;
+    public Object createGroovyScript(@RequestBody GroovyScript groovyScript) {
+        return scriptCachingEngine.createGroovyScript(groovyScript);
     }
 
-    @DeleteMapping("/groovyScript/{scriptName}")
-    public Object deleteGroovyScript(@PathVariable String scriptName) {
-        return null;
+    @DeleteMapping("/groovyScript/{scriptId}")
+    public Object deleteGroovyScript(@PathVariable String scriptId) {
+        return scriptCachingEngine.deleteGroovyScript(scriptId);
     }
 
     @GetMapping("/groovyScripts")

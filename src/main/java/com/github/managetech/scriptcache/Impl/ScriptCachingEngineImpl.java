@@ -2,6 +2,7 @@ package com.github.managetech.scriptcache.Impl;
 
 import com.github.managetech.groovy.GroovyNotSupportInterceptor;
 import com.github.managetech.model.Diagnostic;
+import com.github.managetech.model.GroovyScript;
 import com.github.managetech.scriptcache.ScriptCachingEngine;
 import groovy.lang.Binding;
 import groovy.lang.GroovyClassLoader;
@@ -119,6 +120,16 @@ public class ScriptCachingEngineImpl implements ScriptCachingEngine {
 
     @Override
     public Object getScriptMetadataByName(String scriptName) {
+        return null;
+    }
+
+    @Override
+    public Object createGroovyScript(GroovyScript groovyScript) {
+        return null;
+    }
+
+    @Override
+    public Object deleteGroovyScript(String scriptId) {
         return null;
     }
 

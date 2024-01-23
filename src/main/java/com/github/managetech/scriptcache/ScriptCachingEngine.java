@@ -2,6 +2,7 @@ package com.github.managetech.scriptcache;
 
 
 import com.github.managetech.model.Diagnostic;
+import com.github.managetech.model.GroovyScript;
 import groovy.lang.Binding;
 import groovy.lang.Script;
 
@@ -23,4 +24,8 @@ public interface ScriptCachingEngine {
     Object runGroovyScript(String code, Binding binding) throws IOException;
 
     Object getScriptMetadataByName(String scriptName);
+
+    Object createGroovyScript(GroovyScript groovyScript);
+
+    Object deleteGroovyScript(String scriptId);
 }
