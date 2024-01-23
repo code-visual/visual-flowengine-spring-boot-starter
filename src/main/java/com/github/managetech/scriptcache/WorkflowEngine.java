@@ -2,7 +2,7 @@ package com.github.managetech.scriptcache;
 
 
 import com.github.managetech.model.Diagnostic;
-import com.github.managetech.model.GroovyScript;
+import com.github.managetech.model.WorkflowMetadata;
 import groovy.lang.Binding;
 import groovy.lang.Script;
 
@@ -13,10 +13,10 @@ import java.util.List;
  * @author Levi Li
  * @since 09/18/2023
  */
-public interface ScriptCachingEngine {
+public interface WorkflowEngine {
 
 
-    Script parseScript(String scriptText, Binding binding) throws IOException;
+    Script parseGroovyScript(String scriptText, Binding binding) throws IOException;
 
 
     List<Diagnostic> compileGroovyScript(String code) throws IOException;
@@ -25,7 +25,7 @@ public interface ScriptCachingEngine {
 
     Object getScriptMetadataByName(String scriptName);
 
-    Object createGroovyScript(GroovyScript groovyScript);
+    Object createGroovyScript(WorkflowMetadata workflowMetadata);
 
     Object deleteGroovyScript(String scriptId);
 }
