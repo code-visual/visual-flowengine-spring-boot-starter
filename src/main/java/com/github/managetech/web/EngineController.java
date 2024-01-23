@@ -43,15 +43,14 @@ public class EngineController {
         return workflowEngine.getMenuWorkflowNameList();
     }
 
-
     @PostMapping("/groovyScript/compile")
     public Object compileGroovyScript(@RequestBody String code) throws IOException {
         return workflowEngine.compileGroovyScript(code);
     }
 
-    @GetMapping("/groovyScript/{scriptName}")
-    public Object getScriptMetadataByName(@PathVariable String scriptName) {
-        return workflowEngine.getScriptMetadataByName(scriptName);
+    @GetMapping("/workflow/{workflowName}")
+    public WorkflowMetadata getWorkflowMetadata(@PathVariable String workflowName) {
+        return workflowEngine.getWorkflowMetadataByName(workflowName);
     }
 
 
