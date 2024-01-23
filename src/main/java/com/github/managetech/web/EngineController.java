@@ -1,7 +1,9 @@
 package com.github.managetech.web;
 
+import com.github.managetech.model.RunScriptRequest;
 import com.github.managetech.model.WorkflowMetadata;
 import com.github.managetech.scriptcache.WorkflowEngine;
+import groovy.lang.Binding;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -14,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/engine")
@@ -46,6 +49,10 @@ public class EngineController {
     @PostMapping("/groovyScript/compile")
     public Object compileGroovyScript(@RequestBody String code) throws IOException {
         return workflowEngine.compileGroovyScript(code);
+    }
+    @PostMapping("/groovyScript/run")
+    public Object runGroovyScript(@RequestBody RunScriptRequest runRequest) throws IOException {
+        return workflowEngine.runGroovyScript(runRequest);
     }
 
     @GetMapping("/workflow/{workflowName}")
