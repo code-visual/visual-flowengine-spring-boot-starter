@@ -8,22 +8,13 @@ import java.util.Date;
  */
 public class WorkflowMetadata {
 
-    private Integer workflowId;
     private String workflowName;
     private String workflowDescription;
     private String workflowStatus;
-    private String workflowAuthor;
     private Date createTime;
     private Date updateTime;
     private ScriptMetadata scriptMetadata;
 
-    public Integer getWorkflowId() {
-        return workflowId;
-    }
-
-    public void setWorkflowId(Integer workflowId) {
-        this.workflowId = workflowId;
-    }
 
     public String getWorkflowName() {
         return workflowName;
@@ -47,14 +38,6 @@ public class WorkflowMetadata {
 
     public void setWorkflowStatus(String workflowStatus) {
         this.workflowStatus = workflowStatus;
-    }
-
-    public String getWorkflowAuthor() {
-        return workflowAuthor;
-    }
-
-    public void setWorkflowAuthor(String workflowAuthor) {
-        this.workflowAuthor = workflowAuthor;
     }
 
     public Date getCreateTime() {

@@ -28,19 +28,19 @@ public class EngineController {
         this.workflowEngine = workflowEngine;
     }
 
-    @PostMapping("/groovyScript")
-    public Object createGroovyScript(@RequestBody WorkflowMetadata workflowMetadata) {
-        return workflowEngine.createGroovyScript(workflowMetadata);
+    @PostMapping("/createWorkflow")
+    public Object createWorkflow(@RequestBody WorkflowMetadata workflowMetadata) {
+        return workflowEngine.createWorkflow(workflowMetadata);
     }
 
-    @DeleteMapping("/groovyScript/{scriptId}")
-    public Object deleteGroovyScript(@PathVariable String scriptId) {
-        return workflowEngine.deleteGroovyScript(scriptId);
+    @DeleteMapping("/workflow/{workflowName}")
+    public Object deleteWorkflowMetadata(@PathVariable String workflowName) {
+        return workflowEngine.deleteWorkflowMetadata(workflowName);
     }
 
-    @GetMapping("/groovyScripts")
-    public List<?> listAllGroovyScripts() {
-        return null;
+    @GetMapping("/workflowList")
+    public List<String> listMenuWorkflow() {
+        return workflowEngine.getMenuWorkflowNameList();
     }
 
 
