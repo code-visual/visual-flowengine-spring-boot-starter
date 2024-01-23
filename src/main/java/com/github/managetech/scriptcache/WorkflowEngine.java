@@ -21,10 +21,11 @@ public interface WorkflowEngine {
 
     Object runGroovyScript(String code, Binding binding) throws IOException;
 
-    Object getScriptMetadataByName(String scriptName);
+    WorkflowMetadata getWorkflowMetadataByName(String workflowName);
 
     Object createWorkflow(WorkflowMetadata workflowMetadata);
 
     Object deleteWorkflowMetadata(String workflowName);
+
     List<String> getMenuWorkflowNameList();
 }

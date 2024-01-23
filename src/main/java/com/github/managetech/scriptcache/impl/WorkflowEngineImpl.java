@@ -123,8 +123,8 @@ public class WorkflowEngineImpl implements WorkflowEngine {
     }
 
     @Override
-    public Object getScriptMetadataByName(String scriptName) {
-        return null;
+    public WorkflowMetadata getWorkflowMetadataByName(String workflowName) {
+        return workflowMetadataRepository.findByWorkflowName(workflowName);
     }
 
     @Override
