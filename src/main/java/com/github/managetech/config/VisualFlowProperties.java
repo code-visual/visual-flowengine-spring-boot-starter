@@ -23,6 +23,7 @@ public class VisualFlowProperties {
     private String webUIPath;
     private String resourcePrefix = "";
     private boolean enableDefaultApi;
+    private boolean enableWebUIPath;
 
     private String createWorkflowApiPath = DEFAULT_CREATE_WORKFLOW;
     private String deleteWorkflowApiPath = DEFAULT_DELETE_WORKFLOW;
@@ -31,6 +32,14 @@ public class VisualFlowProperties {
     private String runGroovyScriptApiPath = DEFAULT_RUN_GROOVY_SCRIPT;
     private String getWorkflowMetadataApiPath = DEFAULT_GET_WORKFLOW_METADATA;
 
+
+    public boolean isEnableWebUIPath() {
+        return enableWebUIPath;
+    }
+
+    public void setEnableWebUIPath(boolean enableWebUIPath) {
+        this.enableWebUIPath = enableWebUIPath;
+    }
 
     public String getCreateWorkflowApiPath() {
         return createWorkflowApiPath;
