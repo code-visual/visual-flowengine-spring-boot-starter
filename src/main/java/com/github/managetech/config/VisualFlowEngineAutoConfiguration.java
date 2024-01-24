@@ -1,7 +1,7 @@
 package com.github.managetech.config;
 
-import com.github.managetech.engine.TempWorkflowMetadataRepositoryImpl;
-import com.github.managetech.engine.WorkflowMetadataRepository;
+import com.github.managetech.workflow.TempWorkflowMetadataRepositoryImpl;
+import com.github.managetech.workflow.WorkflowMetadataRepository;
 import org.codehaus.groovy.ast.stmt.Statement;
 import org.codehaus.groovy.ast.stmt.WhileStatement;
 import org.codehaus.groovy.control.CompilerConfiguration;
