@@ -1,4 +1,4 @@
-package com.github.managetech.scriptcache.repository;
+package com.github.managetech.engine;
 
 import com.github.managetech.model.WorkflowMetadata;
 
@@ -8,7 +8,7 @@ public interface WorkflowMetadataRepository {
 
     WorkflowMetadata create(WorkflowMetadata workflowMetadata);
 
-    Object deleteByScriptId(String workflowName);
+    Object deleteByWorkflowName(String workflowName);
 
     WorkflowMetadata findByWorkflowName(String workflowName);
 

@@ -1,10 +1,8 @@
-package com.github.managetech.scriptcache.impl;
+package com.github.managetech.engine;
 
 import com.github.managetech.model.Diagnostic;
 import com.github.managetech.model.ScriptRequest;
 import com.github.managetech.model.WorkflowMetadata;
-import com.github.managetech.scriptcache.WorkflowEngine;
-import com.github.managetech.scriptcache.repository.WorkflowMetadataRepository;
 import groovy.lang.Binding;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.Script;
@@ -130,7 +128,7 @@ public class WorkflowEngineImpl implements WorkflowEngine {
 
     @Override
     public Object deleteWorkflowMetadata(String workflowName) {
-        return workflowMetadataRepository.deleteByScriptId(workflowName);
+        return workflowMetadataRepository.deleteByWorkflowName(workflowName);
     }
 
     @Override

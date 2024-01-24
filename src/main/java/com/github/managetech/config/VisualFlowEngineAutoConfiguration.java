@@ -1,5 +1,7 @@
 package com.github.managetech.config;
 
+import com.github.managetech.engine.TempWorkflowMetadataRepositoryImpl;
+import com.github.managetech.engine.WorkflowMetadataRepository;
 import org.codehaus.groovy.ast.stmt.Statement;
 import org.codehaus.groovy.ast.stmt.WhileStatement;
 import org.codehaus.groovy.control.CompilerConfiguration;
@@ -94,5 +96,11 @@ public class VisualFlowEngineAutoConfiguration {
             config.setSourceEncoding("UTF-8");
             return config;
         }
+    }
+
+    @Bean
+    @ConditionalOnMissingBean(WorkflowMetadataRepository.class)
+    public WorkflowMetadataRepository workflowMetadataRepository() {
+        return new TempWorkflowMetadataRepositoryImpl();
     }
 }
