@@ -2,7 +2,7 @@ package com.github.managetech.scriptcache;
 
 
 import com.github.managetech.model.Diagnostic;
-import com.github.managetech.model.RunScriptRequest;
+import com.github.managetech.model.ScriptRequest;
 import com.github.managetech.model.WorkflowMetadata;
 import groovy.lang.Binding;
 import groovy.lang.Script;
@@ -20,7 +20,7 @@ public interface WorkflowEngine {
 
     List<Diagnostic> compileGroovyScript(String code) throws IOException;
 
-    Object runGroovyScript(RunScriptRequest runScriptRequest) throws IOException;
+    Object runGroovyScript(ScriptRequest scriptRequest) throws IOException;
 
     WorkflowMetadata getWorkflowMetadataByName(String workflowName);
 

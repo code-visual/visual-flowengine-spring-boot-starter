@@ -93,9 +93,7 @@ public class VisualFlowEngineAutoConfiguration {
             final CompilerConfiguration config = new CompilerConfiguration(); // 自定义CompilerConfiguration，设置AST
             config.addCompilationCustomizers(secure);
             config.setSourceEncoding("UTF-8");
-            config.addCompilationCustomizers(new SandboxTransformer());
             return config;
         }
-
     }
 }

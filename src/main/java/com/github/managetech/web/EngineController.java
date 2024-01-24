@@ -1,11 +1,12 @@
 package com.github.managetech.web;
 
 import com.github.managetech.config.VisualFlowProperties;
-import com.github.managetech.model.RunScriptRequest;
+import com.github.managetech.model.ScriptRequest;
 import com.github.managetech.model.WorkflowMetadata;
 import com.github.managetech.scriptcache.WorkflowEngine;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.io.IOException;
 import java.util.List;
 
+@CrossOrigin(origins = {"http://localhost:3000","http://10.17.80.189:3000"})
 @RestController
 @ConditionalOnProperty(name = "visual.flow.enableDefaultApi", havingValue = "true", matchIfMissing = true)
 public class EngineController {
@@ -43,12 +45,12 @@ public class EngineController {
     }
 
     @PostMapping(VisualFlowProperties.DEFAULT_COMPILE_GROOVY_SCRIPT)
-    public Object compileGroovyScript(@RequestBody String code) throws IOException {
-        return workflowEngine.compileGroovyScript(code);
+    public Object compileGroovyScript(@RequestBody ScriptRequest runRequest) throws IOException {
+        return workflowEngine.compileGroovyScript(runRequest.getCode());
     }
 
     @PostMapping(VisualFlowProperties.DEFAULT_RUN_GROOVY_SCRIPT)
-    public Object runGroovyScript(@RequestBody RunScriptRequest runRequest) throws IOException {
+    public Object runGroovyScript(@RequestBody ScriptRequest runRequest) throws IOException {
         return workflowEngine.runGroovyScript(runRequest);
     }
 
