@@ -2,7 +2,7 @@ package com.github.managetech.model;
 
 import java.util.Map;
 
-public class RunScriptRequest {
+public class ScriptRequest {
     private Map<String, Object> inputValues;
     private String code;
 

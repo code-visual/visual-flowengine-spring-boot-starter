@@ -1,8 +1,7 @@
 package com.github.managetech.scriptcache.impl;
 
-import com.github.managetech.groovy.GroovyNotSupportInterceptor;
 import com.github.managetech.model.Diagnostic;
-import com.github.managetech.model.RunScriptRequest;
+import com.github.managetech.model.ScriptRequest;
 import com.github.managetech.model.WorkflowMetadata;
 import com.github.managetech.scriptcache.WorkflowEngine;
 import com.github.managetech.scriptcache.repository.WorkflowMetadataRepository;
@@ -52,9 +51,6 @@ public class WorkflowEngineImpl implements WorkflowEngine {
         GroovyClassLoader groovyClassLoader = null;
 
         if (script == null) {
-            //todo 假如我有多个呢。这样要做成配置的。提供GroovyInterceptor子类。然后全部执行
-             //GroovyValueFilter 这个是默认执行的吗?
-            new GroovyNotSupportInterceptor().register();
 
             try {
                 groovyClassLoader = new GroovyClassLoader(Thread.currentThread().getContextClassLoader(), config);
@@ -80,7 +76,7 @@ public class WorkflowEngineImpl implements WorkflowEngine {
 
     @Override
     public List<Diagnostic> compileGroovyScript(String code) throws IOException {
-        new GroovyNotSupportInterceptor().register();
+
         GroovyClassLoader groovyClassLoader = null;
         try {
             groovyClassLoader = new GroovyClassLoader(Thread.currentThread().getContextClassLoader(), config);
@@ -100,14 +96,13 @@ public class WorkflowEngineImpl implements WorkflowEngine {
     }
 
     @Override
-    public Object runGroovyScript(RunScriptRequest runScriptRequest) throws IOException {
-        new GroovyNotSupportInterceptor().register();
-        GroovyClassLoader groovyClassLoader = null;
+    public Object runGroovyScript(ScriptRequest scriptRequest) throws IOException {
 
+        GroovyClassLoader groovyClassLoader = null;
         try {
             groovyClassLoader = new GroovyClassLoader(Thread.currentThread().getContextClassLoader(), config);
-            Class aClass = groovyClassLoader.parseClass(runScriptRequest.getCode());
-            return InvokerHelper.createScript(aClass, new Binding(runScriptRequest.getInputValues())).run();
+            Class aClass = groovyClassLoader.parseClass(scriptRequest.getCode());
+            return InvokerHelper.createScript(aClass, new Binding(scriptRequest.getInputValues())).run();
         } catch (Exception e) {
             if (!(e instanceof MultipleCompilationErrorsException)) {
                 throw new RuntimeException(e);
