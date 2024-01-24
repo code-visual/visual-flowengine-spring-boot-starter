@@ -1,6 +1,9 @@
 package com.github.managetech.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+
+import javax.annotation.PostConstruct;
 
 /**
  * @author Levi Li
@@ -16,8 +19,8 @@ public class VisualFlowProperties {
     public static final String DEFAULT_RUN_GROOVY_SCRIPT = "/api/engine/groovyScript/run";
     public static final String DEFAULT_GET_WORKFLOW_METADATA = "/api/engine/workflow";
 
-
-    private String webUIPath = "/visualFlow-ui";
+    @Value("${visual.flow.webUIPath:/visualFlow-ui.html}")
+    private String webUIPath;
     private String resourcePrefix = "";
     private boolean enableDefaultApi;
 
@@ -87,7 +90,7 @@ public class VisualFlowProperties {
 
     // Getter
     public String getResourcePath(String path) {
-        return resourcePrefix+ path;
+        return resourcePrefix + path;
     }
 
     public String getWebUIPath() {
