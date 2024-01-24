@@ -3,8 +3,6 @@ package com.github.managetech.config;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-import javax.annotation.PostConstruct;
-
 /**
  * @author Levi Li
  * @since 01/18/2024

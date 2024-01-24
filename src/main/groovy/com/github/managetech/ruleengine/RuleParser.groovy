@@ -1,6 +1,6 @@
 package com.github.managetech.ruleengine
 
-import com.github.managetech.scriptcache.WorkflowEngine
+import com.github.managetech.engine.WorkflowEngine
 import com.github.managetech.utils.SpringContext
 
 class RuleParser {
