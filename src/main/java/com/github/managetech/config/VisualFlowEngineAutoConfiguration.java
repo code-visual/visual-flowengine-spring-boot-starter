@@ -44,7 +44,7 @@ public class VisualFlowEngineAutoConfiguration {
         }
 
 
-        @GetMapping("${visual.flow.webUIPath}")
+        @GetMapping("${visual.flow.webUIPath:/visualFlow-ui.html}")
         @ConditionalOnProperty(name = "visual.flow.enableWebUIPath",havingValue = "true", matchIfMissing = true)
         public ModelAndView visualFlow(Model model) {
             model.addAttribute("visualFlowProperties", visualFlowProperties);
