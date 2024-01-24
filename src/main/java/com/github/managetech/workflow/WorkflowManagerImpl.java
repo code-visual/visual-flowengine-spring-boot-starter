@@ -1,4 +1,4 @@
-package com.github.managetech.engine;
+package com.github.managetech.workflow;
 
 import com.github.managetech.model.Diagnostic;
 import com.github.managetech.model.ScriptRequest;
@@ -29,14 +29,14 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @Service
 @SuppressWarnings("all")
-public class WorkflowEngineImpl implements WorkflowEngine {
+public class WorkflowManagerImpl implements WorkflowManager {
 
     private final CompilerConfiguration config;
     private final WorkflowMetadataRepository workflowMetadataRepository;
     private final Map<String, Class<? extends Script>> parseScriptCache = new ConcurrentHashMap<>();
 
     @Autowired
-    public WorkflowEngineImpl(CompilerConfiguration config, WorkflowMetadataRepository workflowMetadataRepository) {
+    public WorkflowManagerImpl(CompilerConfiguration config, WorkflowMetadataRepository workflowMetadataRepository) {
         this.config = config;
         this.workflowMetadataRepository = workflowMetadataRepository;
     }

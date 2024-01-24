@@ -1,4 +1,4 @@
-package com.github.managetech.engine;
+package com.github.managetech.workflow;
 
 
 import com.github.managetech.model.Diagnostic;
@@ -14,7 +14,7 @@ import java.util.List;
  * @author Levi Li
  * @since 09/18/2023
  */
-public interface WorkflowEngine {
+public interface WorkflowManager {
 
     Script parseGroovyScript(String scriptText, Binding binding) throws IOException;
 
