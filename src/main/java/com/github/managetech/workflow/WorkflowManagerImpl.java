@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -34,11 +35,13 @@ public class WorkflowManagerImpl implements WorkflowManager {
     private final CompilerConfiguration config;
     private final WorkflowMetadataRepository workflowMetadataRepository;
     private GroovyClassLoader groovyClassLoader;
+
     @Autowired
     public WorkflowManagerImpl(CompilerConfiguration config, WorkflowMetadataRepository workflowMetadataRepository) {
         this.config = config;
         this.workflowMetadataRepository = workflowMetadataRepository;
         groovyClassLoader = new GroovyClassLoader(Thread.currentThread().getContextClassLoader(), config);
+
     }
 
 
@@ -48,26 +51,45 @@ public class WorkflowManagerImpl implements WorkflowManager {
         return InvokerHelper.createScript(aClass, binding);
     }
 
+    /**
+     * 编译的时候肯定有很多大量的,细碎的脚本。应该用临时的groovyClassLoader来编译
+     * @param code
+     * @return
+     * @throws IOException
+     */
     @Override
     public List<Diagnostic> compileGroovyScript(String code) throws IOException {
 
+        GroovyClassLoader tempGroovyClassLoader = null;
         try {
-            Class<? extends Script> aClass = this.groovyClassLoader.parseClass(code);
-            return null;
+            tempGroovyClassLoader = new GroovyClassLoader(Thread.currentThread().getContextClassLoader(), config);
+            tempGroovyClassLoader.parseClass(code);
+            return new ArrayList<>();
         } catch (Exception e) {
             if (!(e instanceof MultipleCompilationErrorsException)) {
                 throw new RuntimeException(e);
             }
             List<? extends Message> errors = ((MultipleCompilationErrorsException) e).getErrorCollector().getErrors();
             return CommonUtils.getDiagnostics(errors);
+        } finally {
+            if (tempGroovyClassLoader != null) {
+                tempGroovyClassLoader.close();
+            }
         }
     }
 
+    /**
+     * 测试脚本的时候，应该用临时的groovyClassLoader来编译
+     * @param scriptRequest
+     * @return
+     * @throws IOException
+     */
     @Override
-    public Object runGroovyScript(ScriptRequest scriptRequest) throws IOException {
-
+    public Object testGroovyScript(ScriptRequest scriptRequest) throws IOException {
+        GroovyClassLoader tempGroovyClassLoader = null;
         try {
-            Class aClass = this.groovyClassLoader.parseClass(scriptRequest.getCode());
+            tempGroovyClassLoader = new GroovyClassLoader(Thread.currentThread().getContextClassLoader(), config);
+            Class aClass = tempGroovyClassLoader.parseClass(scriptRequest.getCode());
             return InvokerHelper.createScript(aClass, new Binding(scriptRequest.getInputValues())).run();
         } catch (Exception e) {
             if (!(e instanceof MultipleCompilationErrorsException)) {
@@ -75,6 +97,10 @@ public class WorkflowManagerImpl implements WorkflowManager {
             }
             List<? extends Message> errors = ((MultipleCompilationErrorsException) e).getErrorCollector().getErrors();
             return CommonUtils.getDiagnostics(errors);
+        } finally {
+            if (tempGroovyClassLoader != null) {
+                tempGroovyClassLoader.close();
+            }
         }
     }
 

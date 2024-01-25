@@ -20,7 +20,7 @@ public interface WorkflowManager {
 
     List<Diagnostic> compileGroovyScript(String code) throws IOException;
 
-    Object runGroovyScript(ScriptRequest scriptRequest) throws IOException;
+    Object testGroovyScript(ScriptRequest scriptRequest) throws IOException;
 
     WorkflowMetadata getWorkflowMetadataByName(String workflowName);
 

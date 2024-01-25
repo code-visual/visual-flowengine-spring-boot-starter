@@ -51,7 +51,7 @@ public class WorkflowManagerController {
 
     @PostMapping(VisualFlowProperties.DEFAULT_RUN_GROOVY_SCRIPT)
     public Object runGroovyScript(@RequestBody ScriptRequest runRequest) throws IOException {
-        return workflowManager.runGroovyScript(runRequest);
+        return workflowManager.testGroovyScript(runRequest);
     }
 
     @GetMapping(VisualFlowProperties.DEFAULT_GET_WORKFLOW_METADATA)
