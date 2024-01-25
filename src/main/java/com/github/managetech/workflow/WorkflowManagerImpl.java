@@ -26,6 +26,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Supplier;
 
 /**
  * @author Levi Li
@@ -92,43 +93,42 @@ public class WorkflowManagerImpl implements WorkflowManager {
             workflowTaskLogList.add(workflowTaskLog);
 
         } else if (script.getScriptType() == ScriptType.Condition) {
-            HashMap beforeRunBinding = new HashMap<>(binding.getVariables());
-            WorkflowTaskLog workflowTaskLog = new WorkflowTaskLog();
-            workflowTaskLog.setScriptId(script.getScriptId());
-            workflowTaskLog.setBeforeRunBinding(beforeRunBinding);
-            workflowTaskLog.setScriptRunTime(new Date());
-
-            try {
-                //**************这里应该是执行脚本的地方*****************
+            logScriptExecution(script, binding, workflowTaskLogList, () -> {
                 Object executeScript = this.executeScript(script, binding);
-                //**************这里应该是执行脚本的地方******************
-                workflowTaskLog.setScriptRunStatus(ScriptRunStatus.Success);
-                workflowTaskLog.setAfterRunBinding(new HashMap<>(binding.getVariables()));
-                workflowTaskLog.setScriptRunResult(executeScript);
-                workflowTaskLogList.add(workflowTaskLog);
-
-                if (executeScript instanceof Boolean) {
-                    if ((Boolean) executeScript) {
-                        for (ScriptMetadata child : script.getChildren()) {
-                            recursiveAndExecute(child, binding, workflowTaskLogList);
-                        }
+                if (executeScript instanceof Boolean && (Boolean) executeScript) {
+                    for (ScriptMetadata child : script.getChildren()) {
+                        recursiveAndExecute(child, binding, workflowTaskLogList);
                     }
                 }
-
-            } catch (Exception e) {
-                workflowTaskLog.setScriptRunStatus(ScriptRunStatus.Error);
-                workflowTaskLog.setScriptRunError(e.getMessage());
-                workflowTaskLogList.add(workflowTaskLog);
-                logger.error("executeScript error:{}", e.getMessage());
-                throw e;
-            }
+                return executeScript;
+            });
 
 
         } else if (script.getScriptType() == ScriptType.Script) {
-            executeScript(script, binding);
+            logScriptExecution(script, binding, workflowTaskLogList, () -> this.executeScript(script, binding));
             for (ScriptMetadata scriptChild : script.getChildren()) {
                 recursiveAndExecute(scriptChild, binding, workflowTaskLogList);
             }
+        }
+    }
+    private void logScriptExecution(ScriptMetadata script, Binding binding, List<WorkflowTaskLog> workflowTaskLogList, Supplier<Object> scriptExecutor) {
+        HashMap beforeRunBinding = new HashMap<>(binding.getVariables());
+        WorkflowTaskLog workflowTaskLog = new WorkflowTaskLog();
+        workflowTaskLog.setScriptId(script.getScriptId());
+        workflowTaskLog.setBeforeRunBinding(beforeRunBinding);
+        workflowTaskLog.setScriptRunTime(new Date());
+
+        try {
+            Object result = scriptExecutor.get(); // 执行脚本
+            workflowTaskLog.setScriptRunStatus(ScriptRunStatus.Success);
+            workflowTaskLog.setScriptRunResult(result);
+        } catch (Exception e) {
+            workflowTaskLog.setScriptRunStatus(ScriptRunStatus.Error);
+            workflowTaskLog.setScriptRunError(e.getMessage());
+            throw e;
+        } finally {
+            workflowTaskLog.setAfterRunBinding(new HashMap<>(binding.getVariables()));
+            workflowTaskLogList.add(workflowTaskLog);
         }
     }
 
