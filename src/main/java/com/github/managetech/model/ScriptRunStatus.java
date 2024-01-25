@@ -7,5 +7,7 @@ package com.github.managetech.model;
 public enum ScriptRunStatus {
 
     Start,
-    End
+    End,
+    Success,
+    Error
 }

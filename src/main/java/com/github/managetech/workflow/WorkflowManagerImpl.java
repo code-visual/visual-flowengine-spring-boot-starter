@@ -20,7 +20,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.script.ScriptException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -48,26 +47,28 @@ public class WorkflowManagerImpl implements WorkflowManager {
     }
 
 
-    @SuppressWarnings("rawtypes,unchecked")
+    @SuppressWarnings("rawtypes")
     @Override
-    public void execute(String workflowName, Map inputVariables) throws ScriptException {
+    public void execute(String workflowName, Map inputVariables) {
         WorkflowMetadata workflowMetadata = workflowMetadataRepository.findByWorkflowName(workflowName);
         ScriptMetadata scriptMetadata = workflowMetadata.getScriptMetadata();
         List<WorkflowTaskLog> workflowTaskLogList = new ArrayList<>();
-        this.recursiveAndExecute(scriptMetadata, new Binding(inputVariables), workflowTaskLogList);
-
-
+        try {
+            this.recursiveAndExecute(scriptMetadata, new Binding(inputVariables), workflowTaskLogList);
+        } finally {
+            logger.info("保存日志:{}", workflowTaskLogList);
+        }
     }
 
     public void recursiveAndExecute(ScriptMetadata script, Binding binding, List<WorkflowTaskLog> workflowTaskLogList) {
 
         if (script.getScriptType() == ScriptType.Start) {
 
-            Map beforeRunBinding = new HashMap<>(binding.getVariables());
+            Map StartRunBinding = new HashMap<>(binding.getVariables());
             WorkflowTaskLog workflowTaskLog = new WorkflowTaskLog();
-            workflowTaskLog.setScriptId(null);
-            workflowTaskLog.setBeforeRunBinding(beforeRunBinding);
-            workflowTaskLog.setAfterRunBinding(beforeRunBinding);
+            workflowTaskLog.setScriptId(script.getScriptId());
+            workflowTaskLog.setBeforeRunBinding(StartRunBinding);
+            workflowTaskLog.setAfterRunBinding(StartRunBinding);
             workflowTaskLog.setScriptRunStatus(ScriptRunStatus.Start);
             workflowTaskLog.setScriptRunResult(null);
             workflowTaskLog.setScriptRunTime(new Date());
@@ -79,11 +80,11 @@ public class WorkflowManagerImpl implements WorkflowManager {
 
         } else if (script.getScriptType() == ScriptType.End) {
 
-            Map beforeRunBinding = new HashMap<>(binding.getVariables());
+            Map endBinding = new HashMap<>(binding.getVariables());
             WorkflowTaskLog workflowTaskLog = new WorkflowTaskLog();
             workflowTaskLog.setScriptId(script.getScriptId());
-            workflowTaskLog.setBeforeRunBinding(beforeRunBinding);
-            workflowTaskLog.setAfterRunBinding(beforeRunBinding);
+            workflowTaskLog.setBeforeRunBinding(endBinding);
+            workflowTaskLog.setAfterRunBinding(endBinding);
             workflowTaskLog.setScriptRunStatus(ScriptRunStatus.End);
             workflowTaskLog.setScriptRunResult(null);
             workflowTaskLog.setScriptRunTime(new Date());
@@ -91,15 +92,38 @@ public class WorkflowManagerImpl implements WorkflowManager {
             workflowTaskLogList.add(workflowTaskLog);
 
         } else if (script.getScriptType() == ScriptType.Condition) {
+            HashMap beforeRunBinding = new HashMap<>(binding.getVariables());
+            WorkflowTaskLog workflowTaskLog = new WorkflowTaskLog();
+            workflowTaskLog.setScriptId(script.getScriptId());
+            workflowTaskLog.setBeforeRunBinding(beforeRunBinding);
+            workflowTaskLog.setScriptRunTime(new Date());
 
-            Object executeScript = executeScript(script, binding);
-            if (executeScript instanceof Boolean) {
-                if ((Boolean) executeScript) {
-                    for (ScriptMetadata child : script.getChildren()) {
-                        recursiveAndExecute(child, binding, workflowTaskLogList);
+            try {
+                //**************这里应该是执行脚本的地方*****************
+                Object executeScript = this.executeScript(script, binding);
+                //**************这里应该是执行脚本的地方******************
+                workflowTaskLog.setScriptRunStatus(ScriptRunStatus.Success);
+                workflowTaskLog.setAfterRunBinding(new HashMap<>(binding.getVariables()));
+                workflowTaskLog.setScriptRunResult(executeScript);
+                workflowTaskLogList.add(workflowTaskLog);
+
+                if (executeScript instanceof Boolean) {
+                    if ((Boolean) executeScript) {
+                        for (ScriptMetadata child : script.getChildren()) {
+                            recursiveAndExecute(child, binding, workflowTaskLogList);
+                        }
                     }
                 }
+
+            } catch (Exception e) {
+                workflowTaskLog.setScriptRunStatus(ScriptRunStatus.Error);
+                workflowTaskLog.setScriptRunError(e.getMessage());
+                workflowTaskLogList.add(workflowTaskLog);
+                logger.error("executeScript error:{}", e.getMessage());
+                throw e;
             }
+
+
         } else if (script.getScriptType() == ScriptType.Script) {
             executeScript(script, binding);
             for (ScriptMetadata scriptChild : script.getChildren()) {
