@@ -3,34 +3,38 @@ package com.github.managetech.workflow;
 import com.github.managetech.model.Diagnostic;
 import com.github.managetech.model.ScriptMetadata;
 import com.github.managetech.model.ScriptRequest;
+import com.github.managetech.model.ScriptRunStatus;
 import com.github.managetech.model.ScriptType;
 import com.github.managetech.model.WorkflowMetadata;
+import com.github.managetech.model.WorkflowTaskLog;
 import com.github.managetech.utils.CommonUtils;
 import groovy.lang.Binding;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.Script;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.MultipleCompilationErrorsException;
-import org.codehaus.groovy.control.messages.ExceptionMessage;
 import org.codehaus.groovy.control.messages.Message;
-import org.codehaus.groovy.control.messages.SyntaxErrorMessage;
 import org.codehaus.groovy.runtime.InvokerHelper;
-import org.codehaus.groovy.syntax.SyntaxException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.script.ScriptException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Levi Li
  * @since 09/18/2023
  */
 @Service
-@SuppressWarnings("all")
 public class WorkflowManagerImpl implements WorkflowManager {
+    private static final Logger logger = LoggerFactory.getLogger(WorkflowManagerImpl.class);
 
     private final CompilerConfiguration config;
     private final WorkflowMetadataRepository workflowMetadataRepository;
@@ -41,28 +45,100 @@ public class WorkflowManagerImpl implements WorkflowManager {
         this.config = config;
         this.workflowMetadataRepository = workflowMetadataRepository;
         groovyClassLoader = new GroovyClassLoader(Thread.currentThread().getContextClassLoader(), config);
-
     }
 
 
+    @SuppressWarnings("rawtypes,unchecked")
     @Override
-    public Script parseGroovyScript(String scriptText, Binding binding) throws IOException {
+    public void execute(String workflowName, Map inputVariables) throws ScriptException {
+        WorkflowMetadata workflowMetadata = workflowMetadataRepository.findByWorkflowName(workflowName);
+        ScriptMetadata scriptMetadata = workflowMetadata.getScriptMetadata();
+        List<WorkflowTaskLog> workflowTaskLogList = new ArrayList<>();
+        this.recursiveAndExecute(scriptMetadata, new Binding(inputVariables), workflowTaskLogList);
+
+
+    }
+
+    public void recursiveAndExecute(ScriptMetadata script, Binding binding, List<WorkflowTaskLog> workflowTaskLogList) {
+
+        if (script.getScriptType() == ScriptType.Start) {
+
+            Map beforeRunBinding = new HashMap<>(binding.getVariables());
+            WorkflowTaskLog workflowTaskLog = new WorkflowTaskLog();
+            workflowTaskLog.setScriptId(null);
+            workflowTaskLog.setBeforeRunBinding(beforeRunBinding);
+            workflowTaskLog.setAfterRunBinding(beforeRunBinding);
+            workflowTaskLog.setScriptRunStatus(ScriptRunStatus.Start);
+            workflowTaskLog.setScriptRunResult(null);
+            workflowTaskLog.setScriptRunTime(new Date());
+            workflowTaskLog.setScriptRunError(null);
+            workflowTaskLogList.add(workflowTaskLog);
+            for (ScriptMetadata child : script.getChildren()) {
+                recursiveAndExecute(child, binding, workflowTaskLogList);
+            }
+
+        } else if (script.getScriptType() == ScriptType.End) {
+
+            Map beforeRunBinding = new HashMap<>(binding.getVariables());
+            WorkflowTaskLog workflowTaskLog = new WorkflowTaskLog();
+            workflowTaskLog.setScriptId(script.getScriptId());
+            workflowTaskLog.setBeforeRunBinding(beforeRunBinding);
+            workflowTaskLog.setAfterRunBinding(beforeRunBinding);
+            workflowTaskLog.setScriptRunStatus(ScriptRunStatus.End);
+            workflowTaskLog.setScriptRunResult(null);
+            workflowTaskLog.setScriptRunTime(new Date());
+            workflowTaskLog.setScriptRunError(null);
+            workflowTaskLogList.add(workflowTaskLog);
+
+        } else if (script.getScriptType() == ScriptType.Condition) {
+
+            Object executeScript = executeScript(script, binding);
+            if (executeScript instanceof Boolean) {
+                if ((Boolean) executeScript) {
+                    for (ScriptMetadata child : script.getChildren()) {
+                        recursiveAndExecute(child, binding, workflowTaskLogList);
+                    }
+                }
+            }
+        } else if (script.getScriptType() == ScriptType.Script) {
+            executeScript(script, binding);
+            for (ScriptMetadata scriptChild : script.getChildren()) {
+                recursiveAndExecute(scriptChild, binding, workflowTaskLogList);
+            }
+        }
+    }
+
+
+    @SuppressWarnings("rawtypes,unchecked")
+    private Object executeScript(ScriptMetadata metadata, Binding binding) {
+        Class<?> aClass = groovyClassLoader.parseClass(metadata.getScriptContent());
+        Map variables = binding.getVariables();
+        Script script = InvokerHelper.createScript(aClass, binding);
+        Object run = script.run();
+        if (run instanceof Map) {
+            variables.putAll((Map) run);
+        }
+        return run;
+    }
+
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public Script parseGroovyScript(String scriptText, Binding binding) {
         Class<? extends Script> aClass = this.groovyClassLoader.parseClass(scriptText);
         return InvokerHelper.createScript(aClass, binding);
     }
 
     /**
      * 编译的时候肯定有很多大量的,细碎的脚本。应该用临时的groovyClassLoader来编译
+     *
      * @param code
      * @return
-     * @throws IOException
      */
     @Override
-    public List<Diagnostic> compileGroovyScript(String code) throws IOException {
+    public List<Diagnostic> compileGroovyScript(String code) {
 
-        GroovyClassLoader tempGroovyClassLoader = null;
-        try {
-            tempGroovyClassLoader = new GroovyClassLoader(Thread.currentThread().getContextClassLoader(), config);
+        try (GroovyClassLoader tempGroovyClassLoader = new GroovyClassLoader(Thread.currentThread().getContextClassLoader(), config)) {
             tempGroovyClassLoader.parseClass(code);
             return new ArrayList<>();
         } catch (Exception e) {
@@ -71,24 +147,19 @@ public class WorkflowManagerImpl implements WorkflowManager {
             }
             List<? extends Message> errors = ((MultipleCompilationErrorsException) e).getErrorCollector().getErrors();
             return CommonUtils.getDiagnostics(errors);
-        } finally {
-            if (tempGroovyClassLoader != null) {
-                tempGroovyClassLoader.close();
-            }
         }
     }
 
     /**
      * 测试脚本的时候，应该用临时的groovyClassLoader来编译
+     *
      * @param scriptRequest
      * @return
-     * @throws IOException
      */
+    @SuppressWarnings("rawtypes")
     @Override
-    public Object testGroovyScript(ScriptRequest scriptRequest) throws IOException {
-        GroovyClassLoader tempGroovyClassLoader = null;
-        try {
-            tempGroovyClassLoader = new GroovyClassLoader(Thread.currentThread().getContextClassLoader(), config);
+    public Object testGroovyScript(ScriptRequest scriptRequest) {
+        try (GroovyClassLoader tempGroovyClassLoader = new GroovyClassLoader(Thread.currentThread().getContextClassLoader(), config)) {
             Class aClass = tempGroovyClassLoader.parseClass(scriptRequest.getCode());
             return InvokerHelper.createScript(aClass, new Binding(scriptRequest.getInputValues())).run();
         } catch (Exception e) {
@@ -97,10 +168,6 @@ public class WorkflowManagerImpl implements WorkflowManager {
             }
             List<? extends Message> errors = ((MultipleCompilationErrorsException) e).getErrorCollector().getErrors();
             return CommonUtils.getDiagnostics(errors);
-        } finally {
-            if (tempGroovyClassLoader != null) {
-                tempGroovyClassLoader.close();
-            }
         }
     }
 
@@ -136,15 +203,10 @@ public class WorkflowManagerImpl implements WorkflowManager {
 
 
     @Override
-    public void resetGroovyClassLoader() {
+    public void resetGroovyClassLoader() throws IOException {
 
         if (this.groovyClassLoader != null) {
-            try {
-                this.groovyClassLoader.close();
-            } catch (IOException e) {
-
-                e.printStackTrace();
-            }
+            this.groovyClassLoader.close();
         }
         this.groovyClassLoader = new GroovyClassLoader(Thread.currentThread().getContextClassLoader(), config);
     }

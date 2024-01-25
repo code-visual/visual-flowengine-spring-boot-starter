@@ -7,20 +7,23 @@ import com.github.managetech.model.WorkflowMetadata;
 import groovy.lang.Binding;
 import groovy.lang.Script;
 
+import javax.script.ScriptException;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author Levi Li
  * @since 09/18/2023
  */
 public interface WorkflowManager {
+    void execute(String workflowName, Map inputVariables) throws ScriptException;
 
-    Script parseGroovyScript(String scriptText, Binding binding) throws IOException;
+    Script parseGroovyScript(String scriptText, Binding binding);
 
-    List<Diagnostic> compileGroovyScript(String code) throws IOException;
+    List<Diagnostic> compileGroovyScript(String code);
 
-    Object testGroovyScript(ScriptRequest scriptRequest) throws IOException;
+    Object testGroovyScript(ScriptRequest scriptRequest);
 
     WorkflowMetadata getWorkflowMetadataByName(String workflowName);
 
@@ -30,5 +33,5 @@ public interface WorkflowManager {
 
     List<String> getMenuWorkflowNameList();
 
-    void resetGroovyClassLoader();
+    void resetGroovyClassLoader() throws IOException;
 }
