@@ -17,7 +17,7 @@ import java.util.Map;
  * @since 09/18/2023
  */
 public interface WorkflowManager {
-    void execute(String workflowName, Map inputVariables) throws ScriptException;
+    void execute(String workflowName, Map inputVariables) ;
 
     Script parseGroovyScript(String scriptText, Binding binding);
 
