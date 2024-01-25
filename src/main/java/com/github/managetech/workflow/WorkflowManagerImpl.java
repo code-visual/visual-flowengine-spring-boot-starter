@@ -1,8 +1,11 @@
 package com.github.managetech.workflow;
 
 import com.github.managetech.model.Diagnostic;
+import com.github.managetech.model.ScriptMetadata;
 import com.github.managetech.model.ScriptRequest;
+import com.github.managetech.model.ScriptType;
 import com.github.managetech.model.WorkflowMetadata;
+import com.github.managetech.utils.CommonUtils;
 import groovy.lang.Binding;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.Script;
@@ -15,13 +18,10 @@ import org.codehaus.groovy.runtime.InvokerHelper;
 import org.codehaus.groovy.syntax.SyntaxException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.util.DigestUtils;
 
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * @author Levi Li
@@ -33,87 +33,49 @@ public class WorkflowManagerImpl implements WorkflowManager {
 
     private final CompilerConfiguration config;
     private final WorkflowMetadataRepository workflowMetadataRepository;
-    private final Map<String, Class<? extends Script>> parseScriptCache = new ConcurrentHashMap<>();
-
+    private GroovyClassLoader groovyClassLoader;
     @Autowired
     public WorkflowManagerImpl(CompilerConfiguration config, WorkflowMetadataRepository workflowMetadataRepository) {
         this.config = config;
         this.workflowMetadataRepository = workflowMetadataRepository;
+        groovyClassLoader = new GroovyClassLoader(Thread.currentThread().getContextClassLoader(), config);
     }
 
 
     @Override
     public Script parseGroovyScript(String scriptText, Binding binding) throws IOException {
-
-        Class<? extends Script> script = parseScriptCache.get(DigestUtils.md5DigestAsHex(scriptText.getBytes()));
-        GroovyClassLoader groovyClassLoader = null;
-
-        if (script == null) {
-
-            try {
-                groovyClassLoader = new GroovyClassLoader(Thread.currentThread().getContextClassLoader(), config);
-                Class<? extends Script> aClass = groovyClassLoader.parseClass(scriptText);
-                parseScriptCache.put(DigestUtils.md5DigestAsHex(scriptText.getBytes()), aClass);
-                script = aClass;
-            } catch (Exception e) {
-                if (e instanceof MultipleCompilationErrorsException) {
-                    List<? extends Message> errors = ((MultipleCompilationErrorsException) e).getErrorCollector().getErrors();
-                    List<Diagnostic> diagnostics = getDiagnostics(errors);
-                    throw new RuntimeException(diagnostics.toString());
-                }
-                throw new RuntimeException(e);
-            } finally {
-                if (groovyClassLoader != null) {
-                    groovyClassLoader.close();
-                }
-            }
-        }
-
-        return InvokerHelper.createScript(script, binding);
+        Class<? extends Script> aClass = this.groovyClassLoader.parseClass(scriptText);
+        return InvokerHelper.createScript(aClass, binding);
     }
 
     @Override
     public List<Diagnostic> compileGroovyScript(String code) throws IOException {
 
-        GroovyClassLoader groovyClassLoader = null;
         try {
-            groovyClassLoader = new GroovyClassLoader(Thread.currentThread().getContextClassLoader(), config);
-            groovyClassLoader.parseClass(code);
-            return new ArrayList<>();
+            Class<? extends Script> aClass = this.groovyClassLoader.parseClass(code);
+            return null;
         } catch (Exception e) {
             if (!(e instanceof MultipleCompilationErrorsException)) {
                 throw new RuntimeException(e);
             }
             List<? extends Message> errors = ((MultipleCompilationErrorsException) e).getErrorCollector().getErrors();
-            return getDiagnostics(errors);
-        } finally {
-            if (groovyClassLoader != null) {
-                groovyClassLoader.close();
-            }
+            return CommonUtils.getDiagnostics(errors);
         }
     }
 
     @Override
     public Object runGroovyScript(ScriptRequest scriptRequest) throws IOException {
 
-        GroovyClassLoader groovyClassLoader = null;
         try {
-            groovyClassLoader = new GroovyClassLoader(Thread.currentThread().getContextClassLoader(), config);
-            Class aClass = groovyClassLoader.parseClass(scriptRequest.getCode());
+            Class aClass = this.groovyClassLoader.parseClass(scriptRequest.getCode());
             return InvokerHelper.createScript(aClass, new Binding(scriptRequest.getInputValues())).run();
         } catch (Exception e) {
             if (!(e instanceof MultipleCompilationErrorsException)) {
                 throw new RuntimeException(e);
             }
             List<? extends Message> errors = ((MultipleCompilationErrorsException) e).getErrorCollector().getErrors();
-            return getDiagnostics(errors);
-
-        } finally {
-            if (groovyClassLoader != null) {
-                groovyClassLoader.close();
-            }
+            return CommonUtils.getDiagnostics(errors);
         }
-
     }
 
     @Override
@@ -123,6 +85,16 @@ public class WorkflowManagerImpl implements WorkflowManager {
 
     @Override
     public Object createWorkflow(WorkflowMetadata workflowMetadata) {
+        ScriptMetadata metadata = new ScriptMetadata();
+        metadata.setScriptId("1");
+        //这里应该可以看到workflow 有哪些传入参数的描述
+        metadata.setScriptContent("");
+        metadata.setScriptName("Start");
+        metadata.setScriptType(ScriptType.Start);
+        metadata.setChildren(null);
+
+        workflowMetadata.setScriptMetadata(metadata);
+        workflowMetadata.setCreateTime(new Date());
         return workflowMetadataRepository.create(workflowMetadata);
     }
 
@@ -136,35 +108,18 @@ public class WorkflowManagerImpl implements WorkflowManager {
         return workflowMetadataRepository.getMenuWorkflowList();
     }
 
-    private static List<Diagnostic> getDiagnostics(List<? extends Message> errors) {
-        List<Diagnostic> diagnostics = new java.util.ArrayList<>();
-        for (Message error : errors) {
-            if (error instanceof SyntaxErrorMessage) {
-                SyntaxException cause = ((SyntaxErrorMessage) error).getCause();
-                Diagnostic diagnostic = new Diagnostic();
-                diagnostic.setMessage(cause.getMessage());
-                diagnostic.setStartLineNumber(cause.getStartLine());
-                diagnostic.setStartColumn(cause.getStartColumn());
-                diagnostic.setEndLineNumber(cause.getEndLine());
-                diagnostic.setEndColumn(cause.getEndColumn());
-                diagnostics.add(diagnostic);
-                continue;
-            }
-            if (error instanceof ExceptionMessage) {
-                Exception cause = ((ExceptionMessage) error).getCause();
-                Diagnostic diagnostic = new Diagnostic();
-                diagnostic.setMessage(cause.getMessage());
-                diagnostic.setStartLineNumber(cause.getStackTrace()[0].getLineNumber());
-                diagnostic.setEndLineNumber(cause.getStackTrace()[0].getLineNumber());
-                diagnostics.add(diagnostic);
-                continue;
-            } else {
-                Diagnostic diagnostic = new Diagnostic();
-                diagnostic.setMessage("unkonw error");
-                diagnostics.add(diagnostic);
+
+    @Override
+    public void resetGroovyClassLoader() {
+
+        if (this.groovyClassLoader != null) {
+            try {
+                this.groovyClassLoader.close();
+            } catch (IOException e) {
+
+                e.printStackTrace();
             }
         }
-        return diagnostics;
+        this.groovyClassLoader = new GroovyClassLoader(Thread.currentThread().getContextClassLoader(), config);
     }
-
 }

@@ -29,4 +29,6 @@ public interface WorkflowManager {
     Object deleteWorkflowMetadata(String workflowName);
 
     List<String> getMenuWorkflowNameList();
+
+    void resetGroovyClassLoader();
 }
