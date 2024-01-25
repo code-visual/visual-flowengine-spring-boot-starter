@@ -38,7 +38,7 @@ public class CommonUtils {
                 continue;
             } else {
                 Diagnostic diagnostic = new Diagnostic();
-                diagnostic.setMessage("unkonw error");
+                diagnostic.setMessage("unknown error");
                 diagnostics.add(diagnostic);
             }
         }
