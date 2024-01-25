@@ -10,6 +10,9 @@ public enum ScriptType {
     Start,
     Script,
     Condition,
+    Decision,
+    Fork,
+    Join,
     End
 
 }
