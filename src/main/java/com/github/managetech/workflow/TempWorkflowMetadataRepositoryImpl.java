@@ -22,16 +22,7 @@ public class TempWorkflowMetadataRepositoryImpl implements WorkflowMetadataRepos
     private final Map<String, WorkflowMetadata> workflowMetadataMap = new ConcurrentHashMap<>();
     @Override
     public WorkflowMetadata create(WorkflowMetadata workflowMetadata) {
-        ScriptMetadata metadata = new ScriptMetadata();
-        metadata.setScriptId(1);
-        //这里应该可以看到workflow 有哪些传入参数的描述
-        metadata.setScriptContent("");
-        metadata.setScriptName("Start");
-        metadata.setScriptType(ScriptType.Start);
-        metadata.setChildren(new ArrayList<>());
 
-        workflowMetadata.setScriptMetadata(metadata);
-        workflowMetadata.setCreateTime(new Date());
         return workflowMetadataMap.put(workflowMetadata.getWorkflowName(), workflowMetadata);
     }
 

@@ -4,17 +4,17 @@ import java.util.List;
 
 public class ScriptMetadata {
 
-    private Integer scriptId;
+    private String scriptId;
     private String scriptName;
     private String scriptContent;
     private ScriptType scriptType;
     private List<ScriptMetadata> children;
 
-    public Integer getScriptId() {
+    public String getScriptId() {
         return scriptId;
     }
 
-    public void setScriptId(Integer scriptId) {
+    public void setScriptId(String scriptId) {
         this.scriptId = scriptId;
     }
 
