@@ -6,10 +6,10 @@ class RuleEngine {
     static def execute(List<Rule> rules, Object user) {
 
         def matchedRule = rules.find { rule ->
-            rule.condition(user)
+            rule.when(user)
         }
         if (matchedRule) {
-            def action = matchedRule.action(user)
+            def action = matchedRule.then(user)
             action["ruleName"] = matchedRule.name
             return action
         }
