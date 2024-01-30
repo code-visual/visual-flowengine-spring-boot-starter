@@ -2,6 +2,6 @@ package com.github.managetech.ruleengine
 
 class Rule {
     String name
-    Closure condition
-    Closure action
+    Closure when
+    Closure then
 }
