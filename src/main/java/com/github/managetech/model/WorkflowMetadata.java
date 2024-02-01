@@ -10,11 +10,18 @@ public class WorkflowMetadata {
 
     private String workflowName;
     private String workflowDescription;
-    private String workflowStatus;
+    private String remark;
     private Date createTime;
     private Date updateTime;
     private ScriptMetadata scriptMetadata;
 
+    public String getRemark() {
+        return remark;
+    }
+
+    public void setRemark(String remark) {
+        this.remark = remark;
+    }
 
     public String getWorkflowName() {
         return workflowName;
@@ -32,13 +39,6 @@ public class WorkflowMetadata {
         this.workflowDescription = workflowDescription;
     }
 
-    public String getWorkflowStatus() {
-        return workflowStatus;
-    }
-
-    public void setWorkflowStatus(String workflowStatus) {
-        this.workflowStatus = workflowStatus;
-    }
 
     public Date getCreateTime() {
         return createTime;
