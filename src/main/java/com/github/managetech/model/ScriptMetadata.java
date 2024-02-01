@@ -8,7 +8,17 @@ public class ScriptMetadata {
     private String scriptName;
     private String scriptContent;
     private ScriptType scriptType;
+    private String scriptDesc;
     private List<ScriptMetadata> children;
+
+
+    public String getScriptDesc() {
+        return scriptDesc;
+    }
+
+    public void setScriptDesc(String scriptDesc) {
+        this.scriptDesc = scriptDesc;
+    }
 
     public String getScriptId() {
         return scriptId;
