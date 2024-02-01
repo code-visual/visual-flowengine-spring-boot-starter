@@ -6,13 +6,7 @@ import com.github.managetech.model.WorkflowMetadata;
 import com.github.managetech.workflow.WorkflowManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.List;
@@ -37,6 +31,11 @@ public class WorkflowManagerController {
     @DeleteMapping(VisualFlowProperties.DEFAULT_DELETE_WORKFLOW)
     public Object deleteWorkflowMetadata(@RequestParam String workflowName) {
         return workflowManager.deleteWorkflowMetadata(workflowName);
+    }
+
+    @PutMapping(VisualFlowProperties.DEFAULT_UPDATE_WORKFLOW)
+    public Object updateWorkflowMetadata(@RequestBody WorkflowMetadata workflowMetadata) {
+        return workflowManager.updateWorkflowMetadata(workflowMetadata);
     }
 
     @GetMapping(VisualFlowProperties.DEFAULT_LIST_WORKFLOWS)

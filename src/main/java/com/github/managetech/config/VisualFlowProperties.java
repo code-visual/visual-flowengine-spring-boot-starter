@@ -10,12 +10,13 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "visual.flow")
 public class VisualFlowProperties {
 
-    public static final String DEFAULT_CREATE_WORKFLOW = "/api/engine/createWorkflow";
+    public static final String DEFAULT_CREATE_WORKFLOW = "/api/engine/workflow";
     public static final String DEFAULT_DELETE_WORKFLOW = "/api/engine/workflow";
     public static final String DEFAULT_LIST_WORKFLOWS = "/api/engine/workflowList";
     public static final String DEFAULT_COMPILE_GROOVY_SCRIPT = "/api/engine/groovyScript/compile";
     public static final String DEFAULT_RUN_GROOVY_SCRIPT = "/api/engine/groovyScript/run";
     public static final String DEFAULT_GET_WORKFLOW_METADATA = "/api/engine/workflow";
+    public static final String DEFAULT_UPDATE_WORKFLOW = "/api/engine/workflow";
 
     @Value("${visual.flow.webUIPath:/visualFlow-ui.html}")
     private String webUIPath;

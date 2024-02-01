@@ -234,4 +234,9 @@ public class WorkflowManagerImpl implements WorkflowManager {
         }
         this.groovyClassLoader = new GroovyClassLoader(Thread.currentThread().getContextClassLoader(), config);
     }
+
+    @Override
+    public WorkflowMetadata updateWorkflowMetadata(WorkflowMetadata workflowMetadata) {
+        return null;
+    }
 }
