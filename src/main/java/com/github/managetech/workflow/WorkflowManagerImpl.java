@@ -1,12 +1,6 @@
 package com.github.managetech.workflow;
 
-import com.github.managetech.model.Diagnostic;
-import com.github.managetech.model.ScriptMetadata;
-import com.github.managetech.model.ScriptRequest;
-import com.github.managetech.model.ScriptRunStatus;
-import com.github.managetech.model.ScriptType;
-import com.github.managetech.model.WorkflowMetadata;
-import com.github.managetech.model.WorkflowTaskLog;
+import com.github.managetech.model.*;
 import com.github.managetech.utils.CommonUtils;
 import groovy.lang.Binding;
 import groovy.lang.GroovyClassLoader;
@@ -21,11 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Supplier;
 
 /**
@@ -111,6 +101,7 @@ public class WorkflowManagerImpl implements WorkflowManager {
             }
         }
     }
+
     private void logScriptExecution(ScriptMetadata script, Binding binding, List<WorkflowTaskLog> workflowTaskLogList, Supplier<Object> scriptExecutor) {
         HashMap beforeRunBinding = new HashMap<>(binding.getVariables());
         WorkflowTaskLog workflowTaskLog = new WorkflowTaskLog();
@@ -221,7 +212,7 @@ public class WorkflowManagerImpl implements WorkflowManager {
     }
 
     @Override
-    public List<String> getMenuWorkflowNameList() {
+    public List<WorkflowMetadata> getMenuWorkflowNameList() {
         return workflowMetadataRepository.getMenuWorkflowList();
     }
 
@@ -237,6 +228,6 @@ public class WorkflowManagerImpl implements WorkflowManager {
 
     @Override
     public WorkflowMetadata updateWorkflowMetadata(WorkflowMetadata workflowMetadata) {
-        return null;
+        return workflowMetadataRepository.updateWorkflowMetadata(workflowMetadata);
     }
 }

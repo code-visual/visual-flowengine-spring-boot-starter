@@ -39,7 +39,7 @@ public class WorkflowManagerController {
     }
 
     @GetMapping(VisualFlowProperties.DEFAULT_LIST_WORKFLOWS)
-    public List<String> listMenuWorkflow() {
+    public List<WorkflowMetadata> listMenuWorkflow() {
         return workflowManager.getMenuWorkflowNameList();
     }
 
