@@ -13,6 +13,7 @@ class RuleEngine {
         }
         if (matchedRule) {
             def action = matchedRule.then(user)
+            //todo 万一返回数组呢
             action["ruleName"] = matchedRule.name
             return action
         }
