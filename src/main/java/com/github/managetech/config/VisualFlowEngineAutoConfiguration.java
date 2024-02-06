@@ -62,6 +62,8 @@ public class VisualFlowEngineAutoConfiguration {
             public void addResourceHandlers(ResourceHandlerRegistry registry) {
                 registry.addResourceHandler("/**")
                         .addResourceLocations("classpath:/META-INF/resources/visualflow/");
+                registry.addResourceHandler("/src/components/editor/vs/**")
+                        .addResourceLocations("classpath:/META-INF/resources/vs/");
             }
         };
     }
