@@ -40,8 +40,8 @@ public class WorkflowManagerImpl implements WorkflowManager {
 
     @SuppressWarnings("rawtypes")
     @Override
-    public void execute(String workflowName, Map inputVariables) {
-        WorkflowMetadata workflowMetadata = workflowMetadataRepository.findByWorkflowName(workflowName);
+    public void execute(Integer workflowId, Map inputVariables) {
+        WorkflowMetadata workflowMetadata = workflowMetadataRepository.findByWorkflowId(workflowId);
         ScriptMetadata scriptMetadata = workflowMetadata.getScriptMetadata();
         List<WorkflowTaskLog> workflowTaskLogList = new ArrayList<>();
         try {
@@ -187,8 +187,8 @@ public class WorkflowManagerImpl implements WorkflowManager {
     }
 
     @Override
-    public WorkflowMetadata getWorkflowMetadataByName(String workflowName) {
-        return workflowMetadataRepository.findByWorkflowName(workflowName);
+    public WorkflowMetadata getWorkflowMetadataById(Integer workflowId) {
+        return workflowMetadataRepository.findByWorkflowId(workflowId);
     }
 
     @Override
