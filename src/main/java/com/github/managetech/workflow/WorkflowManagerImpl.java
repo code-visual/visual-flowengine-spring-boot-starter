@@ -126,7 +126,7 @@ public class WorkflowManagerImpl implements WorkflowManager {
 
     @SuppressWarnings("rawtypes,unchecked")
     private Object executeScript(ScriptMetadata metadata, Binding binding) {
-        Class<?> aClass = groovyClassLoader.parseClass(metadata.getScriptContent());
+        Class<?> aClass = groovyClassLoader.parseClass(metadata.getScriptText());
         Map variables = binding.getVariables();
         Script script = InvokerHelper.createScript(aClass, binding);
         Object run = script.run();
@@ -196,7 +196,7 @@ public class WorkflowManagerImpl implements WorkflowManager {
         ScriptMetadata metadata = new ScriptMetadata();
         metadata.setScriptId("1");
 
-        metadata.setScriptContent("");
+        metadata.setScriptText("");
         metadata.setScriptName("Start");
         metadata.setScriptType(ScriptType.Start);
         metadata.setChildren(null);

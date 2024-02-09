@@ -33,7 +33,7 @@ public class WorkflowEngine {
 
             while (!nodeDeque.isEmpty()) {
                 ScriptMetadata metadata = nodeDeque.pop();
-                String scriptContent = metadata.getScriptContent();
+                String scriptContent = metadata.getScriptText();
                 Class<?> aClass = groovyClassLoader.parseClass(scriptContent);
                 if (CollectionUtils.isEmpty(metadata.getChildren())) {
                     for (ScriptMetadata child : metadata.getChildren()) {
