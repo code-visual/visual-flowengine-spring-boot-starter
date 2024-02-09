@@ -195,7 +195,7 @@ public class WorkflowManagerImpl implements WorkflowManager {
     public Object createWorkflow(WorkflowMetadata workflowMetadata) {
         ScriptMetadata metadata = new ScriptMetadata();
         metadata.setScriptId("1");
-        //这里应该可以看到workflow 有哪些传入参数的描述
+
         metadata.setScriptContent("");
         metadata.setScriptName("Start");
         metadata.setScriptType(ScriptType.Start);
@@ -207,8 +207,8 @@ public class WorkflowManagerImpl implements WorkflowManager {
     }
 
     @Override
-    public Object deleteWorkflowMetadata(String workflowName) {
-        return workflowMetadataRepository.deleteByWorkflowName(workflowName);
+    public Object deleteWorkflowMetadata(Integer workflowId) {
+        return workflowMetadataRepository.deleteByWorkflowId(workflowId);
     }
 
     @Override

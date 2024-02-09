@@ -29,7 +29,7 @@ public interface WorkflowManager {
 
     Object createWorkflow(WorkflowMetadata workflowMetadata);
 
-    Object deleteWorkflowMetadata(String workflowName);
+    Object deleteWorkflowMetadata(Integer workflowId);
 
     List<WorkflowMetadata> getMenuWorkflowNameList();
 

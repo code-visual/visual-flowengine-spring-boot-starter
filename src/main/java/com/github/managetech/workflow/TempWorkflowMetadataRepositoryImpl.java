@@ -15,17 +15,17 @@ import java.util.concurrent.ConcurrentHashMap;
 @Repository
 public class TempWorkflowMetadataRepositoryImpl implements WorkflowMetadataRepository {
 
-    private final Map<String, WorkflowMetadata> workflowMetadataMap = new ConcurrentHashMap<>();
+    private final Map<Integer, WorkflowMetadata> workflowMetadataMap = new ConcurrentHashMap<>();
 
     @Override
     public WorkflowMetadata create(WorkflowMetadata workflowMetadata) {
-
-        return workflowMetadataMap.put(workflowMetadata.getWorkflowName(), workflowMetadata);
+        workflowMetadata.setWorkflowId(workflowMetadataMap.size() + 1);
+        return workflowMetadataMap.put(workflowMetadata.getWorkflowId(), workflowMetadata);
     }
 
     @Override
-    public Object deleteByWorkflowName(String workflowName) {
-        return workflowMetadataMap.remove(workflowName);
+    public Object deleteByWorkflowId(Integer workflowId) {
+        return workflowMetadataMap.remove(workflowId);
     }
 
     @Override
@@ -40,6 +40,6 @@ public class TempWorkflowMetadataRepositoryImpl implements WorkflowMetadataRepos
 
     @Override
     public WorkflowMetadata updateWorkflowMetadata(WorkflowMetadata workflowMetadata) {
-        return workflowMetadataMap.put(workflowMetadata.getWorkflowName(), workflowMetadata);
+        return workflowMetadataMap.put(workflowMetadata.getWorkflowId(), workflowMetadata);
     }
 }

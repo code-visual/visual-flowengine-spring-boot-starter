@@ -8,7 +8,7 @@ public interface WorkflowMetadataRepository {
 
     WorkflowMetadata create(WorkflowMetadata workflowMetadata);
 
-    Object deleteByWorkflowName(String workflowName);
+    Object deleteByWorkflowId(Integer workflowName);
 
     WorkflowMetadata findByWorkflowName(String workflowName);
 
