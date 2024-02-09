@@ -10,7 +10,7 @@ public interface WorkflowMetadataRepository {
 
     Object deleteByWorkflowId(Integer workflowName);
 
-    WorkflowMetadata findByWorkflowName(String workflowName);
+    WorkflowMetadata findByWorkflowId(Integer workflowId);
 
     List<WorkflowMetadata> getMenuWorkflowList();
     WorkflowMetadata updateWorkflowMetadata(WorkflowMetadata workflowMetadata);

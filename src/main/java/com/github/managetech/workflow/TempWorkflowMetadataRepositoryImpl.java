@@ -29,8 +29,8 @@ public class TempWorkflowMetadataRepositoryImpl implements WorkflowMetadataRepos
     }
 
     @Override
-    public WorkflowMetadata findByWorkflowName(String workflowName) {
-        return workflowMetadataMap.get(workflowName);
+    public WorkflowMetadata findByWorkflowId(Integer workflowId) {
+        return workflowMetadataMap.get(workflowId);
     }
 
     @Override

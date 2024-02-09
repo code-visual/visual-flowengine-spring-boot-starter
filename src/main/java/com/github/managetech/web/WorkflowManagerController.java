@@ -54,8 +54,8 @@ public class WorkflowManagerController {
     }
 
     @GetMapping(VisualFlowProperties.DEFAULT_GET_WORKFLOW_METADATA)
-    public WorkflowMetadata getWorkflowMetadata(@RequestParam String workflowName) {
-        return workflowManager.getWorkflowMetadataByName(workflowName);
+    public WorkflowMetadata getWorkflowMetadata(@RequestParam Integer workflowId) {
+        return workflowManager.getWorkflowMetadataById(workflowId);
     }
 }
 
