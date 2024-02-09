@@ -1,6 +1,9 @@
 package com.github.managetech.model;
 
+import com.github.managetech.web.parameters.WorkflowParameters;
+
 import java.util.Date;
+import java.util.List;
 
 /**
  * @author Levi Li
@@ -8,12 +11,30 @@ import java.util.Date;
  */
 public class WorkflowMetadata {
 
+    private Integer workflowId;
     private String workflowName;
+    private List<WorkflowParameters> workflowParameters;
     private String workflowDescription;
     private String remark;
     private Date createTime;
     private Date updateTime;
     private ScriptMetadata scriptMetadata;
+
+    public List<WorkflowParameters> getWorkflowParameters() {
+        return workflowParameters;
+    }
+
+    public void setWorkflowParameters(List<WorkflowParameters> workflowParameters) {
+        this.workflowParameters = workflowParameters;
+    }
+
+    public Integer getWorkflowId() {
+        return workflowId;
+    }
+
+    public void setWorkflowId(Integer workflowId) {
+        this.workflowId = workflowId;
+    }
 
     public String getRemark() {
         return remark;

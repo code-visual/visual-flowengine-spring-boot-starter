@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
 import java.util.List;
 
-@CrossOrigin(origins = {"http://localhost:3000","http://10.17.80.189:3000"})
+@CrossOrigin(origins = {"http://localhost:3000"})
 @RestController
 @ConditionalOnProperty(name = "visual.flow.enableDefaultApi", havingValue = "true", matchIfMissing = true)
 public class WorkflowManagerController {
@@ -29,8 +29,8 @@ public class WorkflowManagerController {
     }
 
     @DeleteMapping(VisualFlowProperties.DEFAULT_DELETE_WORKFLOW)
-    public Object deleteWorkflowMetadata(@RequestParam String workflowName) {
-        return workflowManager.deleteWorkflowMetadata(workflowName);
+    public Object deleteWorkflowMetadata(@RequestParam Integer workflowId) {
+        return workflowManager.deleteWorkflowMetadata(workflowId);
     }
 
     @PutMapping(VisualFlowProperties.DEFAULT_UPDATE_WORKFLOW)
