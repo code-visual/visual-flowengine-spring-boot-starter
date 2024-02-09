@@ -6,7 +6,7 @@ public class ScriptMetadata {
 
     private String scriptId;
     private String scriptName;
-    private String scriptContent;
+    private String scriptText;
     private ScriptType scriptType;
     private String scriptDesc;
     private List<ScriptMetadata> children;
@@ -28,12 +28,12 @@ public class ScriptMetadata {
         this.scriptId = scriptId;
     }
 
-    public String getScriptContent() {
-        return scriptContent;
+    public String getScriptText() {
+        return scriptText;
     }
 
-    public void setScriptContent(String scriptContent) {
-        this.scriptContent = scriptContent;
+    public void setScriptText(String scriptText) {
+        this.scriptText = scriptText;
     }
 
     public String getScriptName() {
