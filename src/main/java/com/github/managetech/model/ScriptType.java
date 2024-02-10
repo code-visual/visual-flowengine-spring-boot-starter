@@ -6,13 +6,15 @@ package com.github.managetech.model;
  * @since 09/21/2023
  */
 
+
 public enum ScriptType {
     Start,
     Script,
     Condition,
+    Rule,
     Decision,
     Fork,
     Join,
-    End
+    End;
 
 }

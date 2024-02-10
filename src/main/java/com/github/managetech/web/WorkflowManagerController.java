@@ -44,12 +44,12 @@ public class WorkflowManagerController {
     }
 
     @PostMapping(VisualFlowProperties.DEFAULT_COMPILE_GROOVY_SCRIPT)
-    public Object compileGroovyScript(@RequestBody ScriptRequest runRequest) throws IOException {
+    public Object compileGroovyScript(@RequestBody ScriptRequest runRequest) {
         return workflowManager.compileGroovyScript(runRequest.getCode());
     }
 
     @PostMapping(VisualFlowProperties.DEFAULT_RUN_GROOVY_SCRIPT)
-    public Object runGroovyScript(@RequestBody ScriptRequest runRequest) throws IOException {
+    public Object runGroovyScript(@RequestBody ScriptRequest runRequest) {
         return workflowManager.testGroovyScript(runRequest);
     }
 
