@@ -55,10 +55,10 @@ public class WorkflowManagerImpl implements WorkflowManager {
     @Override
     public void debug(DebugRequest debugRequest) {
 
-        if (debugRequest.getCode() == null) {
+        if (debugRequest.getScriptMetadata() == null) {
            return;
         }
-        this.recursiveAndExecute(debugRequest.getCode(), new Binding(debugRequest.getInputValues()), null);
+        this.recursiveAndExecute(debugRequest.getScriptMetadata(), new Binding(debugRequest.getInputValues()), null);
         try {
             resetGroovyClassLoader();
         } catch (IOException e) {

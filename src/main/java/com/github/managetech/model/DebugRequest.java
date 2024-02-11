@@ -8,12 +8,11 @@ public class DebugRequest {
     private ScriptMetadata scriptMetadata;
     private Map<String, Object> inputValues;
 
-    public ScriptMetadata getCode() {
-
+    public ScriptMetadata getScriptMetadata() {
         return scriptMetadata;
     }
 
-    public void setCode(ScriptMetadata scriptMetadata) {
+    public void setScriptMetadata(ScriptMetadata scriptMetadata) {
         this.scriptMetadata = scriptMetadata;
     }
 
