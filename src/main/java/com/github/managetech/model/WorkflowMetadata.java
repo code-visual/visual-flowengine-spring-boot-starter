@@ -1,7 +1,5 @@
 package com.github.managetech.model;
 
-import com.github.managetech.web.parameters.WorkflowParameters;
-
 import java.util.Date;
 import java.util.List;
 

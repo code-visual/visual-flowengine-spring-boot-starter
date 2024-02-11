@@ -10,6 +10,8 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "visual.flow")
 public class VisualFlowProperties {
 
+    public static final String DEFAULT_EXECUTE_WORKFLOW = "/api/engine/workflow/execute";
+    public static final String DEFAULT_DEBUG_WORKFLOW = "/api/engine/workflow/debug";
     public static final String DEFAULT_CREATE_WORKFLOW = "/api/engine/workflow";
     public static final String DEFAULT_DELETE_WORKFLOW = "/api/engine/workflow";
     public static final String DEFAULT_LIST_WORKFLOWS = "/api/engine/workflowList";
@@ -24,6 +26,8 @@ public class VisualFlowProperties {
     private boolean enableDefaultApi;
     private boolean enableWebUIPath;
 
+    private String executeWorkflowApiPath = DEFAULT_EXECUTE_WORKFLOW;
+    private String debugWorkflowApiPath = DEFAULT_DEBUG_WORKFLOW;
     private String createWorkflowApiPath = DEFAULT_CREATE_WORKFLOW;
     private String deleteWorkflowApiPath = DEFAULT_DELETE_WORKFLOW;
     private String updateWorkflowApiPath = DEFAULT_UPDATE_WORKFLOW;
@@ -31,6 +35,22 @@ public class VisualFlowProperties {
     private String compileScriptApiPath = DEFAULT_COMPILE_GROOVY_SCRIPT;
     private String runGroovyScriptApiPath = DEFAULT_RUN_GROOVY_SCRIPT;
     private String getWorkflowMetadataApiPath = DEFAULT_GET_WORKFLOW_METADATA;
+
+    public String getDebugWorkflowApiPath() {
+        return debugWorkflowApiPath;
+    }
+
+    public void setDebugWorkflowApiPath(String debugWorkflowApiPath) {
+        this.debugWorkflowApiPath = debugWorkflowApiPath;
+    }
+
+    public String getExecuteWorkflowApiPath() {
+        return executeWorkflowApiPath;
+    }
+
+    public void setExecuteWorkflowApiPath(String executeWorkflowApiPath) {
+        this.executeWorkflowApiPath = executeWorkflowApiPath;
+    }
 
     public String getUpdateWorkflowApiPath() {
         return updateWorkflowApiPath;

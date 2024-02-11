@@ -1,6 +1,7 @@
 package com.github.managetech.workflow;
 
 
+import com.github.managetech.model.DebugRequest;
 import com.github.managetech.model.Diagnostic;
 import com.github.managetech.model.ScriptRequest;
 import com.github.managetech.model.WorkflowMetadata;
@@ -17,6 +18,7 @@ import java.util.Map;
  */
 public interface WorkflowManager {
     void execute(Integer workflowId, Map inputVariables) ;
+    void debug(DebugRequest debugRequest) ;
 
     Script parseGroovyScript(String scriptText, Binding binding);
 
