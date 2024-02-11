@@ -1,4 +1,4 @@
-package com.github.managetech.web.parameters;
+package com.github.managetech.model;
 
 public class WorkflowParameters {
 

@@ -1,6 +1,7 @@
 package com.github.managetech.web;
 
 import com.github.managetech.config.VisualFlowProperties;
+import com.github.managetech.model.DebugRequest;
 import com.github.managetech.model.ScriptRequest;
 import com.github.managetech.model.WorkflowMetadata;
 import com.github.managetech.workflow.WorkflowManager;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 @CrossOrigin(origins = {"http://localhost:3000"})
 @RestController
@@ -23,6 +25,17 @@ public class WorkflowManagerController {
         this.workflowManager = workflowManager;
     }
 
+    @PostMapping(VisualFlowProperties.DEFAULT_EXECUTE_WORKFLOW)
+    public String executeWorkflow(@RequestParam Integer workflowId,@RequestBody Map inputVariables) {
+         workflowManager.execute(workflowId,inputVariables);
+         return "ok";
+    }
+
+    @PostMapping(VisualFlowProperties.DEFAULT_DEBUG_WORKFLOW)
+    public String debugWorkflow(@RequestBody DebugRequest debugRequest) {
+        workflowManager.debug(debugRequest);
+        return "ok";
+    }
     @PostMapping(VisualFlowProperties.DEFAULT_CREATE_WORKFLOW)
     public Object createWorkflow(@RequestBody WorkflowMetadata workflowMetadata) {
         return workflowManager.createWorkflow(workflowMetadata);
