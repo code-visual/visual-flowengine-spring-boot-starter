@@ -5,19 +5,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <script type="text/javascript" th:inline="javascript">
 
-        window.compileScriptApiPath = [[${visualFlowProperties.compileScriptApiPath}]];
-        window.createWorkflowApiPath = [[${visualFlowProperties.createWorkflowApiPath}]];
-        window.deleteWorkflowApiPath = [[${visualFlowProperties.deleteWorkflowApiPath}]];
-        window.updateWorkflowApiPath = [[${visualFlowProperties.updateWorkflowApiPath}]];
-        window.listWorkflowsApiPath = [[${visualFlowProperties.listWorkflowsApiPath}]];
-        window.runGroovyScriptApiPath = [[${visualFlowProperties.runGroovyScriptApiPath}]];
-        window.getWorkflowMetadataApiPath = [[${visualFlowProperties.getWorkflowMetadataApiPath}]];
+        window.compileScriptApiPath = [[${visualFlowProperties.compileScriptApiPath}]]; // 编译Groovy脚本的API路径
+        window.executeWorkflowApiPath = [[${visualFlowProperties.executeWorkflowApiPath}]]; // 执行工作流的API路径
+        window.debugWorkflowApiPath = [[${visualFlowProperties.debugWorkflowApiPath}]]; // 调试工作流的API路径
+        window.runGroovyScriptApiPath = [[${visualFlowProperties.runGroovyScriptApiPath}]]; // 运行Groovy脚本的API路径
+        window.createWorkflowApiPath = [[${visualFlowProperties.createWorkflowApiPath}]]; // 创建新工作流的API路径
+        window.updateWorkflowApiPath = [[${visualFlowProperties.updateWorkflowApiPath}]]; // 更新工作流的API路径
+        window.updateWorkflowNameApiPath = [[${visualFlowProperties.updateWorkflowNameApiPath}]]; // 更新工作流名称的API路径
+        window.deleteWorkflowApiPath = [[${visualFlowProperties.deleteWorkflowApiPath}]]; // 删除工作流的API路径
+        window.listWorkflowsApiPath = [[${visualFlowProperties.listWorkflowsApiPath}]]; // 列出所有工作流的API路径
+        window.getWorkflowMetadataApiPath = [[${visualFlowProperties.getWorkflowMetadataApiPath}]]; // 获取工作流元数据的API路径
+
 
 
     </script>
-    <title>manage-man</title>
-    <script type="module" crossorigin th:src="${visualFlowProperties.getResourcePath('/assets/index-ykB7VXHn.js')}"></script>
-    <link rel="stylesheet" crossorigin th:href="${visualFlowProperties.getResourcePath('/assets/index-a1yKGNyp.css')}">
+    <title>visual-flow-engine</title>
+    <script type="module" crossorigin th:src="${visualFlowProperties.getResourcePath('/assets/index-tGx7581Y.js')}"></script>
+    <link rel="stylesheet" crossorigin th:href="${visualFlowProperties.getResourcePath('/assets/index-f91q8T95.css')}">
 </head>
 <body>
 <div id="root"></div>

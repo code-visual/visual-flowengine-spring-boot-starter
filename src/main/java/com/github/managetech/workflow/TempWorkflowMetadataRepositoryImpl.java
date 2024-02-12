@@ -42,4 +42,11 @@ public class TempWorkflowMetadataRepositoryImpl implements WorkflowMetadataRepos
     public WorkflowMetadata updateWorkflowMetadata(WorkflowMetadata workflowMetadata) {
         return workflowMetadataMap.put(workflowMetadata.getWorkflowId(), workflowMetadata);
     }
+
+    @Override
+    public WorkflowMetadata updateWorkflowName(Integer workflowId, String workflowName) {
+        WorkflowMetadata workflowMetadata = workflowMetadataMap.get(workflowId);
+        workflowMetadata.setWorkflowName(workflowName);
+        return workflowMetadataMap.put(workflowId, workflowMetadata);
+    }
 }

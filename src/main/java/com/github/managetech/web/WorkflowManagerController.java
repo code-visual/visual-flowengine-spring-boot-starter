@@ -51,6 +51,11 @@ public class WorkflowManagerController {
         return workflowManager.updateWorkflowMetadata(workflowMetadata);
     }
 
+    @PutMapping(VisualFlowProperties.DEFAULT_UPDATE_WORKFLOW_NAME)
+    public Object updateWorkflowMetadata(@RequestParam Integer workflowId, @RequestParam String workflowName) {
+        return workflowManager.updateWorkflowName(workflowId, workflowName);
+    }
+
     @GetMapping(VisualFlowProperties.DEFAULT_LIST_WORKFLOWS)
     public List<WorkflowMetadata> listMenuWorkflow() {
         return workflowManager.getMenuWorkflowNameList();

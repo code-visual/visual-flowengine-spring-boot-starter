@@ -14,7 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import javax.script.ScriptException;
 import java.io.IOException;
 import java.util.*;
 import java.util.function.Supplier;
@@ -56,7 +55,7 @@ public class WorkflowManagerImpl implements WorkflowManager {
     public void debug(DebugRequest debugRequest) {
 
         if (debugRequest.getScriptMetadata() == null) {
-           return;
+            return;
         }
         this.recursiveAndExecute(debugRequest.getScriptMetadata(), new Binding(debugRequest.getInputValues()), null);
         try {
@@ -84,9 +83,12 @@ public class WorkflowManagerImpl implements WorkflowManager {
                 workflowTaskLogList.add(workflowTaskLog);
             }
 
-            for (ScriptMetadata child : script.getChildren()) {
-                recursiveAndExecute(child, binding, workflowTaskLogList);
+            if (!CollectionUtils.isEmpty(script.getChildren())) {
+                for (ScriptMetadata child : script.getChildren()) {
+                    recursiveAndExecute(child, binding, workflowTaskLogList);
+                }
             }
+
 
         } else if (script.getScriptType() == ScriptType.End) {
 
@@ -108,8 +110,11 @@ public class WorkflowManagerImpl implements WorkflowManager {
             logScriptExecution(script, binding, workflowTaskLogList, () -> {
                 Object executeScript = this.executeScript(script, binding);
                 if (executeScript instanceof Boolean && (Boolean) executeScript) {
-                    for (ScriptMetadata child : script.getChildren()) {
-                        recursiveAndExecute(child, binding, workflowTaskLogList);
+
+                    if (!CollectionUtils.isEmpty(script.getChildren())) {
+                        for (ScriptMetadata child : script.getChildren()) {
+                            recursiveAndExecute(child, binding, workflowTaskLogList);
+                        }
                     }
                 }
                 return executeScript;
@@ -118,8 +123,10 @@ public class WorkflowManagerImpl implements WorkflowManager {
 
         } else if (script.getScriptType() == ScriptType.Script) {
             logScriptExecution(script, binding, workflowTaskLogList, () -> this.executeScript(script, binding));
-            for (ScriptMetadata scriptChild : script.getChildren()) {
-                recursiveAndExecute(scriptChild, binding, workflowTaskLogList);
+            if (!CollectionUtils.isEmpty(script.getChildren())) {
+                for (ScriptMetadata child : script.getChildren()) {
+                    recursiveAndExecute(child, binding, workflowTaskLogList);
+                }
             }
         }
     }
@@ -256,5 +263,10 @@ public class WorkflowManagerImpl implements WorkflowManager {
     @Override
     public WorkflowMetadata updateWorkflowMetadata(WorkflowMetadata workflowMetadata) {
         return workflowMetadataRepository.updateWorkflowMetadata(workflowMetadata);
+    }
+
+    @Override
+    public WorkflowMetadata updateWorkflowName(Integer workflowId, String workflowName) {
+        return workflowMetadataRepository.updateWorkflowName(workflowId, workflowName);
     }
 }

@@ -14,4 +14,6 @@ public interface WorkflowMetadataRepository {
 
     List<WorkflowMetadata> getMenuWorkflowList();
     WorkflowMetadata updateWorkflowMetadata(WorkflowMetadata workflowMetadata);
+
+    WorkflowMetadata updateWorkflowName(Integer workflowId, String workflowName);
 }
