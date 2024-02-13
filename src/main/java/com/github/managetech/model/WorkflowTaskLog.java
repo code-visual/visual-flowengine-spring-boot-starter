@@ -6,6 +6,7 @@ import java.util.Map;
 @SuppressWarnings({"rawtypes"})
 public class WorkflowTaskLog {
     private String scriptId;
+    private String scriptName;
 
     private Map beforeRunBinding;
 
@@ -18,6 +19,14 @@ public class WorkflowTaskLog {
     private Date scriptRunTime;
 
     private String scriptRunError;
+
+    public String getScriptName() {
+        return scriptName;
+    }
+
+    public void setScriptName(String scriptName) {
+        this.scriptName = scriptName;
+    }
 
     public String getScriptId() {
         return scriptId;
