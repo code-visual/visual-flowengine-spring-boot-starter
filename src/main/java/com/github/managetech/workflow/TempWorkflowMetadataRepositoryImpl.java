@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * @author Levi Li
@@ -15,11 +16,12 @@ import java.util.concurrent.ConcurrentHashMap;
 @Repository
 public class TempWorkflowMetadataRepositoryImpl implements WorkflowMetadataRepository {
 
+    AtomicInteger atomicInteger = new AtomicInteger(0);
     private final Map<Integer, WorkflowMetadata> workflowMetadataMap = new ConcurrentHashMap<>();
 
     @Override
     public WorkflowMetadata create(WorkflowMetadata workflowMetadata) {
-        workflowMetadata.setWorkflowId(workflowMetadataMap.size() + 1);
+        workflowMetadata.setWorkflowId(atomicInteger.incrementAndGet());
         return workflowMetadataMap.put(workflowMetadata.getWorkflowId(), workflowMetadata);
     }
 
