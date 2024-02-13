@@ -32,9 +32,8 @@ public class WorkflowManagerController {
     }
 
     @PostMapping(VisualFlowProperties.DEFAULT_DEBUG_WORKFLOW)
-    public String debugWorkflow(@RequestBody DebugRequest debugRequest) {
-        workflowManager.debug(debugRequest);
-        return "ok";
+    public Object debugWorkflow(@RequestBody DebugRequest debugRequest) {
+        return  workflowManager.debug(debugRequest);
     }
     @PostMapping(VisualFlowProperties.DEFAULT_CREATE_WORKFLOW)
     public Object createWorkflow(@RequestBody WorkflowMetadata workflowMetadata) {
