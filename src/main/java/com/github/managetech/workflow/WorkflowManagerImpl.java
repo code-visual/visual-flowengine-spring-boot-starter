@@ -1,4 +1,7 @@
 package com.github.managetech.workflow;
+import com.github.managetech.model.ScriptRunStatus;
+import java.util.Date;
+import java.util.Map;
 
 import com.github.managetech.model.*;
 import com.github.managetech.utils.CommonUtils;
@@ -64,6 +67,7 @@ public class WorkflowManagerImpl implements WorkflowManager {
         } catch (IOException e) {
             logger.error("重置GroovyClassLoader失败", e);
         }
+        return workflowTaskLogList;
 
     }
 
@@ -204,16 +208,26 @@ public class WorkflowManagerImpl implements WorkflowManager {
     @SuppressWarnings("rawtypes")
     @Override
     public Object testGroovyScript(ScriptRequest scriptRequest) {
+        WorkflowTaskLog workflowTaskLog = new WorkflowTaskLog();
         try (GroovyClassLoader tempGroovyClassLoader = new GroovyClassLoader(Thread.currentThread().getContextClassLoader(), config)) {
             Class aClass = tempGroovyClassLoader.parseClass(scriptRequest.getCode());
-            return InvokerHelper.createScript(aClass, new Binding(scriptRequest.getInputValues())).run();
+
+            Binding binding = new Binding(scriptRequest.getInputValues());
+            Object run = InvokerHelper.createScript(aClass, binding).run();
+            if (run instanceof Map) {
+                binding.getVariables().putAll((Map) run);
+            }workflowTaskLog.setScriptRunStatus(ScriptRunStatus.Success);
+            workflowTaskLog.setAfterRunBinding(binding.getVariables());
+            workflowTaskLog.setScriptRunResult(run);
+            return workflowTaskLog;
         } catch (Exception e) {
-            if (!(e instanceof MultipleCompilationErrorsException)) {
-                throw new RuntimeException(e);
-            }
-            List<? extends Message> errors = ((MultipleCompilationErrorsException) e).getErrorCollector().getErrors();
-            return CommonUtils.getDiagnostics(errors);
+            workflowTaskLog.setScriptRunStatus(ScriptRunStatus.Error);
+            workflowTaskLog.setScriptRunError(e.getMessage());
+        }finally {
+            workflowTaskLog.setScriptRunTime(new Date());
+            workflowTaskLog.setBeforeRunBinding(scriptRequest.getInputValues());
         }
+        return workflowTaskLog;
     }
 
     @Override
