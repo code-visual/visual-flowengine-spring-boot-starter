@@ -46,16 +46,17 @@ public class WorkflowManagerImpl implements WorkflowManager {
     public void execute(Integer workflowId, Map inputVariables) {
         WorkflowMetadata workflowMetadata = workflowMetadataRepository.findByWorkflowId(workflowId);
         ScriptMetadata scriptMetadata = workflowMetadata.getScriptMetadata();
-        List<WorkflowTaskLog> workflowTaskLogList = new ArrayList<>();
+//        List<WorkflowTaskLog> workflowTaskLogList = new ArrayList<>();
+        Map<Integer,List<WorkflowTaskLog>>workflowTaskLogMap = new HashMap<>();
         try {
-            this.recursiveAndExecute(scriptMetadata, new Binding(inputVariables), workflowTaskLogList);
+            this.recursiveAndExecute(scriptMetadata, new Binding(inputVariables), workflowTaskLogMap,1);
         } finally {
-            logger.info("保存日志:{}", workflowTaskLogList);
+            logger.info("保存日志:{}", workflowTaskLogMap);
         }
     }
 
     @Override
-    public List<WorkflowTaskLog> debug(DebugRequest debugRequest) {
+    public Map<Integer,List<WorkflowTaskLog>> debug(DebugRequest debugRequest) {
 
         if (debugRequest.getScriptMetadata() == null) {
             WorkflowTaskLog workflowTaskLog = new WorkflowTaskLog();
@@ -68,20 +69,22 @@ public class WorkflowManagerImpl implements WorkflowManager {
             workflowTaskLog.setScriptRunTime(null);
             workflowTaskLog.setScriptRunError("脚本为空");
 
-            return Collections.singletonList(workflowTaskLog);
+            return Collections.singletonMap(1, Collections.singletonList(workflowTaskLog));
         }
-        List<WorkflowTaskLog> workflowTaskLogList = new ArrayList<>();
-        this.recursiveAndExecute(debugRequest.getScriptMetadata(), new Binding(debugRequest.getInputValues()), workflowTaskLogList);
+        Map<Integer,List<WorkflowTaskLog>>workflowTaskLogMap = new HashMap<>();
+        this.recursiveAndExecute(debugRequest.getScriptMetadata(), new Binding(debugRequest.getInputValues()), workflowTaskLogMap,1);
         try {
             resetGroovyClassLoader();
         } catch (IOException e) {
             logger.error("重置GroovyClassLoader失败", e);
         }
-        return workflowTaskLogList;
+        return workflowTaskLogMap;
 
     }
 
-    public void recursiveAndExecute(ScriptMetadata script, Binding binding, List<WorkflowTaskLog> workflowTaskLogList) {
+    public void recursiveAndExecute(ScriptMetadata script, Binding binding,  Map<Integer, List<WorkflowTaskLog>> workflowTaskLogMap, int currentLevel) {
+
+        List<WorkflowTaskLog> workflowTaskLogList = workflowTaskLogMap.getOrDefault(currentLevel, new ArrayList<>());
 
         if (script.getScriptType() == ScriptType.Start) {
 
@@ -99,7 +102,7 @@ public class WorkflowManagerImpl implements WorkflowManager {
 
             if (!CollectionUtils.isEmpty(script.getChildren())) {
                 for (ScriptMetadata child : script.getChildren()) {
-                    recursiveAndExecute(child, binding, workflowTaskLogList);
+                    recursiveAndExecute(child, binding, workflowTaskLogMap, currentLevel + 1);
                 }
             }
 
@@ -126,7 +129,7 @@ public class WorkflowManagerImpl implements WorkflowManager {
 
                     if (!CollectionUtils.isEmpty(script.getChildren())) {
                         for (ScriptMetadata child : script.getChildren()) {
-                            recursiveAndExecute(child, binding, workflowTaskLogList);
+                            recursiveAndExecute(child, binding, workflowTaskLogMap, currentLevel + 1);
                         }
                     }
                 }
@@ -138,10 +141,11 @@ public class WorkflowManagerImpl implements WorkflowManager {
             logScriptExecution(script, binding, workflowTaskLogList, () -> this.executeScript(script, binding));
             if (!CollectionUtils.isEmpty(script.getChildren())) {
                 for (ScriptMetadata child : script.getChildren()) {
-                    recursiveAndExecute(child, binding, workflowTaskLogList);
+                    recursiveAndExecute(child, binding, workflowTaskLogMap, currentLevel + 1);
                 }
             }
         }
+        workflowTaskLogMap.put(currentLevel, workflowTaskLogList);
     }
 
     private void logScriptExecution(ScriptMetadata script, Binding binding, List<WorkflowTaskLog> workflowTaskLogList, Supplier<Object> scriptExecutor) {

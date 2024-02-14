@@ -10,7 +10,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -27,15 +26,16 @@ public class WorkflowManagerController {
     }
 
     @PostMapping(VisualFlowProperties.DEFAULT_EXECUTE_WORKFLOW)
-    public String executeWorkflow(@RequestParam Integer workflowId,@RequestBody Map inputVariables) {
-         workflowManager.execute(workflowId,inputVariables);
-         return "ok";
+    public String executeWorkflow(@RequestParam Integer workflowId, @RequestBody Map inputVariables) {
+        workflowManager.execute(workflowId, inputVariables);
+        return "ok";
     }
 
     @PostMapping(VisualFlowProperties.DEFAULT_DEBUG_WORKFLOW)
-    public List<WorkflowTaskLog> debugWorkflow(@RequestBody DebugRequest debugRequest) {
-        return  workflowManager.debug(debugRequest);
+    public Map<Integer, List<WorkflowTaskLog>> debugWorkflow(@RequestBody DebugRequest debugRequest) {
+        return workflowManager.debug(debugRequest);
     }
+
     @PostMapping(VisualFlowProperties.DEFAULT_CREATE_WORKFLOW)
     public Object createWorkflow(@RequestBody WorkflowMetadata workflowMetadata) {
         return workflowManager.createWorkflow(workflowMetadata);
