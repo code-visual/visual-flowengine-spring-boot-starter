@@ -55,10 +55,20 @@ public class WorkflowManagerImpl implements WorkflowManager {
     }
 
     @Override
-    public Object debug(DebugRequest debugRequest) {
+    public List<WorkflowTaskLog> debug(DebugRequest debugRequest) {
 
         if (debugRequest.getScriptMetadata() == null) {
-            return "脚本为空";
+            WorkflowTaskLog workflowTaskLog = new WorkflowTaskLog();
+            workflowTaskLog.setScriptName("");
+            workflowTaskLog.setScriptId("");
+            workflowTaskLog.setBeforeRunBinding(debugRequest.getInputValues());
+            workflowTaskLog.setAfterRunBinding(null);
+            workflowTaskLog.setScriptRunStatus(ScriptRunStatus.Error);
+            workflowTaskLog.setScriptRunResult(null);
+            workflowTaskLog.setScriptRunTime(null);
+            workflowTaskLog.setScriptRunError("脚本为空");
+
+            return Collections.singletonList(workflowTaskLog);
         }
         List<WorkflowTaskLog> workflowTaskLogList = new ArrayList<>();
         this.recursiveAndExecute(debugRequest.getScriptMetadata(), new Binding(debugRequest.getInputValues()), workflowTaskLogList);
@@ -207,7 +217,7 @@ public class WorkflowManagerImpl implements WorkflowManager {
      */
     @SuppressWarnings("rawtypes")
     @Override
-    public Object testGroovyScript(ScriptRequest scriptRequest) {
+    public WorkflowTaskLog testGroovyScript(ScriptRequest scriptRequest) {
         WorkflowTaskLog workflowTaskLog = new WorkflowTaskLog();
         try (GroovyClassLoader tempGroovyClassLoader = new GroovyClassLoader(Thread.currentThread().getContextClassLoader(), config)) {
             Class aClass = tempGroovyClassLoader.parseClass(scriptRequest.getCode());

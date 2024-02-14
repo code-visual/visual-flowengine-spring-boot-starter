@@ -4,6 +4,7 @@ import com.github.managetech.config.VisualFlowProperties;
 import com.github.managetech.model.DebugRequest;
 import com.github.managetech.model.ScriptRequest;
 import com.github.managetech.model.WorkflowMetadata;
+import com.github.managetech.model.WorkflowTaskLog;
 import com.github.managetech.workflow.WorkflowManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -32,7 +33,7 @@ public class WorkflowManagerController {
     }
 
     @PostMapping(VisualFlowProperties.DEFAULT_DEBUG_WORKFLOW)
-    public Object debugWorkflow(@RequestBody DebugRequest debugRequest) {
+    public List<WorkflowTaskLog> debugWorkflow(@RequestBody DebugRequest debugRequest) {
         return  workflowManager.debug(debugRequest);
     }
     @PostMapping(VisualFlowProperties.DEFAULT_CREATE_WORKFLOW)
@@ -66,7 +67,7 @@ public class WorkflowManagerController {
     }
 
     @PostMapping(VisualFlowProperties.DEFAULT_RUN_GROOVY_SCRIPT)
-    public Object runGroovyScript(@RequestBody ScriptRequest runRequest) {
+    public WorkflowTaskLog runGroovyScript(@RequestBody ScriptRequest runRequest) {
         return workflowManager.testGroovyScript(runRequest);
     }
 
