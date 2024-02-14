@@ -1,10 +1,7 @@
 package com.github.managetech.workflow;
 
 
-import com.github.managetech.model.DebugRequest;
-import com.github.managetech.model.Diagnostic;
-import com.github.managetech.model.ScriptRequest;
-import com.github.managetech.model.WorkflowMetadata;
+import com.github.managetech.model.*;
 import groovy.lang.Binding;
 import groovy.lang.Script;
 
@@ -18,13 +15,13 @@ import java.util.Map;
  */
 public interface WorkflowManager {
     void execute(Integer workflowId, Map inputVariables) ;
-    Object debug(DebugRequest debugRequest) ;
+    List<WorkflowTaskLog> debug(DebugRequest debugRequest) ;
 
     Script parseGroovyScript(String scriptText, Binding binding);
 
     List<Diagnostic> compileGroovyScript(String code);
 
-    Object testGroovyScript(ScriptRequest scriptRequest);
+    WorkflowTaskLog testGroovyScript(ScriptRequest scriptRequest);
 
     WorkflowMetadata getWorkflowMetadataById(Integer workflowName);
 
