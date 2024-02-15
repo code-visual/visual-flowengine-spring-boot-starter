@@ -1,9 +1,14 @@
 package com.github.managetech.workflow;
-import com.github.managetech.model.ScriptRunStatus;
-import java.util.Date;
-import java.util.Map;
 
-import com.github.managetech.model.*;
+import com.github.managetech.model.DebugRequest;
+import com.github.managetech.model.Diagnostic;
+import com.github.managetech.model.ScriptMetadata;
+import com.github.managetech.model.ScriptRunStatus;
+import com.github.managetech.model.ScriptType;
+import com.github.managetech.model.WorkflowMetadata;
+import com.github.managetech.model.WorkflowTaskLog;
+import com.github.managetech.ruleengine.Rule;
+import com.github.managetech.ruleengine.RuleEngine;
 import com.github.managetech.utils.CommonUtils;
 import groovy.lang.Binding;
 import groovy.lang.GroovyClassLoader;
@@ -18,7 +23,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Supplier;
 
 /**
@@ -46,17 +56,16 @@ public class WorkflowManagerImpl implements WorkflowManager {
     public void execute(Integer workflowId, Map inputVariables) {
         WorkflowMetadata workflowMetadata = workflowMetadataRepository.findByWorkflowId(workflowId);
         ScriptMetadata scriptMetadata = workflowMetadata.getScriptMetadata();
-//        List<WorkflowTaskLog> workflowTaskLogList = new ArrayList<>();
-        Map<Integer,List<WorkflowTaskLog>>workflowTaskLogMap = new HashMap<>();
+        Map<Integer, List<WorkflowTaskLog>> workflowTaskLogMap = new HashMap<>();
         try {
-            this.recursiveAndExecute(scriptMetadata, new Binding(inputVariables), workflowTaskLogMap,1);
+            this.recursiveAndExecute(scriptMetadata, new Binding(inputVariables), workflowTaskLogMap, 1);
         } finally {
             logger.info("保存日志:{}", workflowTaskLogMap);
         }
     }
 
     @Override
-    public Map<Integer,List<WorkflowTaskLog>> debug(DebugRequest debugRequest) {
+    public Map<Integer, List<WorkflowTaskLog>> debug(DebugRequest debugRequest) {
 
         if (debugRequest.getScriptMetadata() == null) {
             WorkflowTaskLog workflowTaskLog = new WorkflowTaskLog();
@@ -71,8 +80,8 @@ public class WorkflowManagerImpl implements WorkflowManager {
 
             return Collections.singletonMap(1, Collections.singletonList(workflowTaskLog));
         }
-        Map<Integer,List<WorkflowTaskLog>>workflowTaskLogMap = new HashMap<>();
-        this.recursiveAndExecute(debugRequest.getScriptMetadata(), new Binding(debugRequest.getInputValues()), workflowTaskLogMap,1);
+        Map<Integer, List<WorkflowTaskLog>> workflowTaskLogMap = new HashMap<>();
+        this.recursiveAndExecute(debugRequest.getScriptMetadata(), new Binding(debugRequest.getInputValues()), workflowTaskLogMap, 1);
         try {
             resetGroovyClassLoader();
         } catch (IOException e) {
@@ -82,7 +91,7 @@ public class WorkflowManagerImpl implements WorkflowManager {
 
     }
 
-    public void recursiveAndExecute(ScriptMetadata script, Binding binding,  Map<Integer, List<WorkflowTaskLog>> workflowTaskLogMap, int currentLevel) {
+    public void recursiveAndExecute(ScriptMetadata script, Binding binding, Map<Integer, List<WorkflowTaskLog>> workflowTaskLogMap, int currentLevel) {
 
         List<WorkflowTaskLog> workflowTaskLogList = workflowTaskLogMap.getOrDefault(currentLevel, new ArrayList<>());
 
@@ -144,6 +153,21 @@ public class WorkflowManagerImpl implements WorkflowManager {
                     recursiveAndExecute(child, binding, workflowTaskLogMap, currentLevel + 1);
                 }
             }
+        } else if (script.getScriptType() == ScriptType.Rule) {
+            logScriptExecution(script, binding, workflowTaskLogList, () -> {
+
+                List<Rule> rules = RuleEngine.parser(script.getScriptText(), binding);
+                //闭包导致不能序列化 要移除
+                binding.removeVariable("system_function_decision_rule");
+                Object executeScript = RuleEngine.execute(rules, binding);
+
+                if (!CollectionUtils.isEmpty(script.getChildren())) {
+                    for (ScriptMetadata child : script.getChildren()) {
+                        recursiveAndExecute(child, binding, workflowTaskLogMap, currentLevel + 1);
+                    }
+                }
+                return executeScript;
+            });
         }
         workflowTaskLogMap.put(currentLevel, workflowTaskLogList);
     }
@@ -159,12 +183,13 @@ public class WorkflowManagerImpl implements WorkflowManager {
 
         try {
             Object result = scriptExecutor.get(); // 执行脚本
+
             workflowTaskLog.setScriptRunStatus(ScriptRunStatus.Success);
             workflowTaskLog.setScriptRunResult(result);
         } catch (Exception e) {
             workflowTaskLog.setScriptRunStatus(ScriptRunStatus.Error);
             workflowTaskLog.setScriptRunError(e.getMessage());
-            throw e;
+//            throw e;
         } finally {
             workflowTaskLog.setAfterRunBinding(new HashMap<>(binding.getVariables()));
             workflowTaskLogList.add(workflowTaskLog);
@@ -211,37 +236,6 @@ public class WorkflowManagerImpl implements WorkflowManager {
             List<? extends Message> errors = ((MultipleCompilationErrorsException) e).getErrorCollector().getErrors();
             return CommonUtils.getDiagnostics(errors);
         }
-    }
-
-    /**
-     * 测试脚本的时候，应该用临时的groovyClassLoader来编译
-     *
-     * @param scriptRequest
-     * @return
-     */
-    @SuppressWarnings("rawtypes")
-    @Override
-    public WorkflowTaskLog testGroovyScript(ScriptRequest scriptRequest) {
-        WorkflowTaskLog workflowTaskLog = new WorkflowTaskLog();
-        try (GroovyClassLoader tempGroovyClassLoader = new GroovyClassLoader(Thread.currentThread().getContextClassLoader(), config)) {
-            Class aClass = tempGroovyClassLoader.parseClass(scriptRequest.getCode());
-
-            Binding binding = new Binding(scriptRequest.getInputValues());
-            Object run = InvokerHelper.createScript(aClass, binding).run();
-            if (run instanceof Map) {
-                binding.getVariables().putAll((Map) run);
-            }workflowTaskLog.setScriptRunStatus(ScriptRunStatus.Success);
-            workflowTaskLog.setAfterRunBinding(binding.getVariables());
-            workflowTaskLog.setScriptRunResult(run);
-            return workflowTaskLog;
-        } catch (Exception e) {
-            workflowTaskLog.setScriptRunStatus(ScriptRunStatus.Error);
-            workflowTaskLog.setScriptRunError(e.getMessage());
-        }finally {
-            workflowTaskLog.setScriptRunTime(new Date());
-            workflowTaskLog.setBeforeRunBinding(scriptRequest.getInputValues());
-        }
-        return workflowTaskLog;
     }
 
     @Override

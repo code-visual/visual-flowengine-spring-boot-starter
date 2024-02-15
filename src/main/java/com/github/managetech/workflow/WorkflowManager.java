@@ -20,9 +20,6 @@ public interface WorkflowManager {
     Script parseGroovyScript(String scriptText, Binding binding);
 
     List<Diagnostic> compileGroovyScript(String code);
-
-    WorkflowTaskLog testGroovyScript(ScriptRequest scriptRequest);
-
     WorkflowMetadata getWorkflowMetadataById(Integer workflowName);
 
     Object createWorkflow(WorkflowMetadata workflowMetadata);

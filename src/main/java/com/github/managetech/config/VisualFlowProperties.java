@@ -16,7 +16,6 @@ public class VisualFlowProperties {
     public static final String DEFAULT_DELETE_WORKFLOW = "/api/engine/workflow";
     public static final String DEFAULT_LIST_WORKFLOWS = "/api/engine/workflowList";
     public static final String DEFAULT_COMPILE_GROOVY_SCRIPT = "/api/engine/groovyScript/compile";
-    public static final String DEFAULT_RUN_GROOVY_SCRIPT = "/api/engine/groovyScript/run";
     public static final String DEFAULT_GET_WORKFLOW_METADATA = "/api/engine/workflow";
     public static final String DEFAULT_UPDATE_WORKFLOW = "/api/engine/workflow";
     public static final String DEFAULT_UPDATE_WORKFLOW_NAME = "/api/engine/workflowName";
@@ -35,7 +34,6 @@ public class VisualFlowProperties {
     private String updateWorkflowNameApiPath = DEFAULT_UPDATE_WORKFLOW_NAME;
     private String listWorkflowsApiPath = DEFAULT_LIST_WORKFLOWS;
     private String compileScriptApiPath = DEFAULT_COMPILE_GROOVY_SCRIPT;
-    private String runGroovyScriptApiPath = DEFAULT_RUN_GROOVY_SCRIPT;
     private String getWorkflowMetadataApiPath = DEFAULT_GET_WORKFLOW_METADATA;
 
     public String getUpdateWorkflowNameApiPath() {
@@ -100,14 +98,6 @@ public class VisualFlowProperties {
 
     public void setListWorkflowsApiPath(String listWorkflowsApiPath) {
         this.listWorkflowsApiPath = listWorkflowsApiPath;
-    }
-
-    public String getRunGroovyScriptApiPath() {
-        return runGroovyScriptApiPath;
-    }
-
-    public void setRunGroovyScriptApiPath(String runGroovyScriptApiPath) {
-        this.runGroovyScriptApiPath = runGroovyScriptApiPath;
     }
 
     public String getGetWorkflowMetadataApiPath() {

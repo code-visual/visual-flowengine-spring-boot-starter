@@ -66,11 +66,6 @@ public class WorkflowManagerController {
         return workflowManager.compileGroovyScript(runRequest.getCode());
     }
 
-    @PostMapping(VisualFlowProperties.DEFAULT_RUN_GROOVY_SCRIPT)
-    public WorkflowTaskLog runGroovyScript(@RequestBody ScriptRequest runRequest) {
-        return workflowManager.testGroovyScript(runRequest);
-    }
-
     @GetMapping(VisualFlowProperties.DEFAULT_GET_WORKFLOW_METADATA)
     public WorkflowMetadata getWorkflowMetadata(@RequestParam Integer workflowId) {
         return workflowManager.getWorkflowMetadataById(workflowId);

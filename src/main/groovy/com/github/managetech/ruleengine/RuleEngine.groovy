@@ -11,36 +11,40 @@ import com.github.managetech.workflow.WorkflowManager
  */
 class RuleEngine {
 
-    static def execute(List<Rule> rules, Object user) {
+    static def execute(List<Rule> rules, Object inputData) {
 
         def matchedRule = rules.find { rule ->
-            rule.when(user)
+            rule.when(inputData)
         }
         if (matchedRule) {
-            def action = matchedRule.then(user)
-            //todo 万一返回数组呢
-            action["ruleName"] = matchedRule.name
+            def action = matchedRule.then(inputData)
+            if (action instanceof List) {
+                // 如果action是列表，对每个元素处理
+                action.each { it["system_function_decision_rule"] = matchedRule.name }
+            } else {
+                // 对于单个对象，直接添加ruleName
+                action["system_function_decision_rule"] = matchedRule.name
+            }
             return action
         }
         return null
     }
 
-    static def parser(String rulesDefinition) {
-         def binding = new Binding()
-         List<Rule> localRules = []
-         binding.setVariable("rule", { String name, Closure cl ->
-             def newRule = new Rule(name: name)
-             cl.delegate = newRule
+    static List<Rule> parser(String rulesDefinition, Binding binding) {
+        List<Rule> localRules = []
+        binding.setVariable("system_function_decision_rule", { String name, Closure cl ->
+            def newRule = new Rule(name: name)
+            cl.delegate = newRule
 
 //             Closure.OWNER_FIRST (默认值): 如果闭包内引用的变量或方法在闭包自身中未定义，则Groovy首先尝试在闭包的拥有者（通常是定义闭包的那个类或对象）中解析这些引用。如果在拥有者中也找不到，Groovy会尝试在delegate对象中解析。
 //             Closure.DELEGATE_FIRST: 如果闭包内引用的变量或方法在闭包自身中未定义，则Groovy首先尝试在闭包的delegate对象中解析这些引用。如果在delegate中找不到，Groovy会尝试在闭包的拥有者中解析。
 //             Closure.OWNER_ONLY: Groovy只会在闭包的拥有者中解析闭包内引用的变量或方法。
 //             Closure.DELEGATE_ONLY: Groovy只会在闭包的delegate对象中解析闭包内引用的变量或方法。
 //             Closure.TO_SELF: Groovy只会在闭包自身的作用域内解析变量或方法。如果闭包内部没有定义引用的变量或方法，将会导致解析失败。
-             cl.resolveStrategy = 1
-             cl.call()
-             localRules.add(newRule)
-         })
+            cl.resolveStrategy = 1
+            cl.call()
+            localRules.add(newRule)
+        })
 
         def parseScript = SpringContext.getBean(WorkflowManager.class).parseGroovyScript(rulesDefinition, binding)
         parseScript.run()
