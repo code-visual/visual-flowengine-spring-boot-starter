@@ -1,12 +1,6 @@
 package com.github.managetech.workflow;
 
-import com.github.managetech.model.DebugRequest;
-import com.github.managetech.model.Diagnostic;
-import com.github.managetech.model.ScriptMetadata;
-import com.github.managetech.model.ScriptRunStatus;
-import com.github.managetech.model.ScriptType;
-import com.github.managetech.model.WorkflowMetadata;
-import com.github.managetech.model.WorkflowTaskLog;
+import com.github.managetech.model.*;
 import com.github.managetech.ruleengine.Rule;
 import com.github.managetech.ruleengine.RuleEngine;
 import com.github.managetech.utils.CommonUtils;
@@ -23,12 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Supplier;
 
 /**
@@ -91,7 +80,7 @@ public class WorkflowManagerImpl implements WorkflowManager {
 
     }
 
-    public void recursiveAndExecute(ScriptMetadata script, Binding binding, Map<Integer, List<WorkflowTaskLog>> workflowTaskLogMap, int currentLevel) {
+    public boolean recursiveAndExecute(ScriptMetadata script, Binding binding, Map<Integer, List<WorkflowTaskLog>> workflowTaskLogMap, int currentLevel) {
 
         List<WorkflowTaskLog> workflowTaskLogList = workflowTaskLogMap.getOrDefault(currentLevel, new ArrayList<>());
 
@@ -111,7 +100,10 @@ public class WorkflowManagerImpl implements WorkflowManager {
 
             if (!CollectionUtils.isEmpty(script.getChildren())) {
                 for (ScriptMetadata child : script.getChildren()) {
-                    recursiveAndExecute(child, binding, workflowTaskLogMap, currentLevel + 1);
+                    boolean childSuccess = recursiveAndExecute(child, binding, workflowTaskLogMap, currentLevel + 1);
+                    if (!childSuccess) {
+                        return false;
+                    }
                 }
             }
 
@@ -132,49 +124,70 @@ public class WorkflowManagerImpl implements WorkflowManager {
 
 
         } else if (script.getScriptType() == ScriptType.Condition) {
-            logScriptExecution(script, binding, workflowTaskLogList, () -> {
+            boolean success = logScriptExecution(script, binding, workflowTaskLogList, () -> {
                 Object executeScript = this.executeScript(script, binding);
                 if (executeScript instanceof Boolean && (Boolean) executeScript) {
 
                     if (!CollectionUtils.isEmpty(script.getChildren())) {
                         for (ScriptMetadata child : script.getChildren()) {
-                            recursiveAndExecute(child, binding, workflowTaskLogMap, currentLevel + 1);
+                            boolean childSuccess = recursiveAndExecute(child, binding, workflowTaskLogMap, currentLevel + 1);
+                            if (!childSuccess) {
+                                return false;
+                            }
                         }
                     }
                 }
                 return executeScript;
             });
+            if (!success) {
+                return false;
+            }
 
 
         } else if (script.getScriptType() == ScriptType.Script) {
-            logScriptExecution(script, binding, workflowTaskLogList, () -> this.executeScript(script, binding));
+            boolean success = logScriptExecution(script, binding, workflowTaskLogList, () -> this.executeScript(script, binding));
+            if (!success) {
+                return false;
+            }
+
             if (!CollectionUtils.isEmpty(script.getChildren())) {
                 for (ScriptMetadata child : script.getChildren()) {
-                    recursiveAndExecute(child, binding, workflowTaskLogMap, currentLevel + 1);
+                    boolean childSuccess=  recursiveAndExecute(child, binding, workflowTaskLogMap, currentLevel + 1);
+                    if (!childSuccess) {
+                        return false;
+                    }
                 }
             }
         } else if (script.getScriptType() == ScriptType.Rule) {
-            logScriptExecution(script, binding, workflowTaskLogList, () -> {
+            boolean success = logScriptExecution(script, binding, workflowTaskLogList, () -> {
 
                 List<Rule> rules = RuleEngine.parser(script.getScriptText());
                 //闭包导致不能序列化 要移除
                 Object executeScript = RuleEngine.execute(rules, binding);
-                if (executeScript==null){
-                    binding.setVariable("decision_rule","miss");
+                if (executeScript == null) {
+                    binding.setVariable("decision_rule", "miss");
                 }
 
                 if (!CollectionUtils.isEmpty(script.getChildren())) {
                     for (ScriptMetadata child : script.getChildren()) {
-                        recursiveAndExecute(child, binding, workflowTaskLogMap, currentLevel + 1);
+                        boolean childSuccess = recursiveAndExecute(child, binding, workflowTaskLogMap, currentLevel + 1);
+                        if (!childSuccess) {
+                            return false;
+                        }
+
                     }
                 }
                 return executeScript;
             });
+            if (!success) {
+                return false;
+            }
         }
         workflowTaskLogMap.put(currentLevel, workflowTaskLogList);
+        return true;
     }
 
-    private void logScriptExecution(ScriptMetadata script, Binding binding, List<WorkflowTaskLog> workflowTaskLogList, Supplier<Object> scriptExecutor) {
+    private boolean logScriptExecution(ScriptMetadata script, Binding binding, List<WorkflowTaskLog> workflowTaskLogList, Supplier<Object> scriptExecutor) {
 
         HashMap beforeRunBinding = new HashMap<>(binding.getVariables());
         WorkflowTaskLog workflowTaskLog = new WorkflowTaskLog();
@@ -188,10 +201,12 @@ public class WorkflowManagerImpl implements WorkflowManager {
 
             workflowTaskLog.setScriptRunStatus(ScriptRunStatus.Success);
             workflowTaskLog.setScriptRunResult(result);
+            return true;
         } catch (Exception e) {
             workflowTaskLog.setScriptRunStatus(ScriptRunStatus.Error);
             workflowTaskLog.setScriptRunError(e.getMessage());
-//            throw e;
+            return false;
+
         } finally {
             workflowTaskLog.setAfterRunBinding(new HashMap<>(binding.getVariables()));
             workflowTaskLogList.add(workflowTaskLog);
