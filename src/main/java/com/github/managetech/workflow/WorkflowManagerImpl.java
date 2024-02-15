@@ -156,10 +156,12 @@ public class WorkflowManagerImpl implements WorkflowManager {
         } else if (script.getScriptType() == ScriptType.Rule) {
             logScriptExecution(script, binding, workflowTaskLogList, () -> {
 
-                List<Rule> rules = RuleEngine.parser(script.getScriptText(), binding);
+                List<Rule> rules = RuleEngine.parser(script.getScriptText());
                 //闭包导致不能序列化 要移除
-                binding.removeVariable("system_function_decision_rule");
                 Object executeScript = RuleEngine.execute(rules, binding);
+                if (executeScript==null){
+                    binding.setVariable("decision_rule","miss");
+                }
 
                 if (!CollectionUtils.isEmpty(script.getChildren())) {
                     for (ScriptMetadata child : script.getChildren()) {

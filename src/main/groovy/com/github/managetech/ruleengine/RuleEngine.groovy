@@ -18,21 +18,16 @@ class RuleEngine {
         }
         if (matchedRule) {
             def action = matchedRule.then(inputData)
-            if (action instanceof List) {
-                // 如果action是列表，对每个元素处理
-                action.each { it["system_function_decision_rule"] = matchedRule.name }
-            } else {
-                // 对于单个对象，直接添加ruleName
-                action["system_function_decision_rule"] = matchedRule.name
-            }
+            inputData["decision_rule"] = matchedRule.name
             return action
         }
         return null
     }
 
-    static List<Rule> parser(String rulesDefinition, Binding binding) {
+    static List<Rule> parser(String rulesDefinition) {
         List<Rule> localRules = []
-        binding.setVariable("system_function_decision_rule", { String name, Closure cl ->
+        def binding = new Binding();
+        binding.setVariable("decision_rule", { String name, Closure cl ->
             def newRule = new Rule(name: name)
             cl.delegate = newRule
 
