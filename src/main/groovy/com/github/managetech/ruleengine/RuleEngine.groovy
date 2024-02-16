@@ -10,18 +10,27 @@ import com.github.managetech.workflow.WorkflowManager
  * if-else语句适用于代码中的简单条件逻辑，而Groovy规则引擎适用于管理复杂的业务规则和决策逻辑.并且是当前业务逻辑比较集中 的地方.多个条件影响同一个东西
  */
 class RuleEngine {
+    /**
+     * 规则引擎的核心是规则。规则是一个包含两个闭包的对象。一个闭包用于评估输入数据是否满足规则的条件，另一个闭包用于应用规则。
+     * 当规则引擎执行时，它会遍历所有规则并评估它们的条件。如果条件满足，规则引擎会应用规则。
+     */
 
-    static def execute(List<Rule> rules, Object inputData) {
-
-        def matchedRule = rules.find { rule ->
+    static def execute(List<Rule> rules, Binding inputData) {
+        // 查找所有匹配的规则
+        def matchedRules = rules.findAll { rule ->
             rule.when(inputData)
         }
-        if (matchedRule) {
-            def action = matchedRule.then(inputData)
-            inputData["decision_rule"] = matchedRule.name
-            return action
+
+        // 如果没有规则匹配成功，将"miss"赋值给"decision_rule"
+        if (matchedRules.isEmpty()) {
+            inputData.setVariable("decision_rule", "miss")
+        } else {
+            // 如果有匹配的规则，更新"decision_rule"为匹配规则的名称列表
+            List<String> decisionRules = matchedRules.collect { it.name }
+            inputData.setVariable("decision_rule", decisionRules)
         }
-        return null
+
+        return "decision_rule no result"
     }
 
     static List<Rule> parser(String rulesDefinition) {
