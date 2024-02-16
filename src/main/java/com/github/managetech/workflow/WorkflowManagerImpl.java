@@ -97,7 +97,7 @@ public class WorkflowManagerImpl implements WorkflowManager {
             workflowTaskLog.setScriptRunTime(new Date());
             workflowTaskLog.setScriptRunError(null);
             workflowTaskLogList.add(workflowTaskLog);
-
+            workflowTaskLogMap.put(currentLevel, workflowTaskLogList);
             if (!CollectionUtils.isEmpty(script.getChildren())) {
                 for (ScriptMetadata child : script.getChildren()) {
                     boolean childSuccess = recursiveAndExecute(child, binding, workflowTaskLogMap, currentLevel + 1);
@@ -121,10 +121,10 @@ public class WorkflowManagerImpl implements WorkflowManager {
             workflowTaskLog.setScriptRunTime(new Date());
             workflowTaskLog.setScriptRunError(null);
             workflowTaskLogList.add(workflowTaskLog);
-
+            workflowTaskLogMap.put(currentLevel, workflowTaskLogList);
 
         } else if (script.getScriptType() == ScriptType.Condition) {
-            boolean success = logScriptExecution(script, binding, workflowTaskLogList, () -> {
+            return logScriptExecution(script, binding, workflowTaskLogList, () -> {
                 Object executeScript = this.executeScript(script, binding);
                 if (executeScript instanceof Boolean && (Boolean) executeScript) {
 
@@ -138,14 +138,11 @@ public class WorkflowManagerImpl implements WorkflowManager {
                     }
                 }
                 return executeScript;
-            });
-            if (!success) {
-                return false;
-            }
+            }, workflowTaskLogMap, currentLevel);
 
 
         } else if (script.getScriptType() == ScriptType.Script) {
-            boolean success = logScriptExecution(script, binding, workflowTaskLogList, () -> this.executeScript(script, binding));
+            boolean success = logScriptExecution(script, binding, workflowTaskLogList, () -> this.executeScript(script, binding), workflowTaskLogMap, currentLevel);
             if (!success) {
                 return false;
             }
@@ -159,7 +156,7 @@ public class WorkflowManagerImpl implements WorkflowManager {
                 }
             }
         } else if (script.getScriptType() == ScriptType.Rule) {
-            boolean success = logScriptExecution(script, binding, workflowTaskLogList, () -> {
+            return logScriptExecution(script, binding, workflowTaskLogList, () -> {
 
                 List<Rule> rules = RuleEngine.parser(script.getScriptText());
                 //闭包导致不能序列化 要移除
@@ -176,17 +173,12 @@ public class WorkflowManagerImpl implements WorkflowManager {
                     }
                 }
                 return executeScript;
-            });
-            if (!success) {
-                return false;
-            }
+            }, workflowTaskLogMap, currentLevel);
         }
-        workflowTaskLogMap.put(currentLevel, workflowTaskLogList);
         return true;
     }
 
-    private boolean logScriptExecution(ScriptMetadata script, Binding binding, List<WorkflowTaskLog> workflowTaskLogList, Supplier<Object> scriptExecutor) {
-
+    private boolean logScriptExecution(ScriptMetadata script, Binding binding, List<WorkflowTaskLog> workflowTaskLogList, Supplier<Object> scriptExecutor, Map<Integer, List<WorkflowTaskLog>> workflowTaskLogMap, int currentLevel) {
         HashMap beforeRunBinding = new HashMap<>(binding.getVariables());
         WorkflowTaskLog workflowTaskLog = new WorkflowTaskLog();
         workflowTaskLog.setScriptId(script.getScriptId());
@@ -199,16 +191,17 @@ public class WorkflowManagerImpl implements WorkflowManager {
 
             workflowTaskLog.setScriptRunStatus(ScriptRunStatus.Success);
             workflowTaskLog.setScriptRunResult(result);
-            return true;
         } catch (Exception e) {
             workflowTaskLog.setScriptRunStatus(ScriptRunStatus.Error);
             workflowTaskLog.setScriptRunError(e.getMessage());
-            return false;
-
         } finally {
             workflowTaskLog.setAfterRunBinding(new HashMap<>(binding.getVariables()));
             workflowTaskLogList.add(workflowTaskLog);
+            // 立即更新workflowTaskLogMap以确保日志不会丢失
+            workflowTaskLogMap.put(currentLevel, workflowTaskLogList);
         }
+
+        return workflowTaskLog.getScriptRunStatus() != ScriptRunStatus.Error;
     }
 
 
