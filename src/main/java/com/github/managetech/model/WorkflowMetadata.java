@@ -12,7 +12,7 @@ public class WorkflowMetadata {
     private Integer workflowId;
     private String workflowName;
     private List<WorkflowParameters> workflowParameters;
-    private String workflowDescription;
+    private String workflowPurpose;
     private String remark;
     private Date createTime;
     private Date updateTime;
@@ -50,14 +50,14 @@ public class WorkflowMetadata {
         this.workflowName = workflowName;
     }
 
-    public String getWorkflowDescription() {
-        return workflowDescription;
+
+    public String getWorkflowPurpose() {
+        return workflowPurpose;
     }
 
-    public void setWorkflowDescription(String workflowDescription) {
-        this.workflowDescription = workflowDescription;
+    public void setWorkflowPurpose(String workflowPurpose) {
+        this.workflowPurpose = workflowPurpose;
     }
-
 
     public Date getCreateTime() {
         return createTime;
