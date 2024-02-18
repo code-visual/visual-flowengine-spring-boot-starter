@@ -291,8 +291,4 @@ public class WorkflowManagerImpl implements WorkflowManager {
         return workflowMetadataRepository.updateWorkflowMetadata(workflowMetadata);
     }
 
-    @Override
-    public WorkflowMetadata updateWorkflowName(Integer workflowId, String workflowName) {
-        return workflowMetadataRepository.updateWorkflowName(workflowId, workflowName);
-    }
 }
