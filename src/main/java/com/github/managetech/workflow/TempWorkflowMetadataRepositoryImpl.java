@@ -21,8 +21,9 @@ public class TempWorkflowMetadataRepositoryImpl implements WorkflowMetadataRepos
 
     @Override
     public WorkflowMetadata create(WorkflowMetadata workflowMetadata) {
-        workflowMetadata.setWorkflowId(atomicInteger.incrementAndGet());
-        return workflowMetadataMap.put(workflowMetadata.getWorkflowId(), workflowMetadata);
+        workflowMetadata.setWorkflowId(atomicInteger.incrementAndGet() + 10000);
+        workflowMetadataMap.put(workflowMetadata.getWorkflowId(), workflowMetadata);
+        return workflowMetadata;
     }
 
     @Override
@@ -41,14 +42,33 @@ public class TempWorkflowMetadataRepositoryImpl implements WorkflowMetadataRepos
     }
 
     @Override
-    public WorkflowMetadata updateWorkflowMetadata(WorkflowMetadata workflowMetadata) {
-        return workflowMetadataMap.put(workflowMetadata.getWorkflowId(), workflowMetadata);
+    public WorkflowMetadata updateWorkflowMetadata(WorkflowMetadata updatedWorkflowMetadata) {
+        WorkflowMetadata existingWorkflowMetadata = workflowMetadataMap.get(updatedWorkflowMetadata.getWorkflowId());
+
+        if (existingWorkflowMetadata == null) {
+
+            throw new IllegalArgumentException("WorkflowMetadata with id " + updatedWorkflowMetadata.getWorkflowId() + " does not exist");
+        }
+
+        if (updatedWorkflowMetadata.getWorkflowName() != null) {
+            existingWorkflowMetadata.setWorkflowName(updatedWorkflowMetadata.getWorkflowName());
+        }
+        if (updatedWorkflowMetadata.getWorkflowParameters() != null) {
+            existingWorkflowMetadata.setWorkflowParameters(updatedWorkflowMetadata.getWorkflowParameters());
+        }
+        if (updatedWorkflowMetadata.getWorkflowPurpose() != null) {
+            existingWorkflowMetadata.setWorkflowPurpose(updatedWorkflowMetadata.getWorkflowPurpose());
+        }
+        if (updatedWorkflowMetadata.getRemark() != null) {
+            existingWorkflowMetadata.setRemark(updatedWorkflowMetadata.getRemark());
+        }
+        if (updatedWorkflowMetadata.getScriptMetadata() != null) {
+            existingWorkflowMetadata.setScriptMetadata(updatedWorkflowMetadata.getScriptMetadata());
+        }
+
+        workflowMetadataMap.put(updatedWorkflowMetadata.getWorkflowId(), existingWorkflowMetadata);
+
+        return existingWorkflowMetadata;
     }
 
-    @Override
-    public WorkflowMetadata updateWorkflowName(Integer workflowId, String workflowName) {
-        WorkflowMetadata workflowMetadata = workflowMetadataMap.get(workflowId);
-        workflowMetadata.setWorkflowName(workflowName);
-        return workflowMetadataMap.put(workflowId, workflowMetadata);
-    }
 }
