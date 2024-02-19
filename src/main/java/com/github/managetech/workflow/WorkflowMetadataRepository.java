@@ -15,4 +15,5 @@ public interface WorkflowMetadataRepository {
     List<WorkflowMetadata> getMenuWorkflowList();
     WorkflowMetadata updateWorkflowMetadata(WorkflowMetadata workflowMetadata);
 
+    WorkflowMetadata findByWorkflowName(String workflowName);
 }

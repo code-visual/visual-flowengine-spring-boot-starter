@@ -71,4 +71,9 @@ public class TempWorkflowMetadataRepositoryImpl implements WorkflowMetadataRepos
         return existingWorkflowMetadata;
     }
 
+    @Override
+    public WorkflowMetadata findByWorkflowName(String workflowName) {
+        return workflowMetadataMap.values().stream().filter(workflowMetadata -> workflowMetadata.getWorkflowName().equals(workflowName)).findFirst().orElse(null);
+    }
+
 }
