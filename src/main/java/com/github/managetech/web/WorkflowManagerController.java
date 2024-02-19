@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 
-@CrossOrigin(origins = {"http://localhost:3000"})
+
 @RestController
 @ConditionalOnProperty(name = "visual.flow.enableDefaultApi", havingValue = "true", matchIfMissing = true)
 public class WorkflowManagerController {
@@ -26,9 +26,8 @@ public class WorkflowManagerController {
     }
 
     @PostMapping(VisualFlowProperties.DEFAULT_EXECUTE_WORKFLOW)
-    public String executeWorkflow(@RequestParam Integer workflowId, @RequestBody Map inputVariables) {
-        workflowManager.execute(workflowId, inputVariables);
-        return "ok";
+    public Map<Integer, List<WorkflowTaskLog>> executeWorkflow(@RequestParam Integer workflowId, @RequestBody Map inputVariables) {
+        return workflowManager.startWorkflow(workflowId, inputVariables);
     }
 
     @PostMapping(VisualFlowProperties.DEFAULT_DEBUG_WORKFLOW)

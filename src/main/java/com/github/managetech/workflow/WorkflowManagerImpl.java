@@ -42,15 +42,22 @@ public class WorkflowManagerImpl implements WorkflowManager {
 
     @SuppressWarnings("rawtypes")
     @Override
-    public void execute(Integer workflowId, Map inputVariables) {
+    public Map<Integer, List<WorkflowTaskLog>> startWorkflow(Integer workflowId, Map inputVariables) {
         WorkflowMetadata workflowMetadata = workflowMetadataRepository.findByWorkflowId(workflowId);
+        return executeWorkflow(inputVariables, workflowMetadata);
+    }
+
+    @Override
+    public Map<Integer, List<WorkflowTaskLog>> startWorkflow(String workflowName, Map inputVariables) {
+        WorkflowMetadata workflowMetadata = workflowMetadataRepository.findByWorkflowName(workflowName);
+        return executeWorkflow(inputVariables, workflowMetadata);
+    }
+
+    private Map<Integer, List<WorkflowTaskLog>> executeWorkflow(Map inputVariables, WorkflowMetadata workflowMetadata) {
         ScriptMetadata scriptMetadata = workflowMetadata.getScriptMetadata();
         Map<Integer, List<WorkflowTaskLog>> workflowTaskLogMap = new HashMap<>();
-        try {
-            this.recursiveAndExecute(scriptMetadata, new Binding(inputVariables), workflowTaskLogMap, 1);
-        } finally {
-            logger.info("保存日志:{}", workflowTaskLogMap);
-        }
+        this.recursiveAndExecute(scriptMetadata, new Binding(inputVariables), workflowTaskLogMap, 1);
+        return workflowTaskLogMap;
     }
 
     @Override

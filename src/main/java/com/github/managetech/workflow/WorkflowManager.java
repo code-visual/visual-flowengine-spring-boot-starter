@@ -14,7 +14,9 @@ import java.util.Map;
  * @since 09/18/2023
  */
 public interface WorkflowManager {
-    void execute(Integer workflowId, Map inputVariables) ;
+    Map<Integer, List<WorkflowTaskLog>> startWorkflow(Integer workflowId, Map inputVariables) ;
+    Map<Integer, List<WorkflowTaskLog>> startWorkflow(String workflowName, Map inputVariables) ;
+
     Map<Integer,List<WorkflowTaskLog>> debug(DebugRequest debugRequest) ;
 
     Script parseGroovyScript(String scriptText, Binding binding);
