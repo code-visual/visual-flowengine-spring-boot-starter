@@ -45,8 +45,7 @@ public class GroovyShellVisitor extends ClassCodeVisitorSupport {
 
     @Override
     public void visitMethod(MethodNode methodNode) {
-        System.out.println("visitMethod = " + methodNode.getName());
-
+        super.visitMethod(methodNode);
     }
 
     /**
@@ -65,7 +64,7 @@ public class GroovyShellVisitor extends ClassCodeVisitorSupport {
     @Override
     public void visitClosureExpression(ClosureExpression expression) {
         // ignore
-        System.out.println("expression = " + expression);
+//        System.out.println("expression = " + expression);
     }
 
     public Set<String> getDynamicVariables() {
