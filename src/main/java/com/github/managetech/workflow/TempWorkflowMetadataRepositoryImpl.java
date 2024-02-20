@@ -73,7 +73,7 @@ public class TempWorkflowMetadataRepositoryImpl implements WorkflowMetadataRepos
 
     @Override
     public WorkflowMetadata findByWorkflowName(String workflowName) {
-        return workflowMetadataMap.values().stream().filter(workflowMetadata -> workflowMetadata.getWorkflowName().equals(workflowName)).findFirst().orElseThrow(()->new RuntimeException("WorkflowMetadata with name " + workflowName + " does not exist"));
+        return workflowMetadataMap.values().stream().filter(workflowMetadata -> workflowMetadata.getWorkflowName().equals(workflowName)).findFirst().orElseThrow(() -> new RuntimeException("WorkflowMetadata with name " + workflowName + " does not exist"));
     }
 
 }

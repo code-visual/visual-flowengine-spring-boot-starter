@@ -13,6 +13,7 @@ public interface WorkflowMetadataRepository {
     WorkflowMetadata findByWorkflowId(Integer workflowId);
 
     List<WorkflowMetadata> getMenuWorkflowList();
+
     WorkflowMetadata updateWorkflowMetadata(WorkflowMetadata workflowMetadata);
 
     WorkflowMetadata findByWorkflowName(String workflowName);
