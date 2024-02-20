@@ -1,19 +1,12 @@
 package com.github.managetech.utils;
 
 import com.github.managetech.model.Diagnostic;
-import com.github.managetech.model.ScriptMetadata;
 import org.codehaus.groovy.control.messages.ExceptionMessage;
 import org.codehaus.groovy.control.messages.Message;
 import org.codehaus.groovy.control.messages.SyntaxErrorMessage;
 import org.codehaus.groovy.syntax.SyntaxException;
-import org.springframework.util.CollectionUtils;
 
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
-import java.util.Queue;
 
 /**
  * @author Levi Li

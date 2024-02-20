@@ -1,10 +1,14 @@
 package com.github.managetech.workflow;
 
 
-import com.github.managetech.model.*;
+import com.github.managetech.model.DebugRequest;
+import com.github.managetech.model.Diagnostic;
+import com.github.managetech.model.WorkflowMetadata;
+import com.github.managetech.model.WorkflowTaskLog;
 import groovy.lang.Binding;
 import groovy.lang.Script;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -14,14 +18,18 @@ import java.util.Map;
  * @since 09/18/2023
  */
 public interface WorkflowManager {
-    Map<Integer, List<WorkflowTaskLog>> startWorkflow(Integer workflowId, Map inputVariables) ;
-    Map<Integer, List<WorkflowTaskLog>> startWorkflow(String workflowName, Map inputVariables) ;
+    Map<Integer, List<WorkflowTaskLog>> startWorkflow(Integer workflowId, Map inputVariables);
 
-    Map<Integer,List<WorkflowTaskLog>> debug(DebugRequest debugRequest) ;
+    Map<Integer, List<WorkflowTaskLog>> startWorkflow(String workflowName, Map inputVariables);
+
+    Map<Integer, List<WorkflowTaskLog>> debug(DebugRequest debugRequest);
+
+    public void localTestScript(List<File> files, Binding binding) throws IOException;
 
     Script parseGroovyScript(String scriptText, Binding binding);
 
     List<Diagnostic> compileGroovyScript(String code);
+
     WorkflowMetadata getWorkflowMetadataById(Integer workflowName);
 
     Object createWorkflow(WorkflowMetadata workflowMetadata);

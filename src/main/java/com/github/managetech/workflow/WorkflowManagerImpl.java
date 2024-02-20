@@ -1,6 +1,12 @@
 package com.github.managetech.workflow;
 
-import com.github.managetech.model.*;
+import com.github.managetech.model.DebugRequest;
+import com.github.managetech.model.Diagnostic;
+import com.github.managetech.model.ScriptMetadata;
+import com.github.managetech.model.ScriptRunStatus;
+import com.github.managetech.model.ScriptType;
+import com.github.managetech.model.WorkflowMetadata;
+import com.github.managetech.model.WorkflowTaskLog;
 import com.github.managetech.ruleengine.Rule;
 import com.github.managetech.ruleengine.RuleEngine;
 import com.github.managetech.utils.CommonUtils;
@@ -16,8 +22,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.Supplier;
 
 /**
@@ -85,6 +97,17 @@ public class WorkflowManagerImpl implements WorkflowManager {
         }
         return workflowTaskLogMap;
 
+    }
+
+    @SuppressWarnings("all")
+    public void localTestScript(List<File> files, Binding binding) throws IOException {
+
+        GroovyClassLoader tempGroovyClassLoader = new GroovyClassLoader(Thread.currentThread().getContextClassLoader(), config);
+
+        for (File file : files) {
+            Class aClass = tempGroovyClassLoader.parseClass(file);
+            InvokerHelper.createScript(aClass, binding).run();
+        }
     }
 
     public boolean recursiveAndExecute(ScriptMetadata script, Binding binding, Map<Integer, List<WorkflowTaskLog>> workflowTaskLogMap, int currentLevel) {
@@ -156,7 +179,7 @@ public class WorkflowManagerImpl implements WorkflowManager {
 
             if (!CollectionUtils.isEmpty(script.getChildren())) {
                 for (ScriptMetadata child : script.getChildren()) {
-                    boolean childSuccess=  recursiveAndExecute(child, binding, workflowTaskLogMap, currentLevel + 1);
+                    boolean childSuccess = recursiveAndExecute(child, binding, workflowTaskLogMap, currentLevel + 1);
                     if (!childSuccess) {
                         return false;
                     }
