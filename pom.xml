@@ -137,6 +137,53 @@
                             <goal>compile</goal>
                         </goals>
                     </execution>
+
+                    <execution>
+                        <id>Copyright config</id>
+                        <phase>clean</phase>
+                        <goals>
+                            <goal>execute</goal>
+                        </goals>
+                        <configuration>
+                            <scripts>
+                                <script>
+                                    <![CDATA[
+void addCopyright(String path, String extension) {
+println("path: " + path)
+    def directory = new java.io.File(path)
+    directory.eachFileRecurse(groovy.io.FileType.FILES) { file ->
+        if (file.name.endsWith(extension)) {
+            def content = file.text
+            if (!content.contains("Copyright")) {
+                def newContent = "/*\n" +
+                    " * Copyright (c) 2023-2024, levi li (levi.lideng@gmail.com)\n" +
+                    " *\n" +
+                    " * Licensed under the Apache License, Version 2.0 (the \"License\");\n" +
+                    " * you may not use this file except in compliance with the License.\n" +
+                    " * You may obtain a copy of the License at\n" +
+                    " *\n" +
+                    " *      https://www.apache.org/licenses/LICENSE-2.0\n" +
+                    " *\n" +
+                    " * Unless required by applicable law or agreed to in writing, software\n" +
+                    " * distributed under the License is distributed on an \"AS IS\" BASIS,\n" +
+                    " * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n" +
+                    " * See the License for the specific language governing permissions and\n" +
+                    " * limitations under the License.\n" +
+                    " */\n" + content
+                file.text = newContent
+            }
+        }
+    }
+}
+
+addCopyright(project.basedir.toString() + "/src/main/java", ".java")
+addCopyright(project.basedir.toString() + "/src/main/groovy", ".groovy")
+                        ]]>
+                                </script>
+                            </scripts>
+                        </configuration>
+                    </execution>
+
                 </executions>
             </plugin>
             <plugin>
