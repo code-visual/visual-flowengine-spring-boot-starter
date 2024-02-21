@@ -1,3 +1,18 @@
+/*
+ * Copyright (c) 2023-2024, levi li (levi.lideng@gmail.com)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package io.github.code.visual.config;
 
 import io.github.code.visual.workflow.TempWorkflowMetadataRepositoryImpl;
@@ -73,16 +88,16 @@ public class VisualFlowEngineAutoConfiguration {
         @ConditionalOnMissingBean(SecureASTCustomizer.class)
         public SecureASTCustomizer secureASTCustomizer() {
             final SecureASTCustomizer secure = new SecureASTCustomizer();
-            secure.setClosuresAllowed(true); // 鍏佽浣跨敤闂寘
+            secure.setClosuresAllowed(true); // 允许使用闭包
 
             List<Integer> tokensBlacklist = new ArrayList<>();
-            tokensBlacklist.add(Types.KEYWORD_WHILE); // 娣诲姞鍏抽敭瀛楅粦鍚嶅崟 while鍜実oto
+            tokensBlacklist.add(Types.KEYWORD_WHILE); // 添加关键字黑名单 while和goto
             tokensBlacklist.add(Types.KEYWORD_GOTO);
             secure.setDisallowedTokens(tokensBlacklist);
             List<Class<? extends Statement>> statementBlacklist = new ArrayList<>();
             statementBlacklist.add(WhileStatement.class);
             secure.setDisallowedStatements(statementBlacklist);
-            secure.setIndirectImportCheckEnabled(false); // 璁剧疆涓篺alse, 鍙互鍦ㄤ唬鐮佷腑瀹氫箟骞剁洿鎺ヤ娇鐢╟lass, 鍚﹀垯闇�瑕佸湪鐧藉悕鍗曚腑鎸囧畾
+            secure.setIndirectImportCheckEnabled(false); // 设置为false, 可以在代码中定义并直接使用class, 否则需要在白名单中指定
             secure.setDisallowedImports(Arrays.asList("org.codehaus.groovy.runtime.*", "groovy.json.*"));
             return secure;
         }
@@ -90,7 +105,7 @@ public class VisualFlowEngineAutoConfiguration {
         @Bean
         @ConditionalOnMissingBean(CompilerConfiguration.class)
         public CompilerConfiguration compilerConfiguration(SecureASTCustomizer secure) {
-            final CompilerConfiguration config = new CompilerConfiguration(); // 鑷畾涔塁ompilerConfiguration锛岃缃瓵ST
+            final CompilerConfiguration config = new CompilerConfiguration(); // 自定义CompilerConfiguration，设置AST
             config.addCompilationCustomizers(secure);
             config.setSourceEncoding("UTF-8");
             return config;

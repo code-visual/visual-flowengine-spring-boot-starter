@@ -1,3 +1,18 @@
+/*
+ * Copyright (c) 2023-2024, levi li (levi.lideng@gmail.com)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package io.github.code.visual.groovy;
 
 import org.codehaus.groovy.ast.ASTNode;
@@ -7,9 +22,9 @@ import org.codehaus.groovy.transform.ASTTransformation;
 import org.codehaus.groovy.transform.GroovyASTTransformation;
 
 /**
- * ç¼–è¯‘å™¨åœ¨å°†æˆ‘ä»¬çš„æºç ç¼–è¯‘æˆå­—èŠ‚ç ä¹‹å‰ï¼Œ
- * ä¼šç‡å…ˆå°†æºä»£ç è½¬æ¢ä¸º AST ( Abstract Syntax Treeï¼ŒæŠ½è±¡è¯­æ³•æ ‘ )ï¼Œ
- * ä»¥ä¾¿äºè¯­ä¹‰åˆ†æã€‚è€Œ Groovy æä¾›çš„ç¼–è¯‘æ—¶å…ƒç¼–ç¨‹å·¥å…·ä½¿å¾—æˆ‘ä»¬èƒ½å¤Ÿåœ¨ç¼–è¯‘å™¨äº§å‡ºçœŸæ­£çš„å­—èŠ‚ç ä¹‹å‰æˆªè·æºä»£ç çš„ ASTï¼Œå¹¶å¯¹å…¶ä¿®æ”¹ã€‚
+ * ±àÒëÆ÷ÔÚ½«ÎÒÃÇµÄÔ´Âë±àÒë³É×Ö½ÚÂëÖ®Ç°£¬
+ * »áÂÊÏÈ½«Ô´´úÂë×ª»»Îª AST ( Abstract Syntax Tree£¬³éÏóÓï·¨Ê÷ )£¬
+ * ÒÔ±ãÓÚÓïÒå·ÖÎö¡£¶ø Groovy Ìá¹©µÄ±àÒëÊ±Ôª±à³Ì¹¤¾ßÊ¹µÃÎÒÃÇÄÜ¹»ÔÚ±àÒëÆ÷²ú³öÕæÕıµÄ×Ö½ÚÂëÖ®Ç°½Ø»ñÔ´´úÂëµÄ AST£¬²¢¶ÔÆäĞŞ¸Ä¡£
  *
  * @author Levi Li
  * @since 09/18/2023
