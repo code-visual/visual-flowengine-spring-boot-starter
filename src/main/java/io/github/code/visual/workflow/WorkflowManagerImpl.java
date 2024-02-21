@@ -99,7 +99,7 @@ public class WorkflowManagerImpl implements WorkflowManager {
             workflowTaskLog.setScriptRunStatus(ScriptRunStatus.Error);
             workflowTaskLog.setScriptRunResult(null);
             workflowTaskLog.setScriptRunTime(null);
-            workflowTaskLog.setScriptRunError("�ű�Ϊ��");
+            workflowTaskLog.setScriptRunError("ScriptMetadata is null");
 
             return Collections.singletonMap(1, Collections.singletonList(workflowTaskLog));
         }
