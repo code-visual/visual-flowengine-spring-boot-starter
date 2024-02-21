@@ -1,3 +1,18 @@
+/*
+ * Copyright (c) 2023-2024, levi li (levi.lideng@gmail.com)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package io.github.code.visual.workflow;
 
 import io.github.code.visual.model.DebugRequest;
@@ -84,7 +99,7 @@ public class WorkflowManagerImpl implements WorkflowManager {
             workflowTaskLog.setScriptRunStatus(ScriptRunStatus.Error);
             workflowTaskLog.setScriptRunResult(null);
             workflowTaskLog.setScriptRunTime(null);
-            workflowTaskLog.setScriptRunError("è„šæœ¬ä¸ºç©º");
+            workflowTaskLog.setScriptRunError("½Å±¾Îª¿Õ");
 
             return Collections.singletonMap(1, Collections.singletonList(workflowTaskLog));
         }
@@ -93,7 +108,7 @@ public class WorkflowManagerImpl implements WorkflowManager {
         try {
             resetGroovyClassLoader();
         } catch (IOException e) {
-            logger.error("é‡ç½®GroovyClassLoaderå¤±è´¥", e);
+            logger.error("ÖØÖÃGroovyClassLoaderÊ§°Ü", e);
         }
         return workflowTaskLogMap;
 
@@ -189,7 +204,7 @@ public class WorkflowManagerImpl implements WorkflowManager {
             return logScriptExecution(script, binding, workflowTaskLogList, () -> {
 
                 List<Rule> rules = RuleEngine.parser(script.getScriptText());
-                //é—­åŒ…å¯¼è‡´ä¸èƒ½åºåˆ—åŒ– è¦ç§»é™¤
+                //±Õ°üµ¼ÖÂ²»ÄÜĞòÁĞ»¯ ÒªÒÆ³ı
                 String executeScript = RuleEngine.execute(rules, binding);
 
 
@@ -217,7 +232,7 @@ public class WorkflowManagerImpl implements WorkflowManager {
         workflowTaskLog.setScriptRunTime(new Date());
 
         try {
-            Object result = scriptExecutor.get(); // æ‰§è¡Œè„šæœ¬
+            Object result = scriptExecutor.get(); // Ö´ĞĞ½Å±¾
 
             workflowTaskLog.setScriptRunStatus(ScriptRunStatus.Success);
             workflowTaskLog.setScriptRunResult(result);
@@ -227,7 +242,7 @@ public class WorkflowManagerImpl implements WorkflowManager {
         } finally {
             workflowTaskLog.setAfterRunBinding(new HashMap<>(binding.getVariables()));
             workflowTaskLogList.add(workflowTaskLog);
-            // ç«‹å³æ›´æ–°workflowTaskLogMapä»¥ç¡®ä¿æ—¥å¿—ä¸ä¼šä¸¢å¤±
+            // Á¢¼´¸üĞÂworkflowTaskLogMapÒÔÈ·±£ÈÕÖ¾²»»á¶ªÊ§
             workflowTaskLogMap.put(currentLevel, workflowTaskLogList);
         }
 
@@ -256,7 +271,7 @@ public class WorkflowManagerImpl implements WorkflowManager {
     }
 
     /**
-     * ç¼–è¯‘çš„æ—¶å€™è‚¯å®šæœ‰å¾ˆå¤šå¤§é‡çš„,ç»†ç¢çš„è„šæœ¬ã€‚åº”è¯¥ç”¨ä¸´æ—¶çš„groovyClassLoaderæ¥ç¼–è¯‘
+     * ±àÒëµÄÊ±ºò¿Ï¶¨ÓĞºÜ¶à´óÁ¿µÄ,Ï¸ËéµÄ½Å±¾¡£Ó¦¸ÃÓÃÁÙÊ±µÄgroovyClassLoaderÀ´±àÒë
      *
      * @param code
      * @return
