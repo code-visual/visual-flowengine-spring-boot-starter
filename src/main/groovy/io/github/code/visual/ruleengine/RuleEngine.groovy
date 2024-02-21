@@ -16,9 +16,9 @@ class RuleEngine {
      * 当规则引擎执行时，它会遍历所有规则并评估它们的条件。如果条件满足，规则引擎会应用规则。
      */
 
-    static def execute(List<Rule> rules, Binding inputData) {
+    static String execute(List<Rule> rules, Binding inputData) {
         // 查找所有匹配的规则
-        def matchedRules = rules.findAll { rule ->
+        List<Rule> matchedRules = rules.findAll { rule ->
             rule.when(inputData)
         }
 
@@ -27,11 +27,14 @@ class RuleEngine {
             inputData.setVariable("decision_rule", "miss")
         } else {
             // 如果有匹配的规则，更新"decision_rule"为匹配规则的名称列表
+            matchedRules.each { rule ->
+                rule.then(inputData)
+            }
             List<String> decisionRules = matchedRules.collect { it.name }
             inputData.setVariable("decision_rule", decisionRules)
         }
 
-        return "decision_rule no result"
+        return inputData.getVariable("decision_rule").toString()
     }
 
     static List<Rule> parser(String rulesDefinition) {
