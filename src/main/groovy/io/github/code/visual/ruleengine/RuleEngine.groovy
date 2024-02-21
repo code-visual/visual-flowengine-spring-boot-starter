@@ -28,11 +28,9 @@ class RuleEngine {
             rule.when(inputData)
         }
 
-        // ���û�й���ƥ��ɹ�����"miss"��ֵ��"decision_rule"
         if (matchedRules.isEmpty()) {
             inputData.setVariable("decision_rule", "miss")
         } else {
-            // �����ƥ��Ĺ��򣬸���"decision_rule"Ϊƥ�����������б�
             matchedRules.each { rule ->
                 rule.then(inputData)
             }
