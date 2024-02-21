@@ -61,9 +61,7 @@ public class GroovyShellVisitor extends ClassCodeVisitorSupport {
         super.visitMethod(methodNode);
     }
 
-    /**
-     * ��ȡ�ű��ڲ������ı���
-     */
+
     @Override
     public void visitDeclarationExpression(DeclarationExpression expression) {
         // ����ű��ڲ��������
@@ -71,13 +69,10 @@ public class GroovyShellVisitor extends ClassCodeVisitorSupport {
         super.visitDeclarationExpression(expression);
     }
 
-    /**
-     * ���Զ��﷨���հ��ķ���
-     */
+
     @Override
     public void visitClosureExpression(ClosureExpression expression) {
-        // ignore
-//        System.out.println("expression = " + expression);
+        super.visitClosureExpression(expression);
     }
 
     public Set<String> getDynamicVariables() {
