@@ -190,7 +190,7 @@ public class WorkflowManagerImpl implements WorkflowManager {
 
                 List<Rule> rules = RuleEngine.parser(script.getScriptText());
                 //闭包导致不能序列化 要移除
-                Object executeScript = RuleEngine.execute(rules, binding);
+                String executeScript = RuleEngine.execute(rules, binding);
 
 
                 if (!CollectionUtils.isEmpty(script.getChildren())) {
