@@ -99,7 +99,7 @@ public class WorkflowManagerImpl implements WorkflowManager {
             workflowTaskLog.setScriptRunStatus(ScriptRunStatus.Error);
             workflowTaskLog.setScriptRunResult(null);
             workflowTaskLog.setScriptRunTime(null);
-            workflowTaskLog.setScriptRunError("脚本为空");
+            workflowTaskLog.setScriptRunError("锟脚憋拷为锟斤拷");
 
             return Collections.singletonMap(1, Collections.singletonList(workflowTaskLog));
         }
@@ -108,7 +108,7 @@ public class WorkflowManagerImpl implements WorkflowManager {
         try {
             resetGroovyClassLoader();
         } catch (IOException e) {
-            logger.error("重置GroovyClassLoader失败", e);
+            logger.error("reset Groovy ClassLoader error", e);
         }
         return workflowTaskLogMap;
 
@@ -204,7 +204,7 @@ public class WorkflowManagerImpl implements WorkflowManager {
             return logScriptExecution(script, binding, workflowTaskLogList, () -> {
 
                 List<Rule> rules = RuleEngine.parser(script.getScriptText());
-                //闭包导致不能序列化 要移除
+                //锟秸帮拷锟斤拷锟铰诧拷锟斤拷锟斤拷锟叫伙拷 要锟狡筹拷
                 String executeScript = RuleEngine.execute(rules, binding);
 
 
@@ -232,7 +232,7 @@ public class WorkflowManagerImpl implements WorkflowManager {
         workflowTaskLog.setScriptRunTime(new Date());
 
         try {
-            Object result = scriptExecutor.get(); // 执行脚本
+            Object result = scriptExecutor.get();
 
             workflowTaskLog.setScriptRunStatus(ScriptRunStatus.Success);
             workflowTaskLog.setScriptRunResult(result);
@@ -242,7 +242,7 @@ public class WorkflowManagerImpl implements WorkflowManager {
         } finally {
             workflowTaskLog.setAfterRunBinding(new HashMap<>(binding.getVariables()));
             workflowTaskLogList.add(workflowTaskLog);
-            // 立即更新workflowTaskLogMap以确保日志不会丢失
+            // 锟斤拷锟斤拷锟斤拷锟斤拷workflowTaskLogMap锟斤拷确锟斤拷锟斤拷志锟斤拷锟结丢失
             workflowTaskLogMap.put(currentLevel, workflowTaskLogList);
         }
 
@@ -270,12 +270,7 @@ public class WorkflowManagerImpl implements WorkflowManager {
         return InvokerHelper.createScript(aClass, binding);
     }
 
-    /**
-     * 编译的时候肯定有很多大量的,细碎的脚本。应该用临时的groovyClassLoader来编译
-     *
-     * @param code
-     * @return
-     */
+
     @Override
     public List<Diagnostic> compileGroovyScript(String code) {
 

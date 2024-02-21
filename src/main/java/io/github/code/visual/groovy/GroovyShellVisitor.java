@@ -38,20 +38,18 @@ public class GroovyShellVisitor extends ClassCodeVisitorSupport {
 
     private final Set<String> declarationVariables = new HashSet<>();
 
-    /**
-     * ¼ÇÂ¼Groovy½âÎö¹ý³ÌµÄ±äÁ¿
-     **/
+
     @Override
-    public void visitVariableExpression(VariableExpression expression) {    //±äÁ¿±í´ïÊ½·ÖÎö
+    public void visitVariableExpression(VariableExpression expression) {    //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ê½ï¿½ï¿½ï¿½ï¿½
         super.visitVariableExpression(expression);
         if (EXCLUDE_IN_PARAM.stream().noneMatch(x -> x.equals(expression.getName()))) {
 
             if (!declarationVariables.contains(expression.getName())) {
 
-                if (expression.getAccessedVariable() instanceof DynamicVariable) { // ¶¯Ì¬ÀàÐÍ,±äÁ¿ÀàÐÍ¶¼ÊÇObject
+                if (expression.getAccessedVariable() instanceof DynamicVariable) { // ï¿½ï¿½Ì¬ï¿½ï¿½ï¿½ï¿½,ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Í¶ï¿½ï¿½ï¿½Object
                     dynamicVariables.put(expression.getName(), expression.getOriginType().getTypeClass());
                 } else {
-                    // ¾²Ì¬ÀàÐÍ GroovyÖ§³Ö¾²Ì¬ÀàÐÍ
+                    // ï¿½ï¿½Ì¬ï¿½ï¿½ï¿½ï¿½ GroovyÖ§ï¿½Ö¾ï¿½Ì¬ï¿½ï¿½ï¿½ï¿½
                     dynamicVariables.put(expression.getName(), expression.getOriginType().getTypeClass());
                 }
             }
@@ -64,17 +62,17 @@ public class GroovyShellVisitor extends ClassCodeVisitorSupport {
     }
 
     /**
-     * »ñÈ¡½Å±¾ÄÚ²¿ÉùÃ÷µÄ±äÁ¿
+     * ï¿½ï¿½È¡ï¿½Å±ï¿½ï¿½Ú²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä±ï¿½ï¿½ï¿½
      */
     @Override
     public void visitDeclarationExpression(DeclarationExpression expression) {
-        // ±£´æ½Å±¾ÄÚ²¿¶¨Òå±äÁ¿
+        // ï¿½ï¿½ï¿½ï¿½Å±ï¿½ï¿½Ú²ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
         declarationVariables.add(expression.getVariableExpression().getName());
         super.visitDeclarationExpression(expression);
     }
 
     /**
-     * ºöÂÔ¶ÔÓï·¨Ê÷±Õ°üµÄ·ÃÎÊ
+     * ï¿½ï¿½ï¿½Ô¶ï¿½ï¿½ï·¨ï¿½ï¿½ï¿½Õ°ï¿½ï¿½Ä·ï¿½ï¿½ï¿½
      */
     @Override
     public void visitClosureExpression(ClosureExpression expression) {
