@@ -45,7 +45,7 @@ import java.util.List;
  * @since 12/19/2023
  */
 @Configuration
-@ComponentScan(basePackages = "com.github.managetech")
+@ComponentScan(basePackages = "io.github.code.visual")
 @ConditionalOnWebApplication
 @EnableConfigurationProperties(VisualFlowProperties.class)
 public class VisualFlowEngineAutoConfiguration {
@@ -88,16 +88,16 @@ public class VisualFlowEngineAutoConfiguration {
         @ConditionalOnMissingBean(SecureASTCustomizer.class)
         public SecureASTCustomizer secureASTCustomizer() {
             final SecureASTCustomizer secure = new SecureASTCustomizer();
-            secure.setClosuresAllowed(true); // 允许使用闭包
+            secure.setClosuresAllowed(true);
 
             List<Integer> tokensBlacklist = new ArrayList<>();
-            tokensBlacklist.add(Types.KEYWORD_WHILE); // 添加关键字黑名单 while和goto
+            tokensBlacklist.add(Types.KEYWORD_WHILE);
             tokensBlacklist.add(Types.KEYWORD_GOTO);
             secure.setDisallowedTokens(tokensBlacklist);
             List<Class<? extends Statement>> statementBlacklist = new ArrayList<>();
             statementBlacklist.add(WhileStatement.class);
             secure.setDisallowedStatements(statementBlacklist);
-            secure.setIndirectImportCheckEnabled(false); // 设置为false, 可以在代码中定义并直接使用class, 否则需要在白名单中指定
+            secure.setIndirectImportCheckEnabled(false);
             secure.setDisallowedImports(Arrays.asList("org.codehaus.groovy.runtime.*", "groovy.json.*"));
             return secure;
         }
@@ -105,7 +105,7 @@ public class VisualFlowEngineAutoConfiguration {
         @Bean
         @ConditionalOnMissingBean(CompilerConfiguration.class)
         public CompilerConfiguration compilerConfiguration(SecureASTCustomizer secure) {
-            final CompilerConfiguration config = new CompilerConfiguration(); // 自定义CompilerConfiguration，设置AST
+            final CompilerConfiguration config = new CompilerConfiguration();
             config.addCompilationCustomizers(secure);
             config.setSourceEncoding("UTF-8");
             return config;
