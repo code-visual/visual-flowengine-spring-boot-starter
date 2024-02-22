@@ -25,31 +25,20 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "visual.flow")
 public class VisualFlowProperties {
 
-    public static final String DEFAULT_EXECUTE_WORKFLOW = "/api/engine/workflow/execute";
-    public static final String DEFAULT_DEBUG_WORKFLOW = "/api/engine/workflow/debug";
-    public static final String DEFAULT_CREATE_WORKFLOW = "/api/engine/workflow";
-    public static final String DEFAULT_DELETE_WORKFLOW = "/api/engine/workflow";
-    public static final String DEFAULT_LIST_WORKFLOWS = "/api/engine/workflowList";
-    public static final String DEFAULT_COMPILE_GROOVY_SCRIPT = "/api/engine/groovyScript/compile";
-    public static final String DEFAULT_GET_WORKFLOW_METADATA = "/api/engine/workflow";
-    public static final String DEFAULT_UPDATE_WORKFLOW = "/api/engine/workflow";
-
-
     @Value("${visual.flow.webUIPath:/visualFlow-ui.html}")
     private String webUIPath;
-    private String resourcePrefix = "";
     private boolean enableDefaultApi;
     private boolean enableWebUIPath;
 
-    private String executeWorkflowApiPath = DEFAULT_EXECUTE_WORKFLOW;
-    private String debugWorkflowApiPath = DEFAULT_DEBUG_WORKFLOW;
-    private String createWorkflowApiPath = DEFAULT_CREATE_WORKFLOW;
-    private String deleteWorkflowApiPath = DEFAULT_DELETE_WORKFLOW;
-    private String updateWorkflowApiPath = DEFAULT_UPDATE_WORKFLOW;
+    private String executeWorkflowApiPath = "/api/engine/workflow/execute";
+    private String debugWorkflowApiPath = "/api/engine/workflow/debug";
+    private String createWorkflowApiPath = "/api/engine/workflow";
+    private String deleteWorkflowApiPath = "/api/engine/workflow";
+    private String updateWorkflowApiPath = "/api/engine/workflow";
 
-    private String listWorkflowsApiPath = DEFAULT_LIST_WORKFLOWS;
-    private String compileScriptApiPath = DEFAULT_COMPILE_GROOVY_SCRIPT;
-    private String getWorkflowMetadataApiPath = DEFAULT_GET_WORKFLOW_METADATA;
+    private String listWorkflowsApiPath = "/api/engine/workflowList";
+    private String compileScriptApiPath = "/api/engine/groovyScript/compile";
+    private String getWorkflowMetadataApiPath = "/api/engine/workflow";
 
 
     public String getDebugWorkflowApiPath() {
@@ -132,11 +121,6 @@ public class VisualFlowProperties {
         this.enableDefaultApi = enableDefaultApi;
     }
 
-    // Getter
-    public String getResourcePath(String path) {
-        return resourcePrefix + path;
-    }
-
     public String getWebUIPath() {
         return webUIPath;
     }
@@ -146,12 +130,5 @@ public class VisualFlowProperties {
         this.webUIPath = webUIPath;
     }
 
-    public String getResourcePrefix() {
-        return resourcePrefix;
-    }
-
-    public void setResourcePrefix(String resourcePrefix) {
-        this.resourcePrefix = resourcePrefix;
-    }
 
 }
