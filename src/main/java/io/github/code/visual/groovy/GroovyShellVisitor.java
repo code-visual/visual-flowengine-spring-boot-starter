@@ -40,16 +40,15 @@ public class GroovyShellVisitor extends ClassCodeVisitorSupport {
 
 
     @Override
-    public void visitVariableExpression(VariableExpression expression) {    //�������ʽ����
+    public void visitVariableExpression(VariableExpression expression) {  
         super.visitVariableExpression(expression);
         if (EXCLUDE_IN_PARAM.stream().noneMatch(x -> x.equals(expression.getName()))) {
 
             if (!declarationVariables.contains(expression.getName())) {
 
-                if (expression.getAccessedVariable() instanceof DynamicVariable) { // ��̬����,�������Ͷ���Object
+                if (expression.getAccessedVariable() instanceof DynamicVariable) {
                     dynamicVariables.put(expression.getName(), expression.getOriginType().getTypeClass());
                 } else {
-                    // ��̬���� Groovy֧�־�̬����
                     dynamicVariables.put(expression.getName(), expression.getOriginType().getTypeClass());
                 }
             }
@@ -64,7 +63,6 @@ public class GroovyShellVisitor extends ClassCodeVisitorSupport {
 
     @Override
     public void visitDeclarationExpression(DeclarationExpression expression) {
-        // ����ű��ڲ��������
         declarationVariables.add(expression.getVariableExpression().getName());
         super.visitDeclarationExpression(expression);
     }
