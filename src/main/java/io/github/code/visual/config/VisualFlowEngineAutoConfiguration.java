@@ -15,11 +15,13 @@
  */
 package io.github.code.visual.config;
 
+import groovy.transform.CompileStatic;
 import io.github.code.visual.workflow.TempWorkflowMetadataRepositoryImpl;
 import io.github.code.visual.workflow.WorkflowMetadataRepository;
 import org.codehaus.groovy.ast.stmt.Statement;
 import org.codehaus.groovy.ast.stmt.WhileStatement;
 import org.codehaus.groovy.control.CompilerConfiguration;
+import org.codehaus.groovy.control.customizers.ASTTransformationCustomizer;
 import org.codehaus.groovy.control.customizers.SecureASTCustomizer;
 import org.codehaus.groovy.syntax.Types;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -39,6 +41,9 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import static java.util.Collections.singletonList;
+import static java.util.Collections.singletonMap;
 
 /**
  * @author Levi Li
@@ -107,7 +112,10 @@ public class VisualFlowEngineAutoConfiguration {
         @ConditionalOnMissingBean(CompilerConfiguration.class)
         public CompilerConfiguration compilerConfiguration(SecureASTCustomizer secure) {
             final CompilerConfiguration config = new CompilerConfiguration();
-            config.addCompilationCustomizers(secure);
+            ASTTransformationCustomizer astcz = new ASTTransformationCustomizer(
+                    singletonMap("extensions", singletonList("groovy/SecureExtension.groovy")),
+                    CompileStatic.class);
+            config.addCompilationCustomizers(secure,astcz);
             config.setSourceEncoding("UTF-8");
             return config;
         }
