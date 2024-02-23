@@ -204,7 +204,6 @@ public class WorkflowManagerImpl implements WorkflowManager {
             return logScriptExecution(script, binding, workflowTaskLogList, () -> {
 
                 List<Rule> rules = RuleEngine.parser(script.getScriptText());
-                //�հ����²������л� Ҫ�Ƴ�
                 String executeScript = RuleEngine.execute(rules, binding);
 
 
@@ -235,14 +234,16 @@ public class WorkflowManagerImpl implements WorkflowManager {
             Object result = scriptExecutor.get();
 
             workflowTaskLog.setScriptRunStatus(ScriptRunStatus.Success);
-            workflowTaskLog.setScriptRunResult(result);
+            if (result instanceof java.io.Serializable) {
+                workflowTaskLog.setScriptRunResult(result);
+            }
+
         } catch (Exception e) {
             workflowTaskLog.setScriptRunStatus(ScriptRunStatus.Error);
             workflowTaskLog.setScriptRunError(e.getMessage());
         } finally {
             workflowTaskLog.setAfterRunBinding(new HashMap<>(binding.getVariables()));
             workflowTaskLogList.add(workflowTaskLog);
-            // ��������workflowTaskLogMap��ȷ����־���ᶪʧ
             workflowTaskLogMap.put(currentLevel, workflowTaskLogList);
         }
 
@@ -250,16 +251,10 @@ public class WorkflowManagerImpl implements WorkflowManager {
     }
 
 
-    @SuppressWarnings("rawtypes,unchecked")
     private Object executeScript(ScriptMetadata metadata, Binding binding) {
         Class<?> aClass = groovyClassLoader.parseClass(metadata.getScriptText());
-        Map variables = binding.getVariables();
         Script script = InvokerHelper.createScript(aClass, binding);
-        Object run = script.run();
-        if (run instanceof Map) {
-            variables.putAll((Map) run);
-        }
-        return run;
+        return script.run();
     }
 
 

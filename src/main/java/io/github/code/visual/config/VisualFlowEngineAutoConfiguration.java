@@ -98,6 +98,7 @@ public class VisualFlowEngineAutoConfiguration {
             statementBlacklist.add(WhileStatement.class);
             secure.setDisallowedStatements(statementBlacklist);
             secure.setIndirectImportCheckEnabled(false);
+            secure.setDisallowedStaticImports(Arrays.asList("System", "Runtime", "Class"));
             secure.setDisallowedImports(Arrays.asList("org.codehaus.groovy.runtime.*", "groovy.json.*"));
             return secure;
         }
