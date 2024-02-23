@@ -1,3 +1,18 @@
+/*
+ * Copyright (c) 2023-2024, levi li (levi.lideng@gmail.com)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package io.github.code.visual.groovy;
 
 import org.codehaus.groovy.ast.ClassCodeVisitorSupport;
@@ -23,20 +38,17 @@ public class GroovyShellVisitor extends ClassCodeVisitorSupport {
 
     private final Set<String> declarationVariables = new HashSet<>();
 
-    /**
-     * 记录Groovy解析过程的变量
-     **/
+
     @Override
-    public void visitVariableExpression(VariableExpression expression) {    //变量表达式分析
+    public void visitVariableExpression(VariableExpression expression) {  
         super.visitVariableExpression(expression);
         if (EXCLUDE_IN_PARAM.stream().noneMatch(x -> x.equals(expression.getName()))) {
 
             if (!declarationVariables.contains(expression.getName())) {
 
-                if (expression.getAccessedVariable() instanceof DynamicVariable) { // 动态类型,变量类型都是Object
+                if (expression.getAccessedVariable() instanceof DynamicVariable) {
                     dynamicVariables.put(expression.getName(), expression.getOriginType().getTypeClass());
                 } else {
-                    // 静态类型 Groovy支持静态类型
                     dynamicVariables.put(expression.getName(), expression.getOriginType().getTypeClass());
                 }
             }
@@ -48,23 +60,17 @@ public class GroovyShellVisitor extends ClassCodeVisitorSupport {
         super.visitMethod(methodNode);
     }
 
-    /**
-     * 获取脚本内部声明的变量
-     */
+
     @Override
     public void visitDeclarationExpression(DeclarationExpression expression) {
-        // 保存脚本内部定义变量
         declarationVariables.add(expression.getVariableExpression().getName());
         super.visitDeclarationExpression(expression);
     }
 
-    /**
-     * 忽略对语法树闭包的访问
-     */
+
     @Override
     public void visitClosureExpression(ClosureExpression expression) {
-        // ignore
-//        System.out.println("expression = " + expression);
+        super.visitClosureExpression(expression);
     }
 
     public Set<String> getDynamicVariables() {

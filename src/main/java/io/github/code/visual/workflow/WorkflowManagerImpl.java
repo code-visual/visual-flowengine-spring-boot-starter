@@ -1,3 +1,18 @@
+/*
+ * Copyright (c) 2023-2024, levi li (levi.lideng@gmail.com)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package io.github.code.visual.workflow;
 
 import io.github.code.visual.model.DebugRequest;
@@ -84,7 +99,7 @@ public class WorkflowManagerImpl implements WorkflowManager {
             workflowTaskLog.setScriptRunStatus(ScriptRunStatus.Error);
             workflowTaskLog.setScriptRunResult(null);
             workflowTaskLog.setScriptRunTime(null);
-            workflowTaskLog.setScriptRunError("脚本为空");
+            workflowTaskLog.setScriptRunError("ScriptMetadata is null");
 
             return Collections.singletonMap(1, Collections.singletonList(workflowTaskLog));
         }
@@ -93,7 +108,7 @@ public class WorkflowManagerImpl implements WorkflowManager {
         try {
             resetGroovyClassLoader();
         } catch (IOException e) {
-            logger.error("重置GroovyClassLoader失败", e);
+            logger.error("reset Groovy ClassLoader error", e);
         }
         return workflowTaskLogMap;
 
@@ -189,7 +204,7 @@ public class WorkflowManagerImpl implements WorkflowManager {
             return logScriptExecution(script, binding, workflowTaskLogList, () -> {
 
                 List<Rule> rules = RuleEngine.parser(script.getScriptText());
-                //闭包导致不能序列化 要移除
+                //�հ����²������л� Ҫ�Ƴ�
                 String executeScript = RuleEngine.execute(rules, binding);
 
 
@@ -217,7 +232,7 @@ public class WorkflowManagerImpl implements WorkflowManager {
         workflowTaskLog.setScriptRunTime(new Date());
 
         try {
-            Object result = scriptExecutor.get(); // 执行脚本
+            Object result = scriptExecutor.get();
 
             workflowTaskLog.setScriptRunStatus(ScriptRunStatus.Success);
             workflowTaskLog.setScriptRunResult(result);
@@ -227,7 +242,7 @@ public class WorkflowManagerImpl implements WorkflowManager {
         } finally {
             workflowTaskLog.setAfterRunBinding(new HashMap<>(binding.getVariables()));
             workflowTaskLogList.add(workflowTaskLog);
-            // 立即更新workflowTaskLogMap以确保日志不会丢失
+            // ��������workflowTaskLogMap��ȷ����־���ᶪʧ
             workflowTaskLogMap.put(currentLevel, workflowTaskLogList);
         }
 
@@ -255,12 +270,7 @@ public class WorkflowManagerImpl implements WorkflowManager {
         return InvokerHelper.createScript(aClass, binding);
     }
 
-    /**
-     * 编译的时候肯定有很多大量的,细碎的脚本。应该用临时的groovyClassLoader来编译
-     *
-     * @param code
-     * @return
-     */
+
     @Override
     public List<Diagnostic> compileGroovyScript(String code) {
 
