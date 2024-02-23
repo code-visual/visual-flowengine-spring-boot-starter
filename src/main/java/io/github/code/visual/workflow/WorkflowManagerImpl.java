@@ -15,6 +15,7 @@
  */
 package io.github.code.visual.workflow;
 
+import io.github.code.visual.config.GroovyNotSupportInterceptor;
 import io.github.code.visual.model.DebugRequest;
 import io.github.code.visual.model.Diagnostic;
 import io.github.code.visual.model.ScriptMetadata;
@@ -81,6 +82,7 @@ public class WorkflowManagerImpl implements WorkflowManager {
     }
 
     private Map<Integer, List<WorkflowTaskLog>> executeWorkflow(Map inputVariables, WorkflowMetadata workflowMetadata) {
+
         ScriptMetadata scriptMetadata = workflowMetadata.getScriptMetadata();
         Map<Integer, List<WorkflowTaskLog>> workflowTaskLogMap = new HashMap<>();
         this.recursiveAndExecute(scriptMetadata, new Binding(inputVariables), workflowTaskLogMap, 1);
@@ -89,7 +91,7 @@ public class WorkflowManagerImpl implements WorkflowManager {
 
     @Override
     public Map<Integer, List<WorkflowTaskLog>> debug(DebugRequest debugRequest) {
-
+            new GroovyNotSupportInterceptor().register();
         if (debugRequest.getScriptMetadata() == null) {
             WorkflowTaskLog workflowTaskLog = new WorkflowTaskLog();
             workflowTaskLog.setScriptName("");
