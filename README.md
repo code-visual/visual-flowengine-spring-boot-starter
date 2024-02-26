@@ -20,8 +20,9 @@
 
 ## 友情提示
 
-> 1. **快速体验项目**：[在线访问地址](<a href="http://ikuning.com:8081/visualFlow-ui.html" target="_blank"></a>) 。
-> 2. **项目交流**：想要加群交流项目的朋友，可以加入[XX交流群]() 。
+> 1. **快速体验项目**：<a href="http://ikuning.com:8081/visualFlow-ui.html" target="_blank">在线访问地址</a>
+     。
+> 2. **项目交流**：想要加群交流项目的朋友，可以加入V:LeviJava 。
 
 ## 项目内容
 
