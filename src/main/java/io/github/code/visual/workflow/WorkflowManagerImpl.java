@@ -18,13 +18,7 @@ package io.github.code.visual.workflow;
 import groovy.lang.Binding;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.Script;
-import io.github.code.visual.model.DebugRequest;
-import io.github.code.visual.model.Diagnostic;
-import io.github.code.visual.model.ScriptMetadata;
-import io.github.code.visual.model.ScriptRunStatus;
-import io.github.code.visual.model.ScriptType;
-import io.github.code.visual.model.WorkflowMetadata;
-import io.github.code.visual.model.WorkflowTaskLog;
+import io.github.code.visual.model.*;
 import io.github.code.visual.ruleengine.Rule;
 import io.github.code.visual.ruleengine.RuleEngine;
 import io.github.code.visual.utils.CommonUtils;
@@ -39,12 +33,7 @@ import org.springframework.util.CollectionUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Supplier;
 
 /**
@@ -300,7 +289,8 @@ public class WorkflowManagerImpl implements WorkflowManager {
 
         workflowMetadata.setScriptMetadata(metadata);
         workflowMetadata.setCreateTime(new Date());
-        return workflowMetadataRepository.create(workflowMetadata);
+        workflowMetadataRepository.create(workflowMetadata);
+        return "ok";
     }
 
     @Override
@@ -309,7 +299,7 @@ public class WorkflowManagerImpl implements WorkflowManager {
     }
 
     @Override
-    public List<WorkflowMetadata> getMenuWorkflowNameList() {
+    public List<WorkflowIdAndName> getMenuWorkflowNameList() {
         return workflowMetadataRepository.getMenuWorkflowList();
     }
 

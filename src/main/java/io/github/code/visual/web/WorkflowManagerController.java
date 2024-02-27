@@ -15,10 +15,7 @@
  */
 package io.github.code.visual.web;
 
-import io.github.code.visual.model.DebugRequest;
-import io.github.code.visual.model.ScriptRequest;
-import io.github.code.visual.model.WorkflowMetadata;
-import io.github.code.visual.model.WorkflowTaskLog;
+import io.github.code.visual.model.*;
 import io.github.code.visual.workflow.WorkflowManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -65,7 +62,7 @@ public class WorkflowManagerController {
     }
 
     @GetMapping("${visual.flow.listWorkflowsApiPath:/api/engine/workflowList}")
-    public List<WorkflowMetadata> listMenuWorkflow() {
+    public List<WorkflowIdAndName> listMenuWorkflow() {
         return workflowManager.getMenuWorkflowNameList();
     }
 
