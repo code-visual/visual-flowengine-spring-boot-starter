@@ -28,6 +28,7 @@ import org.codehaus.groovy.control.messages.Message;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
@@ -41,6 +42,7 @@ import java.util.function.Supplier;
  * @since 09/18/2023
  */
 @Service
+@ConditionalOnMissingBean(WorkflowManager.class)
 public class WorkflowManagerImpl implements WorkflowManager {
     private final Logger logger = org.slf4j.LoggerFactory.getLogger(this.getClass());
 
