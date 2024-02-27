@@ -16,10 +16,7 @@
 package io.github.code.visual.workflow;
 
 
-import io.github.code.visual.model.DebugRequest;
-import io.github.code.visual.model.Diagnostic;
-import io.github.code.visual.model.WorkflowMetadata;
-import io.github.code.visual.model.WorkflowTaskLog;
+import io.github.code.visual.model.*;
 import groovy.lang.Binding;
 import groovy.lang.Script;
 
@@ -39,7 +36,7 @@ public interface WorkflowManager {
 
     Map<Integer, List<WorkflowTaskLog>> debug(DebugRequest debugRequest);
 
-    public void localTestScript(List<File> files, Binding binding) throws IOException;
+    void localTestScript(List<File> files, Binding binding) throws IOException;
 
     Script parseGroovyScript(String scriptText, Binding binding);
 
@@ -51,7 +48,7 @@ public interface WorkflowManager {
 
     Object deleteWorkflowMetadata(Integer workflowId);
 
-    List<WorkflowMetadata> getMenuWorkflowNameList();
+    List<WorkflowIdAndName> getMenuWorkflowNameList();
 
     void resetGroovyClassLoader() throws IOException;
 
