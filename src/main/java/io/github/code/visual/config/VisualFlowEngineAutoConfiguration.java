@@ -17,6 +17,8 @@ package io.github.code.visual.config;
 
 import groovy.transform.CompileStatic;
 import io.github.code.visual.workflow.TempWorkflowMetadataRepositoryImpl;
+import io.github.code.visual.workflow.WorkflowManager;
+import io.github.code.visual.workflow.WorkflowManagerImpl;
 import io.github.code.visual.workflow.WorkflowMetadataRepository;
 import org.codehaus.groovy.ast.stmt.Statement;
 import org.codehaus.groovy.ast.stmt.WhileStatement;
@@ -112,10 +114,10 @@ public class VisualFlowEngineAutoConfiguration {
         @ConditionalOnMissingBean(CompilerConfiguration.class)
         public CompilerConfiguration compilerConfiguration(SecureASTCustomizer secure) {
             final CompilerConfiguration config = new CompilerConfiguration();
-            ASTTransformationCustomizer astcz = new ASTTransformationCustomizer(
-                    singletonMap("extensions", singletonList("groovy/SecureExtension.groovy")),
-                    CompileStatic.class);
-            config.addCompilationCustomizers(secure,astcz);
+//            ASTTransformationCustomizer astcz = new ASTTransformationCustomizer(
+//                    singletonMap("extensions", singletonList("groovy/SecureExtension.groovy")),
+//                    CompileStatic.class);
+            config.addCompilationCustomizers(secure);
             config.setSourceEncoding("UTF-8");
             return config;
         }
@@ -125,5 +127,11 @@ public class VisualFlowEngineAutoConfiguration {
     @ConditionalOnMissingBean(WorkflowMetadataRepository.class)
     public WorkflowMetadataRepository workflowMetadataRepository() {
         return new TempWorkflowMetadataRepositoryImpl();
+    }
+    @Bean
+    @ConditionalOnMissingBean(WorkflowManager.class)
+    public WorkflowManager workflowManager(CompilerConfiguration compilerConfiguration,
+                                                          WorkflowMetadataRepository workflowMetadataRepository) {
+        return new WorkflowManagerImpl(compilerConfiguration,workflowMetadataRepository);
     }
 }

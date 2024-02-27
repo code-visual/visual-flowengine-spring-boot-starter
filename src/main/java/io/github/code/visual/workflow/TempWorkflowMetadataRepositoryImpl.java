@@ -34,7 +34,7 @@ import java.util.stream.Collectors;
  * @since 01/24/2024
  */
 @Component
-//@ConditionalOnMissingBean(WorkflowMetadataRepository.class)
+@ConditionalOnMissingBean(WorkflowMetadataRepository.class)
 public class TempWorkflowMetadataRepositoryImpl implements WorkflowMetadataRepository {
 
     AtomicInteger atomicInteger = new AtomicInteger(10000);
