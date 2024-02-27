@@ -15,6 +15,9 @@
  */
 package io.github.code.visual.workflow;
 
+import groovy.lang.Binding;
+import groovy.lang.GroovyClassLoader;
+import groovy.lang.Script;
 import io.github.code.visual.model.DebugRequest;
 import io.github.code.visual.model.Diagnostic;
 import io.github.code.visual.model.ScriptMetadata;
@@ -25,9 +28,6 @@ import io.github.code.visual.model.WorkflowTaskLog;
 import io.github.code.visual.ruleengine.Rule;
 import io.github.code.visual.ruleengine.RuleEngine;
 import io.github.code.visual.utils.CommonUtils;
-import groovy.lang.Binding;
-import groovy.lang.GroovyClassLoader;
-import groovy.lang.Script;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.MultipleCompilationErrorsException;
 import org.codehaus.groovy.control.messages.Message;
@@ -64,6 +64,7 @@ public class WorkflowManagerImpl implements WorkflowManager {
         this.config = config;
         this.workflowMetadataRepository = workflowMetadataRepository;
         groovyClassLoader = new GroovyClassLoader(Thread.currentThread().getContextClassLoader(), config);
+//        groovyClassLoader = new GroovyClassLoader(this.getClass().getClassLoader(),config);
     }
 
 
@@ -241,6 +242,7 @@ public class WorkflowManagerImpl implements WorkflowManager {
         } catch (Exception e) {
             workflowTaskLog.setScriptRunStatus(ScriptRunStatus.Error);
             workflowTaskLog.setScriptRunError(e.getMessage());
+            logger.error("scriptExecutor Exception trace", e);
         } finally {
             workflowTaskLog.setAfterRunBinding(new HashMap<>(binding.getVariables()));
             workflowTaskLogList.add(workflowTaskLog);
