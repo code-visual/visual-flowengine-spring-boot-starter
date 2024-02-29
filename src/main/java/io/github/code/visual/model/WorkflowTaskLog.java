@@ -22,6 +22,7 @@ import java.util.Map;
 public class WorkflowTaskLog {
     private String scriptId;
     private String scriptName;
+    private ScriptType scriptType;
 
     private Map beforeRunBinding;
 
@@ -97,5 +98,13 @@ public class WorkflowTaskLog {
 
     public void setScriptRunError(String scriptRunError) {
         this.scriptRunError = scriptRunError;
+    }
+
+    public ScriptType getScriptType() {
+        return scriptType;
+    }
+
+    public void setScriptType(ScriptType scriptType) {
+        this.scriptType = scriptType;
     }
 }
