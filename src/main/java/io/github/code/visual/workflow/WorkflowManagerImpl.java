@@ -139,6 +139,7 @@ public class WorkflowManagerImpl implements WorkflowManager {
             workflowTaskLog.setScriptName(script.getScriptName());
             workflowTaskLog.setBeforeRunBinding(StartRunBinding);
             workflowTaskLog.setAfterRunBinding(StartRunBinding);
+            workflowTaskLog.setScriptType(ScriptType.Start);
             workflowTaskLog.setScriptRunStatus(ScriptRunStatus.Start);
             workflowTaskLog.setScriptRunResult(null);
             workflowTaskLog.setScriptRunTime(new Date());
@@ -163,6 +164,7 @@ public class WorkflowManagerImpl implements WorkflowManager {
             workflowTaskLog.setScriptName(script.getScriptName());
             workflowTaskLog.setBeforeRunBinding(endBinding);
             workflowTaskLog.setAfterRunBinding(endBinding);
+            workflowTaskLog.setScriptType(ScriptType.End);
             workflowTaskLog.setScriptRunStatus(ScriptRunStatus.End);
             workflowTaskLog.setScriptRunResult(null);
             workflowTaskLog.setScriptRunTime(new Date());
@@ -172,8 +174,10 @@ public class WorkflowManagerImpl implements WorkflowManager {
 
         } else if (script.getScriptType() == ScriptType.Condition) {
 
-            Binding replaceBinding = new Binding(binding.getVariables());
-            WorkflowTaskLog runResult = logScriptExecution(script, binding, workflowTaskLogList, () -> this.executeScript(script.getScriptText(), replaceBinding), workflowTaskLogMap, currentLevel);
+
+            Binding replaceBinding = new Binding( new HashMap<>(binding.getVariables()));
+
+            WorkflowTaskLog runResult = logScriptExecution(script, replaceBinding, workflowTaskLogList, () -> this.executeScript(script.getScriptText(), replaceBinding), workflowTaskLogMap, currentLevel);
             if (runResult.getScriptRunStatus() == ScriptRunStatus.Error) {
                 return false;
             }
