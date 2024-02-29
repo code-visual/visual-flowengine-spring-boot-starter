@@ -18,7 +18,6 @@ package io.github.code.visual.workflow;
 
 import io.github.code.visual.model.*;
 import groovy.lang.Binding;
-import groovy.lang.Script;
 
 import java.io.File;
 import java.io.IOException;
@@ -38,7 +37,7 @@ public interface WorkflowManager {
 
     void localTestScript(List<File> files, Binding binding) throws IOException;
 
-    Script parseGroovyScript(String scriptText, Binding binding);
+    Object runGroovyScriptText(String scriptText, Binding binding);
 
     List<Diagnostic> compileGroovyScript(String code);
 
