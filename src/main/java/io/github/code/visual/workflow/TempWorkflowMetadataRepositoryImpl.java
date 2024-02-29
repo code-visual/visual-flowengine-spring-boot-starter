@@ -15,14 +15,13 @@
  */
 package io.github.code.visual.workflow;
 
+import groovy.lang.GroovyClassLoader;
 import io.github.code.visual.model.WorkflowIdAndName;
 import io.github.code.visual.model.WorkflowMetadata;
-import org.codehaus.groovy.control.CompilerConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Repository;
+import org.springframework.util.DigestUtils;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -39,6 +38,7 @@ public class TempWorkflowMetadataRepositoryImpl implements WorkflowMetadataRepos
 
     AtomicInteger atomicInteger = new AtomicInteger(10000);
     private final Map<Integer, WorkflowMetadata> workflowMetadataMap = new ConcurrentHashMap<>();
+    private final Map<String, Class> parseClassCache = new ConcurrentHashMap<>();
 
     @Override
     public void create(WorkflowMetadata workflowMetadata) {
@@ -58,7 +58,7 @@ public class TempWorkflowMetadataRepositoryImpl implements WorkflowMetadataRepos
 
     @Override
     public List<WorkflowIdAndName> getMenuWorkflowList() {
-        return  workflowMetadataMap.values().stream().map(
+        return workflowMetadataMap.values().stream().map(
                 workflowMetadata -> new WorkflowIdAndName(workflowMetadata.getWorkflowId(), workflowMetadata.getWorkflowName())).collect(Collectors.toList());
     }
 
@@ -95,6 +95,19 @@ public class TempWorkflowMetadataRepositoryImpl implements WorkflowMetadataRepos
     @Override
     public WorkflowMetadata findByWorkflowName(String workflowName) {
         return workflowMetadataMap.values().stream().filter(workflowMetadata -> workflowMetadata.getWorkflowName().equals(workflowName)).findFirst().orElseThrow(() -> new RuntimeException("WorkflowMetadata with name " + workflowName + " does not exist"));
+    }
+
+    @Override
+    public Class<?> getClassFromCache(GroovyClassLoader groovyClassLoader, String scriptText) {
+
+        String md5 = DigestUtils.md5DigestAsHex(scriptText.getBytes());
+        Class aClass = parseClassCache.get(md5);
+        if (aClass == null) {
+            Class parseClass = groovyClassLoader.parseClass(scriptText);
+            parseClassCache.put(md5, parseClass);
+            return parseClass;
+        }
+        return aClass;
     }
 
 }

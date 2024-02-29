@@ -18,7 +18,14 @@ package io.github.code.visual.workflow;
 import groovy.lang.Binding;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.Script;
-import io.github.code.visual.model.*;
+import io.github.code.visual.model.DebugRequest;
+import io.github.code.visual.model.Diagnostic;
+import io.github.code.visual.model.ScriptMetadata;
+import io.github.code.visual.model.ScriptRunStatus;
+import io.github.code.visual.model.ScriptType;
+import io.github.code.visual.model.WorkflowIdAndName;
+import io.github.code.visual.model.WorkflowMetadata;
+import io.github.code.visual.model.WorkflowTaskLog;
 import io.github.code.visual.ruleengine.Rule;
 import io.github.code.visual.ruleengine.RuleEngine;
 import io.github.code.visual.utils.CommonUtils;
@@ -34,7 +41,13 @@ import org.springframework.util.CollectionUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Supplier;
 
 /**
@@ -49,6 +62,8 @@ public class WorkflowManagerImpl implements WorkflowManager {
     private final CompilerConfiguration config;
     private final WorkflowMetadataRepository workflowMetadataRepository;
     private GroovyClassLoader groovyClassLoader;
+
+    private Map<String, Class> parseClassCache = new ConcurrentHashMap<>();
 
     @Autowired
     public WorkflowManagerImpl(CompilerConfiguration config, WorkflowMetadataRepository workflowMetadataRepository) {
@@ -97,11 +112,6 @@ public class WorkflowManagerImpl implements WorkflowManager {
         }
         Map<Integer, List<WorkflowTaskLog>> workflowTaskLogMap = new HashMap<>();
         this.recursiveAndExecute(debugRequest.getScriptMetadata(), new Binding(debugRequest.getInputValues()), workflowTaskLogMap, 1);
-        try {
-            resetGroovyClassLoader();
-        } catch (IOException e) {
-            logger.error("reset Groovy ClassLoader error", e);
-        }
         return workflowTaskLogMap;
 
     }
@@ -161,7 +171,7 @@ public class WorkflowManagerImpl implements WorkflowManager {
             workflowTaskLogMap.put(currentLevel, workflowTaskLogList);
 
         } else if (script.getScriptType() == ScriptType.Condition) {
-            WorkflowTaskLog runResult = logScriptExecution(script, binding, workflowTaskLogList, () -> this.executeScript(script, binding), workflowTaskLogMap, currentLevel);
+            WorkflowTaskLog runResult = logScriptExecution(script, binding, workflowTaskLogList, () -> this.executeScript(script.getScriptText(), binding), workflowTaskLogMap, currentLevel);
             if (runResult.getScriptRunStatus() == ScriptRunStatus.Error) {
                 return false;
             }
@@ -177,7 +187,7 @@ public class WorkflowManagerImpl implements WorkflowManager {
             }
 
         } else if (script.getScriptType() == ScriptType.Script) {
-            WorkflowTaskLog runResult = logScriptExecution(script, binding, workflowTaskLogList, () -> this.executeScript(script, binding), workflowTaskLogMap, currentLevel);
+            WorkflowTaskLog runResult = logScriptExecution(script, binding, workflowTaskLogList, () -> this.executeScript(script.getScriptText(), binding), workflowTaskLogMap, currentLevel);
             if (runResult.getScriptRunStatus() == ScriptRunStatus.Error) {
                 return false;
             }
@@ -241,18 +251,11 @@ public class WorkflowManagerImpl implements WorkflowManager {
     }
 
 
-    private Object executeScript(ScriptMetadata metadata, Binding binding) {
-        Class<?> aClass = groovyClassLoader.parseClass(metadata.getScriptText());
+    @Override
+    public Object executeScript(String scriptText, Binding binding) {
+        Class<?> aClass = workflowMetadataRepository.getClassFromCache(groovyClassLoader, scriptText);
         Script script = InvokerHelper.createScript(aClass, binding);
         return script.run();
-    }
-
-
-    @SuppressWarnings("unchecked")
-    @Override
-    public Object runGroovyScriptText(String scriptText, Binding binding) {
-        Class<? extends Script> aClass = this.groovyClassLoader.parseClass(scriptText);
-        return InvokerHelper.createScript(aClass, binding).run();
     }
 
 
@@ -310,6 +313,7 @@ public class WorkflowManagerImpl implements WorkflowManager {
             this.groovyClassLoader.close();
         }
         this.groovyClassLoader = new GroovyClassLoader(Thread.currentThread().getContextClassLoader(), config);
+        parseClassCache.clear();
     }
 
     @Override
