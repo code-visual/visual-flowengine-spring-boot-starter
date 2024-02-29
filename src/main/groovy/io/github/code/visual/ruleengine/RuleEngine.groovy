@@ -27,18 +27,24 @@ class RuleEngine {
         List<Rule> matchedRules = rules.findAll { rule ->
             rule.when(inputData)
         }
-
+        List<String> decisionRules=['']
         if (matchedRules.isEmpty()) {
             inputData.setVariable("decision_rule", "miss")
         } else {
             matchedRules.each { rule ->
                 rule.then(inputData)
             }
-            List<String> decisionRules = matchedRules.collect { it.name }
-            inputData.setVariable("decision_rule", decisionRules)
-        }
+            decisionRules = matchedRules.collect { it.name }
 
-        return inputData.getVariable("decision_rule").toString()
+
+            def decisionRuleList = inputData.getVariables().get("decision_rule")
+            if (decisionRuleList != null && (decisionRuleList instanceof List)) {
+                decisionRuleList.addAll(decisionRules)
+            } else {
+                inputData.setVariable("decision_rule", decisionRules)
+            }
+        }
+        return  decisionRules.toString()
     }
 
     static List<Rule> parser(String rulesDefinition) {
