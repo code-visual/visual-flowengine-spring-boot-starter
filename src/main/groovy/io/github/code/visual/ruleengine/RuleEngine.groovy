@@ -28,8 +28,14 @@ class RuleEngine {
             rule.when(inputData)
         }
         List<String> decisionRules=['']
+
         if (matchedRules.isEmpty()) {
-            inputData.setVariable("decision_rule", "miss")
+            def decisionRuleList = inputData.getVariables().get("decision_rule")
+            if (decisionRuleList != null && (decisionRuleList instanceof List)) {
+                decisionRuleList.add("miss")
+            } else {
+                inputData.setVariable("decision_rule", ['miss'])
+            }
         } else {
             matchedRules.each { rule ->
                 rule.then(inputData)
