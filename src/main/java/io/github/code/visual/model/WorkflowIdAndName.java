@@ -15,20 +15,32 @@
  */
 package io.github.code.visual.model;
 
+public class WorkflowIdAndName {
 
-/**
- * @author Levi Li
- * @since 09/21/2023
- */
+    private Integer workflowId;
+    private String workflowName;
 
+    public Integer getWorkflowId() {
+        return workflowId;
+    }
 
-public enum ScriptType {
-    Start,
-    Script,
-    Condition,
-    Rule,
-    Fork,
-    Join,
-    End
+    public void setWorkflowId(Integer workflowId) {
+        this.workflowId = workflowId;
+    }
 
+    public String getWorkflowName() {
+        return workflowName;
+    }
+
+    public void setWorkflowName(String workflowName) {
+        this.workflowName = workflowName;
+    }
+
+    public WorkflowIdAndName(Integer workflowId, String workflowName) {
+        this.workflowId = workflowId;
+        this.workflowName = workflowName;
+    }
+
+    public WorkflowIdAndName() {
+    }
 }
