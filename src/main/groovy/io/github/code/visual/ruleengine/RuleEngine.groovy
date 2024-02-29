@@ -58,7 +58,7 @@ class RuleEngine {
             localRules.add(newRule)
         })
 
-        SpringContext.getBean(WorkflowManager.class).runGroovyScriptText(rulesDefinition, binding)
+        SpringContext.getBean(WorkflowManager.class).executeScript(rulesDefinition, binding)
         return localRules
     }
 }
