@@ -114,9 +114,6 @@ public class VisualFlowEngineAutoConfiguration {
         @ConditionalOnMissingBean(CompilerConfiguration.class)
         public CompilerConfiguration compilerConfiguration(SecureASTCustomizer secure) {
             final CompilerConfiguration config = new CompilerConfiguration();
-//            ASTTransformationCustomizer astcz = new ASTTransformationCustomizer(
-//                    singletonMap("extensions", singletonList("groovy/SecureExtension.groovy")),
-//                    CompileStatic.class);
             config.addCompilationCustomizers(secure);
             config.setSourceEncoding("UTF-8");
             return config;
