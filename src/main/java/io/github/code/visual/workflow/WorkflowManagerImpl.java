@@ -171,15 +171,18 @@ public class WorkflowManagerImpl implements WorkflowManager {
             workflowTaskLogMap.put(currentLevel, workflowTaskLogList);
 
         } else if (script.getScriptType() == ScriptType.Condition) {
-            WorkflowTaskLog runResult = logScriptExecution(script, binding, workflowTaskLogList, () -> this.executeScript(script.getScriptText(), binding), workflowTaskLogMap, currentLevel);
+
+            Binding replaceBinding = new Binding(binding.getVariables());
+            WorkflowTaskLog runResult = logScriptExecution(script, binding, workflowTaskLogList, () -> this.executeScript(script.getScriptText(), replaceBinding), workflowTaskLogMap, currentLevel);
             if (runResult.getScriptRunStatus() == ScriptRunStatus.Error) {
                 return false;
             }
             boolean trueCondition = runResult.getScriptRunResult() instanceof Boolean && (Boolean) runResult.getScriptRunResult();
 
             if (trueCondition && !CollectionUtils.isEmpty(script.getChildren())) {
+
                 for (ScriptMetadata child : script.getChildren()) {
-                    boolean childSuccess = recursiveAndExecute(child, binding, workflowTaskLogMap, currentLevel + 1);
+                    boolean childSuccess = recursiveAndExecute(child, replaceBinding, workflowTaskLogMap, currentLevel + 1);
                     if (!childSuccess) {
                         return false;
                     }
@@ -227,6 +230,7 @@ public class WorkflowManagerImpl implements WorkflowManager {
         WorkflowTaskLog workflowTaskLog = new WorkflowTaskLog();
         workflowTaskLog.setScriptId(script.getScriptId());
         workflowTaskLog.setScriptName(script.getScriptName());
+        workflowTaskLog.setScriptType(script.getScriptType());
         workflowTaskLog.setBeforeRunBinding(beforeRunBinding);
         workflowTaskLog.setScriptRunTime(new Date());
 
