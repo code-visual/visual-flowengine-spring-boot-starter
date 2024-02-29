@@ -27,9 +27,8 @@ public enum ScriptType {
     Script,
     Condition,
     Rule,
-    Decision,
     Fork,
     Join,
-    End;
+    End
 
 }

@@ -161,26 +161,24 @@ public class WorkflowManagerImpl implements WorkflowManager {
             workflowTaskLogMap.put(currentLevel, workflowTaskLogList);
 
         } else if (script.getScriptType() == ScriptType.Condition) {
-            return logScriptExecution(script, binding, workflowTaskLogList, () -> {
-                Object executeScript = this.executeScript(script, binding);
-                if (executeScript instanceof Boolean && (Boolean) executeScript) {
+            WorkflowTaskLog runResult = logScriptExecution(script, binding, workflowTaskLogList, () -> this.executeScript(script, binding), workflowTaskLogMap, currentLevel);
+            if (runResult.getScriptRunStatus() == ScriptRunStatus.Error) {
+                return false;
+            }
+            boolean trueCondition = runResult.getScriptRunResult() instanceof Boolean && (Boolean) runResult.getScriptRunResult();
 
-                    if (!CollectionUtils.isEmpty(script.getChildren())) {
-                        for (ScriptMetadata child : script.getChildren()) {
-                            boolean childSuccess = recursiveAndExecute(child, binding, workflowTaskLogMap, currentLevel + 1);
-                            if (!childSuccess) {
-                                return false;
-                            }
-                        }
+            if (trueCondition && !CollectionUtils.isEmpty(script.getChildren())) {
+                for (ScriptMetadata child : script.getChildren()) {
+                    boolean childSuccess = recursiveAndExecute(child, binding, workflowTaskLogMap, currentLevel + 1);
+                    if (!childSuccess) {
+                        return false;
                     }
                 }
-                return executeScript;
-            }, workflowTaskLogMap, currentLevel);
-
+            }
 
         } else if (script.getScriptType() == ScriptType.Script) {
-            boolean success = logScriptExecution(script, binding, workflowTaskLogList, () -> this.executeScript(script, binding), workflowTaskLogMap, currentLevel);
-            if (!success) {
+            WorkflowTaskLog runResult = logScriptExecution(script, binding, workflowTaskLogList, () -> this.executeScript(script, binding), workflowTaskLogMap, currentLevel);
+            if (runResult.getScriptRunStatus() == ScriptRunStatus.Error) {
                 return false;
             }
 
@@ -193,28 +191,28 @@ public class WorkflowManagerImpl implements WorkflowManager {
                 }
             }
         } else if (script.getScriptType() == ScriptType.Rule) {
-            return logScriptExecution(script, binding, workflowTaskLogList, () -> {
-
+            WorkflowTaskLog runResult = logScriptExecution(script, binding, workflowTaskLogList, () -> {
                 List<Rule> rules = RuleEngine.parser(script.getScriptText());
-                String executeScript = RuleEngine.execute(rules, binding);
+                return RuleEngine.execute(rules, binding);
+            }, workflowTaskLogMap, currentLevel);
 
+            if (runResult.getScriptRunStatus() == ScriptRunStatus.Error) {
+                return false;
+            }
 
-                if (!CollectionUtils.isEmpty(script.getChildren())) {
-                    for (ScriptMetadata child : script.getChildren()) {
-                        boolean childSuccess = recursiveAndExecute(child, binding, workflowTaskLogMap, currentLevel + 1);
-                        if (!childSuccess) {
-                            return false;
-                        }
-
+            if (!CollectionUtils.isEmpty(script.getChildren())) {
+                for (ScriptMetadata child : script.getChildren()) {
+                    boolean childSuccess = recursiveAndExecute(child, binding, workflowTaskLogMap, currentLevel + 1);
+                    if (!childSuccess) {
+                        return false;
                     }
                 }
-                return executeScript;
-            }, workflowTaskLogMap, currentLevel);
+            }
         }
         return true;
     }
 
-    private boolean logScriptExecution(ScriptMetadata script, Binding binding, List<WorkflowTaskLog> workflowTaskLogList, Supplier<Object> scriptExecutor, Map<Integer, List<WorkflowTaskLog>> workflowTaskLogMap, int currentLevel) {
+    private WorkflowTaskLog logScriptExecution(ScriptMetadata script, Binding binding, List<WorkflowTaskLog> workflowTaskLogList, Supplier<Object> scriptExecutor, Map<Integer, List<WorkflowTaskLog>> workflowTaskLogMap, int currentLevel) {
         HashMap beforeRunBinding = new HashMap<>(binding.getVariables());
         WorkflowTaskLog workflowTaskLog = new WorkflowTaskLog();
         workflowTaskLog.setScriptId(script.getScriptId());
@@ -239,8 +237,7 @@ public class WorkflowManagerImpl implements WorkflowManager {
             workflowTaskLogList.add(workflowTaskLog);
             workflowTaskLogMap.put(currentLevel, workflowTaskLogList);
         }
-
-        return workflowTaskLog.getScriptRunStatus() != ScriptRunStatus.Error;
+        return workflowTaskLog;
     }
 
 
@@ -253,9 +250,9 @@ public class WorkflowManagerImpl implements WorkflowManager {
 
     @SuppressWarnings("unchecked")
     @Override
-    public Script parseGroovyScript(String scriptText, Binding binding) {
+    public Object runGroovyScriptText(String scriptText, Binding binding) {
         Class<? extends Script> aClass = this.groovyClassLoader.parseClass(scriptText);
-        return InvokerHelper.createScript(aClass, binding);
+        return InvokerHelper.createScript(aClass, binding).run();
     }
 
 
