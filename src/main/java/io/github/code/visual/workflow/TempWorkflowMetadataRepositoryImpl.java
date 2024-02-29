@@ -15,7 +15,11 @@
  */
 package io.github.code.visual.workflow;
 
+import io.github.code.visual.model.WorkflowIdAndName;
 import io.github.code.visual.model.WorkflowMetadata;
+import org.codehaus.groovy.control.CompilerConfiguration;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
@@ -23,22 +27,23 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 /**
  * @author Levi Li
  * @since 01/24/2024
  */
-@Repository
+@Component
+@ConditionalOnMissingBean(WorkflowMetadataRepository.class)
 public class TempWorkflowMetadataRepositoryImpl implements WorkflowMetadataRepository {
 
-    AtomicInteger atomicInteger = new AtomicInteger(0);
+    AtomicInteger atomicInteger = new AtomicInteger(10000);
     private final Map<Integer, WorkflowMetadata> workflowMetadataMap = new ConcurrentHashMap<>();
 
     @Override
-    public WorkflowMetadata create(WorkflowMetadata workflowMetadata) {
-        workflowMetadata.setWorkflowId(atomicInteger.incrementAndGet() + 10000);
+    public void create(WorkflowMetadata workflowMetadata) {
+        workflowMetadata.setWorkflowId(atomicInteger.incrementAndGet());
         workflowMetadataMap.put(workflowMetadata.getWorkflowId(), workflowMetadata);
-        return workflowMetadata;
     }
 
     @Override
@@ -52,8 +57,9 @@ public class TempWorkflowMetadataRepositoryImpl implements WorkflowMetadataRepos
     }
 
     @Override
-    public List<WorkflowMetadata> getMenuWorkflowList() {
-        return new ArrayList<>(workflowMetadataMap.values());
+    public List<WorkflowIdAndName> getMenuWorkflowList() {
+        return  workflowMetadataMap.values().stream().map(
+                workflowMetadata -> new WorkflowIdAndName(workflowMetadata.getWorkflowId(), workflowMetadata.getWorkflowName())).collect(Collectors.toList());
     }
 
     @Override

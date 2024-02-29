@@ -15,10 +15,7 @@
  */
 package io.github.code.visual.web;
 
-import io.github.code.visual.model.DebugRequest;
-import io.github.code.visual.model.ScriptRequest;
-import io.github.code.visual.model.WorkflowMetadata;
-import io.github.code.visual.model.WorkflowTaskLog;
+import io.github.code.visual.model.*;
 import io.github.code.visual.workflow.WorkflowManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -40,7 +37,7 @@ public class WorkflowManagerController {
     }
 
     @PostMapping("${visual.flow.executeWorkflowApiPath:/api/engine/workflow/execute}")
-    public Map<Integer, List<WorkflowTaskLog>> executeWorkflow(@RequestParam Integer workflowId, @RequestBody Map inputVariables) {
+    public Map<Integer, List<WorkflowTaskLog>> executeWorkflow(@RequestParam("workflowId") Integer workflowId, @RequestBody Map inputVariables) {
         return workflowManager.startWorkflow(workflowId, inputVariables);
     }
 
@@ -55,7 +52,7 @@ public class WorkflowManagerController {
     }
 
     @DeleteMapping("${visual.flow.deleteWorkflowApiPath:/api/engine/workflow}")
-    public Object deleteWorkflowMetadata(@RequestParam Integer workflowId) {
+    public Object deleteWorkflowMetadata(@RequestParam("workflowId") Integer workflowId) {
         return workflowManager.deleteWorkflowMetadata(workflowId);
     }
 
@@ -65,7 +62,7 @@ public class WorkflowManagerController {
     }
 
     @GetMapping("${visual.flow.listWorkflowsApiPath:/api/engine/workflowList}")
-    public List<WorkflowMetadata> listMenuWorkflow() {
+    public List<WorkflowIdAndName> listMenuWorkflow() {
         return workflowManager.getMenuWorkflowNameList();
     }
 
@@ -75,7 +72,7 @@ public class WorkflowManagerController {
     }
 
     @GetMapping("${visual.flow.getWorkflowMetadataApiPath:/api/engine/workflow}")
-    public WorkflowMetadata getWorkflowMetadata(@RequestParam Integer workflowId) {
+    public WorkflowMetadata getWorkflowMetadata(@RequestParam("workflowId") Integer workflowId) {
         return workflowManager.getWorkflowMetadataById(workflowId);
     }
 }
