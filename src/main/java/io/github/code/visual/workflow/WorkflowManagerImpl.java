@@ -41,7 +41,6 @@ import org.springframework.util.CollectionUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -102,7 +101,7 @@ public class WorkflowManagerImpl implements WorkflowManager {
             WorkflowTaskLog workflowTaskLog = new WorkflowTaskLog();
             workflowTaskLog.setScriptName("");
             workflowTaskLog.setScriptId("");
-            workflowTaskLog.setBeforeRunBinding(debugRequest.getInputValues());
+            workflowTaskLog.setBeforeRunBinding(debugRequest.toString());
             workflowTaskLog.setAfterRunBinding(null);
             workflowTaskLog.setScriptRunStatus(ScriptRunStatus.Error);
             workflowTaskLog.setScriptRunResult(null);
@@ -134,12 +133,12 @@ public class WorkflowManagerImpl implements WorkflowManager {
 
         if (script.getScriptType() == ScriptType.Start) {
 
-            Map StartRunBinding = new HashMap<>(binding.getVariables());
+            String string = binding.getVariables().toString();
             WorkflowTaskLog workflowTaskLog = new WorkflowTaskLog();
             workflowTaskLog.setScriptId(script.getScriptId());
             workflowTaskLog.setScriptName(script.getScriptName());
-            workflowTaskLog.setBeforeRunBinding(StartRunBinding);
-            workflowTaskLog.setAfterRunBinding(StartRunBinding);
+            workflowTaskLog.setBeforeRunBinding(string);
+            workflowTaskLog.setAfterRunBinding(string);
             workflowTaskLog.setScriptType(ScriptType.Start);
             workflowTaskLog.setScriptRunStatus(ScriptRunStatus.Start);
             workflowTaskLog.setScriptRunResult(null);
@@ -159,12 +158,12 @@ public class WorkflowManagerImpl implements WorkflowManager {
 
         } else if (script.getScriptType() == ScriptType.End) {
 
-            Map endBinding = new HashMap<>(binding.getVariables());
+            String string = binding.getVariables().toString();
             WorkflowTaskLog workflowTaskLog = new WorkflowTaskLog();
             workflowTaskLog.setScriptId(script.getScriptId());
             workflowTaskLog.setScriptName(script.getScriptName());
-            workflowTaskLog.setBeforeRunBinding(endBinding);
-            workflowTaskLog.setAfterRunBinding(endBinding);
+            workflowTaskLog.setBeforeRunBinding(string);
+            workflowTaskLog.setAfterRunBinding(string);
             workflowTaskLog.setScriptType(ScriptType.End);
             workflowTaskLog.setScriptRunStatus(ScriptRunStatus.End);
             workflowTaskLog.setScriptRunResult(null);
@@ -212,7 +211,7 @@ public class WorkflowManagerImpl implements WorkflowManager {
                 }
             }
         } else if (script.getScriptType() == ScriptType.Rule) {
-            WorkflowTaskLog runResult = logScriptExecution(script, binding, workflowTaskLogList, (scriptText,binding1) -> {
+            WorkflowTaskLog runResult = logScriptExecution(script, binding, workflowTaskLogList, (scriptText, binding1) -> {
                 List<Rule> rules = RuleEngine.parser(scriptText);
                 return RuleEngine.execute(rules, binding1);
             }, workflowTaskLogMap, currentLevel);
@@ -237,18 +236,17 @@ public class WorkflowManagerImpl implements WorkflowManager {
     private WorkflowTaskLog logScriptExecution(ScriptMetadata script,
                                                Binding binding,
                                                List<WorkflowTaskLog> workflowTaskLogList,
-                                               BiFunction<String,Binding,Object> scriptExecutor,
+                                               BiFunction<String, Binding, Object> scriptExecutor,
                                                Map<Integer, List<WorkflowTaskLog>> workflowTaskLogMap, int currentLevel) {
-        HashMap beforeRunBinding = new HashMap<>(binding.getVariables());
         WorkflowTaskLog workflowTaskLog = new WorkflowTaskLog();
         workflowTaskLog.setScriptId(script.getScriptId());
         workflowTaskLog.setScriptName(script.getScriptName());
         workflowTaskLog.setScriptType(script.getScriptType());
-        workflowTaskLog.setBeforeRunBinding(beforeRunBinding);
+        workflowTaskLog.setBeforeRunBinding(binding.getVariables().toString());
         workflowTaskLog.setScriptRunTime(new Date());
 
         try {
-            Object result = scriptExecutor.apply(script.getScriptText(),binding);
+            Object result = scriptExecutor.apply(script.getScriptText(), binding);
 
             workflowTaskLog.setScriptRunStatus(ScriptRunStatus.Success);
             if (result instanceof java.io.Serializable) {
@@ -260,7 +258,7 @@ public class WorkflowManagerImpl implements WorkflowManager {
             workflowTaskLog.setScriptRunError(e.getMessage());
             logger.error("scriptExecutor Exception trace", e);
         } finally {
-            workflowTaskLog.setAfterRunBinding(new HashMap<>(binding.getVariables()));
+            workflowTaskLog.setAfterRunBinding(binding.getVariables().toString());
             workflowTaskLogList.add(workflowTaskLog);
             workflowTaskLogMap.put(currentLevel, workflowTaskLogList);
         }
