@@ -19,14 +19,14 @@ import java.util.Date;
 import java.util.Map;
 
 @SuppressWarnings({"rawtypes"})
-public class WorkflowTaskLog {
+public class WorkflowTaskLog implements java.io.Serializable{
     private String scriptId;
     private String scriptName;
     private ScriptType scriptType;
 
-    private Map beforeRunBinding;
+    private String beforeRunBinding;
 
-    private Map afterRunBinding;
+    private String afterRunBinding;
 
     private ScriptRunStatus scriptRunStatus;
 
@@ -35,6 +35,21 @@ public class WorkflowTaskLog {
     private Date scriptRunTime;
 
     private String scriptRunError;
+
+    @Override
+    public String toString() {
+        return "WorkflowTaskLog{" +
+                "scriptId='" + scriptId + '\'' +
+                ", scriptName='" + scriptName + '\'' +
+                ", scriptType=" + scriptType +
+                ", beforeRunBinding='" + beforeRunBinding + '\'' +
+                ", afterRunBinding='" + afterRunBinding + '\'' +
+                ", scriptRunStatus=" + scriptRunStatus +
+                ", scriptRunResult=" + scriptRunResult +
+                ", scriptRunTime=" + scriptRunTime +
+                ", scriptRunError='" + scriptRunError + '\'' +
+                '}';
+    }
 
     public String getScriptName() {
         return scriptName;
@@ -52,19 +67,19 @@ public class WorkflowTaskLog {
         this.scriptId = scriptId;
     }
 
-    public Map getBeforeRunBinding() {
+    public String getBeforeRunBinding() {
         return beforeRunBinding;
     }
 
-    public void setBeforeRunBinding(Map beforeRunBinding) {
+    public void setBeforeRunBinding(String beforeRunBinding) {
         this.beforeRunBinding = beforeRunBinding;
     }
 
-    public Map getAfterRunBinding() {
+    public String getAfterRunBinding() {
         return afterRunBinding;
     }
 
-    public void setAfterRunBinding(Map afterRunBinding) {
+    public void setAfterRunBinding(String afterRunBinding) {
         this.afterRunBinding = afterRunBinding;
     }
 

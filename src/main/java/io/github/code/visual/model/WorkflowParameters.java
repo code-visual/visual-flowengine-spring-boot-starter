@@ -15,11 +15,19 @@
  */
 package io.github.code.visual.model;
 
-public class WorkflowParameters {
+public class WorkflowParameters implements java.io.Serializable{
 
 
     private String parameterName;
     private String parameterType;
+
+    @Override
+    public String toString() {
+        return "WorkflowParameters{" +
+                "parameterName='" + parameterName + '\'' +
+                ", parameterType='" + parameterType + '\'' +
+                '}';
+    }
 
     public String getParameterName() {
         return parameterName;

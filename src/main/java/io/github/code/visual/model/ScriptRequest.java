@@ -17,9 +17,17 @@ package io.github.code.visual.model;
 
 import java.util.Map;
 
-public class ScriptRequest {
+public class ScriptRequest implements java.io.Serializable{
     private Map<String, Object> inputValues;
     private String code;
+
+    @Override
+    public String toString() {
+        return "ScriptRequest{" +
+                "inputValues=" + inputValues +
+                ", code='" + code + '\'' +
+                '}';
+    }
 
     public Map<String, Object> getInputValues() {
         return inputValues;
