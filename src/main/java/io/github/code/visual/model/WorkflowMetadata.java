@@ -22,7 +22,7 @@ import java.util.List;
  * @author Levi Li
  * @since 01/22/2024
  */
-public class WorkflowMetadata {
+public class WorkflowMetadata implements java.io.Serializable{
 
     private Integer workflowId;
     private String workflowName;
@@ -32,6 +32,20 @@ public class WorkflowMetadata {
     private Date createTime;
     private Date updateTime;
     private ScriptMetadata scriptMetadata;
+
+    @Override
+    public String toString() {
+        return "WorkflowMetadata{" +
+                "workflowId=" + workflowId +
+                ", workflowName='" + workflowName + '\'' +
+                ", workflowParameters=" + workflowParameters +
+                ", workflowPurpose='" + workflowPurpose + '\'' +
+                ", remark='" + remark + '\'' +
+                ", createTime=" + createTime +
+                ", updateTime=" + updateTime +
+                ", scriptMetadata=" + scriptMetadata +
+                '}';
+    }
 
     public List<WorkflowParameters> getWorkflowParameters() {
         return workflowParameters;

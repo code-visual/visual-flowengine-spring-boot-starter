@@ -15,10 +15,18 @@
  */
 package io.github.code.visual.model;
 
-public class WorkflowIdAndName {
+public class WorkflowIdAndName implements java.io.Serializable{
 
     private Integer workflowId;
     private String workflowName;
+
+    @Override
+    public String toString() {
+        return "WorkflowIdAndName{" +
+                "workflowId=" + workflowId +
+                ", workflowName='" + workflowName + '\'' +
+                '}';
+    }
 
     public Integer getWorkflowId() {
         return workflowId;

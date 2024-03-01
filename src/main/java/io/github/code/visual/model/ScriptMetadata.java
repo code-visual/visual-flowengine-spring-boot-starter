@@ -17,7 +17,7 @@ package io.github.code.visual.model;
 
 import java.util.List;
 
-public class ScriptMetadata {
+public class ScriptMetadata implements java.io.Serializable{
 
     private String scriptId;
     private String scriptName;
@@ -26,6 +26,17 @@ public class ScriptMetadata {
     private String scriptDesc;
     private List<ScriptMetadata> children;
 
+    @Override
+    public String toString() {
+        return "ScriptMetadata{" +
+                "scriptId='" + scriptId + '\'' +
+                ", scriptName='" + scriptName + '\'' +
+                ", scriptText='" + scriptText + '\'' +
+                ", scriptType=" + scriptType +
+                ", scriptDesc='" + scriptDesc + '\'' +
+                ", children=" + children +
+                '}';
+    }
 
     public String getScriptDesc() {
         return scriptDesc;

@@ -15,7 +15,7 @@
  */
 package io.github.code.visual.model;
 
-public class Diagnostic {
+public class Diagnostic implements java.io.Serializable{
     private int startLineNumber;
     private int startColumn;
     private int endLineNumber;

@@ -17,7 +17,7 @@ package io.github.code.visual.model;
 
 import java.util.Map;
 
-public class DebugRequest {
+public class DebugRequest implements java.io.Serializable{
 
 
     private ScriptMetadata scriptMetadata;
@@ -38,4 +38,14 @@ public class DebugRequest {
     public void setInputValues(Map<String, Object> inputValues) {
         this.inputValues = inputValues;
     }
+
+
+    @Override
+    public String toString() {
+        return "DebugRequest{" +
+                "scriptMetadata=" + scriptMetadata +
+                ", inputValues=" + inputValues +
+                '}';
+    }
 }
+
