@@ -41,6 +41,7 @@ import org.springframework.util.CollectionUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -48,7 +49,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Supplier;
+import java.util.function.BiFunction;
 
 /**
  * @author Levi Li
@@ -175,9 +176,12 @@ public class WorkflowManagerImpl implements WorkflowManager {
         } else if (script.getScriptType() == ScriptType.Condition) {
 
 
+            //todo 一样有深浅拷贝的问题
             Binding replaceBinding = new Binding( new HashMap<>(binding.getVariables()));
 
-            WorkflowTaskLog runResult = logScriptExecution(script, replaceBinding, workflowTaskLogList, () -> this.executeScript(script.getScriptText(), replaceBinding), workflowTaskLogMap, currentLevel);
+            WorkflowTaskLog runResult = logScriptExecution(script, replaceBinding, workflowTaskLogList,
+                    this::executeScript,
+                    workflowTaskLogMap, currentLevel);
             if (runResult.getScriptRunStatus() == ScriptRunStatus.Error) {
                 return false;
             }
@@ -194,7 +198,7 @@ public class WorkflowManagerImpl implements WorkflowManager {
             }
 
         } else if (script.getScriptType() == ScriptType.Script) {
-            WorkflowTaskLog runResult = logScriptExecution(script, binding, workflowTaskLogList, () -> this.executeScript(script.getScriptText(), binding), workflowTaskLogMap, currentLevel);
+            WorkflowTaskLog runResult = logScriptExecution(script, binding, workflowTaskLogList, this::executeScript, workflowTaskLogMap, currentLevel);
             if (runResult.getScriptRunStatus() == ScriptRunStatus.Error) {
                 return false;
             }
@@ -208,9 +212,9 @@ public class WorkflowManagerImpl implements WorkflowManager {
                 }
             }
         } else if (script.getScriptType() == ScriptType.Rule) {
-            WorkflowTaskLog runResult = logScriptExecution(script, binding, workflowTaskLogList, () -> {
-                List<Rule> rules = RuleEngine.parser(script.getScriptText());
-                return RuleEngine.execute(rules, binding);
+            WorkflowTaskLog runResult = logScriptExecution(script, binding, workflowTaskLogList, (scriptText,binding1) -> {
+                List<Rule> rules = RuleEngine.parser(scriptText);
+                return RuleEngine.execute(rules, binding1);
             }, workflowTaskLogMap, currentLevel);
 
             if (runResult.getScriptRunStatus() == ScriptRunStatus.Error) {
@@ -229,7 +233,12 @@ public class WorkflowManagerImpl implements WorkflowManager {
         return true;
     }
 
-    private WorkflowTaskLog logScriptExecution(ScriptMetadata script, Binding binding, List<WorkflowTaskLog> workflowTaskLogList, Supplier<Object> scriptExecutor, Map<Integer, List<WorkflowTaskLog>> workflowTaskLogMap, int currentLevel) {
+
+    private WorkflowTaskLog logScriptExecution(ScriptMetadata script,
+                                               Binding binding,
+                                               List<WorkflowTaskLog> workflowTaskLogList,
+                                               BiFunction<String,Binding,Object> scriptExecutor,
+                                               Map<Integer, List<WorkflowTaskLog>> workflowTaskLogMap, int currentLevel) {
         HashMap beforeRunBinding = new HashMap<>(binding.getVariables());
         WorkflowTaskLog workflowTaskLog = new WorkflowTaskLog();
         workflowTaskLog.setScriptId(script.getScriptId());
@@ -239,7 +248,7 @@ public class WorkflowManagerImpl implements WorkflowManager {
         workflowTaskLog.setScriptRunTime(new Date());
 
         try {
-            Object result = scriptExecutor.get();
+            Object result = scriptExecutor.apply(script.getScriptText(),binding);
 
             workflowTaskLog.setScriptRunStatus(ScriptRunStatus.Success);
             if (result instanceof java.io.Serializable) {
