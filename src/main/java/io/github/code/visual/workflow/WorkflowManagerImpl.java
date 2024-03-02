@@ -19,6 +19,7 @@ import groovy.lang.Binding;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyCodeSource;
 import groovy.lang.Script;
+import io.github.code.visual.groovy.CustomBinding;
 import io.github.code.visual.model.*;
 import io.github.code.visual.ruleengine.Rule;
 import io.github.code.visual.ruleengine.RuleEngine;
@@ -82,7 +83,7 @@ public class WorkflowManagerImpl implements WorkflowManager {
     private Map<Integer, List<WorkflowTaskLog>> executeWorkflow(Map inputVariables, WorkflowMetadata workflowMetadata) {
         ScriptMetadata scriptMetadata = workflowMetadata.getScriptMetadata();
         Map<Integer, List<WorkflowTaskLog>> workflowTaskLogMap = new HashMap<>();
-        this.recursiveAndExecute(scriptMetadata, new Binding(inputVariables), workflowTaskLogMap, 1);
+        this.recursiveAndExecute(scriptMetadata, new CustomBinding(inputVariables), workflowTaskLogMap, 1);
         return workflowTaskLogMap;
     }
 
@@ -103,7 +104,7 @@ public class WorkflowManagerImpl implements WorkflowManager {
             return Collections.singletonMap(1, Collections.singletonList(workflowTaskLog));
         }
         Map<Integer, List<WorkflowTaskLog>> workflowTaskLogMap = new HashMap<>();
-        this.recursiveAndExecute(debugRequest.getScriptMetadata(), new Binding(debugRequest.getInputValues()), workflowTaskLogMap, 1);
+        this.recursiveAndExecute(debugRequest.getScriptMetadata(), new CustomBinding(debugRequest.getInputValues()), workflowTaskLogMap, 1);
         return workflowTaskLogMap;
 
     }
@@ -119,12 +120,12 @@ public class WorkflowManagerImpl implements WorkflowManager {
         }
     }
 
-    public boolean recursiveAndExecute(ScriptMetadata script, Binding binding, Map<Integer, List<WorkflowTaskLog>> workflowTaskLogMap, int currentLevel) {
+    public boolean recursiveAndExecute(ScriptMetadata script, CustomBinding binding, Map<Integer, List<WorkflowTaskLog>> workflowTaskLogMap, int currentLevel) {
 
         List<WorkflowTaskLog> workflowTaskLogList = workflowTaskLogMap.getOrDefault(currentLevel, new ArrayList<>());
 
         if (script.getScriptType() == ScriptType.Start) {
-
+            binding.setScriptType(ScriptType.End);
             String string = binding.getVariables().toString();
             WorkflowTaskLog workflowTaskLog = new WorkflowTaskLog();
             workflowTaskLog.setScriptId(script.getScriptId());
@@ -149,7 +150,7 @@ public class WorkflowManagerImpl implements WorkflowManager {
 
 
         } else if (script.getScriptType() == ScriptType.End) {
-
+            binding.setScriptType(ScriptType.End);
             String string = binding.getVariables().toString();
             WorkflowTaskLog workflowTaskLog = new WorkflowTaskLog();
             workflowTaskLog.setScriptId(script.getScriptId());
@@ -166,7 +167,7 @@ public class WorkflowManagerImpl implements WorkflowManager {
 
         } else if (script.getScriptType() == ScriptType.Condition) {
 
-
+            binding.setScriptType(ScriptType.Condition);
             WorkflowTaskLog runResult = logScriptExecution(script, binding, workflowTaskLogList,
                     this::executeScript,
                     workflowTaskLogMap, currentLevel);
@@ -186,6 +187,7 @@ public class WorkflowManagerImpl implements WorkflowManager {
             }
 
         } else if (script.getScriptType() == ScriptType.Script) {
+            binding.setScriptType(ScriptType.Script);
             WorkflowTaskLog runResult = logScriptExecution(script, binding, workflowTaskLogList, this::executeScript, workflowTaskLogMap, currentLevel);
             if (runResult.getScriptRunStatus() == ScriptRunStatus.Error) {
                 return false;
@@ -200,6 +202,7 @@ public class WorkflowManagerImpl implements WorkflowManager {
                 }
             }
         } else if (script.getScriptType() == ScriptType.Rule) {
+            binding.setScriptType(ScriptType.Rule);
             WorkflowTaskLog runResult = logScriptExecution(script, binding, workflowTaskLogList, (scriptText, inputBinding) -> {
                 List<Rule> rules = RuleEngine.parser(scriptText);
                 return RuleEngine.execute(rules, inputBinding);
@@ -223,9 +226,9 @@ public class WorkflowManagerImpl implements WorkflowManager {
 
 
     private WorkflowTaskLog logScriptExecution(ScriptMetadata script,
-                                               Binding binding,
+                                               CustomBinding binding,
                                                List<WorkflowTaskLog> workflowTaskLogList,
-                                               BiFunction<ScriptMetadata, Binding, Object> scriptExecutor,
+                                               BiFunction<ScriptMetadata, CustomBinding, Object> scriptExecutor,
                                                Map<Integer, List<WorkflowTaskLog>> workflowTaskLogMap, int currentLevel) {
         WorkflowTaskLog workflowTaskLog = new WorkflowTaskLog();
         workflowTaskLog.setScriptId(script.getScriptId());
@@ -241,10 +244,32 @@ public class WorkflowManagerImpl implements WorkflowManager {
                 workflowTaskLog.setScriptRunResult(result);
             }
 
-        } catch (Exception e) {
-            workflowTaskLog.setScriptRunStatus(ScriptRunStatus.Error);
-            workflowTaskLog.setScriptRunError(e.getMessage());
-            logger.error("scriptExecutor Exception trace", e);
+        } catch (Throwable e) {
+
+            if (e instanceof Exception) {
+                workflowTaskLog.setScriptRunStatus(ScriptRunStatus.Error);
+                workflowTaskLog.setScriptRunError(e.getMessage());
+                logger.error("Exception trace", e);
+            }
+            if (e instanceof Error) {
+                workflowTaskLog.setScriptRunStatus(ScriptRunStatus.Error);
+                if (e.getCause() != null) {
+
+                    if (e.getCause().getCause() != null) {
+                        workflowTaskLog.setScriptRunError(e.getCause().getCause().getMessage());
+                    } else {
+                        workflowTaskLog.setScriptRunError(e.getCause().getMessage());
+                    }
+                }else{
+                    workflowTaskLog.setScriptRunError(e.getMessage());
+                }
+
+
+
+                logger.error("Error trace", e);
+
+            }
+
         } finally {
             workflowTaskLog.setAfterRunBinding(binding.getVariables().toString());
             workflowTaskLogList.add(workflowTaskLog);
@@ -255,7 +280,7 @@ public class WorkflowManagerImpl implements WorkflowManager {
 
 
     @Override
-    public Object executeScript(ScriptMetadata scriptMetadata, Binding binding) {
+    public Object executeScript(ScriptMetadata scriptMetadata, CustomBinding binding) {
         Class<?> aClass = workflowMetadataRepository.getClassFromCache(groovyClassLoader, scriptMetadata);
         if (aClass != null) {
             Script script = InvokerHelper.createScript(aClass, binding);
@@ -264,12 +289,12 @@ public class WorkflowManagerImpl implements WorkflowManager {
 
         String filename;
         try {
-            filename = "Script_" + scriptMetadata.getScriptName() + "_" + EncodingGroovyMethods.md5(scriptMetadata.getScriptText()) + ".groovy";
+            filename = scriptMetadata.getScriptType().name() + "_Id_" + scriptMetadata.getScriptId() + "_MD5_" + EncodingGroovyMethods.md5(scriptMetadata.getScriptText()) + ".groovy";
         } catch (NoSuchAlgorithmException e) {
             throw new GroovyBugError("Failed to generate md5", e);
         }
         GroovyCodeSource codeSource = new GroovyCodeSource(scriptMetadata.getScriptText(), filename, "/groovy/script");
-        Class parseClass = groovyClassLoader.parseClass(codeSource);
+        Class parseClass = groovyClassLoader.parseClass(codeSource, false);
         Script script = InvokerHelper.createScript(parseClass, binding);
         return script.run();
     }

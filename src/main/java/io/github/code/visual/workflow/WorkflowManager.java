@@ -16,6 +16,7 @@
 package io.github.code.visual.workflow;
 
 
+import io.github.code.visual.groovy.CustomBinding;
 import io.github.code.visual.model.*;
 import groovy.lang.Binding;
 
@@ -37,7 +38,7 @@ public interface WorkflowManager {
 
     void localTestScript(List<File> files, Binding binding) throws IOException;
 
-    Object executeScript(ScriptMetadata scriptText, Binding binding);
+    Object executeScript(ScriptMetadata scriptText, CustomBinding binding);
 
     List<Diagnostic> compileGroovyScript(String code);
 
