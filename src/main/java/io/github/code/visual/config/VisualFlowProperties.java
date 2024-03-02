@@ -29,6 +29,7 @@ public class VisualFlowProperties {
     private String webUIPath;
     private boolean enableDefaultApi;
     private boolean enableWebUIPath;
+    private boolean enableAST=true;
 
     private String executeWorkflowApiPath = "/api/engine/workflow/execute";
     private String debugWorkflowApiPath = "/api/engine/workflow/debug";
@@ -40,6 +41,14 @@ public class VisualFlowProperties {
     private String compileScriptApiPath = "/api/engine/groovyScript/compile";
     private String getWorkflowMetadataApiPath = "/api/engine/workflow";
 
+
+    public boolean isEnableAST() {
+        return enableAST;
+    }
+
+    public void setEnableAST(boolean enableAST) {
+        this.enableAST = enableAST;
+    }
 
     public String getDebugWorkflowApiPath() {
         return debugWorkflowApiPath;

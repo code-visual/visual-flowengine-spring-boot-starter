@@ -15,6 +15,7 @@
  */
 package io.github.code.visual.ruleengine
 
+import io.github.code.visual.groovy.CustomBinding
 import io.github.code.visual.model.ScriptMetadata
 import io.github.code.visual.utils.SpringContext
 import io.github.code.visual.workflow.WorkflowManager
@@ -55,7 +56,7 @@ class RuleEngine {
 
     static List<Rule> parser(ScriptMetadata rulesDefinition) {
         List<Rule> localRules = []
-        def binding = new Binding();
+        CustomBinding binding = new CustomBinding()
         binding.setVariable("decision_rule", { String name, Closure cl ->
             def newRule = new Rule(name: name)
             cl.delegate = newRule
