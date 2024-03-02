@@ -175,10 +175,7 @@ public class WorkflowManagerImpl implements WorkflowManager {
         } else if (script.getScriptType() == ScriptType.Condition) {
 
 
-            //todo 一样有深浅拷贝的问题
-            Binding replaceBinding = new Binding( new HashMap<>(binding.getVariables()));
-
-            WorkflowTaskLog runResult = logScriptExecution(script, replaceBinding, workflowTaskLogList,
+            WorkflowTaskLog runResult = logScriptExecution(script, binding, workflowTaskLogList,
                     this::executeScript,
                     workflowTaskLogMap, currentLevel);
             if (runResult.getScriptRunStatus() == ScriptRunStatus.Error) {
@@ -189,7 +186,7 @@ public class WorkflowManagerImpl implements WorkflowManager {
             if (trueCondition && !CollectionUtils.isEmpty(script.getChildren())) {
 
                 for (ScriptMetadata child : script.getChildren()) {
-                    boolean childSuccess = recursiveAndExecute(child, replaceBinding, workflowTaskLogMap, currentLevel + 1);
+                    boolean childSuccess = recursiveAndExecute(child, binding, workflowTaskLogMap, currentLevel + 1);
                     if (!childSuccess) {
                         return false;
                     }
@@ -247,7 +244,6 @@ public class WorkflowManagerImpl implements WorkflowManager {
 
         try {
             Object result = scriptExecutor.apply(script.getScriptText(), binding);
-
             workflowTaskLog.setScriptRunStatus(ScriptRunStatus.Success);
             if (result instanceof java.io.Serializable) {
                 workflowTaskLog.setScriptRunResult(result);
