@@ -16,6 +16,7 @@
 package io.github.code.visual.workflow;
 
 import groovy.lang.GroovyClassLoader;
+import io.github.code.visual.model.ScriptMetadata;
 import io.github.code.visual.model.WorkflowIdAndName;
 import io.github.code.visual.model.WorkflowMetadata;
 
@@ -35,5 +36,7 @@ public interface WorkflowMetadataRepository {
 
     WorkflowMetadata findByWorkflowName(String workflowName);
 
-    Class<?> getClassFromCache(GroovyClassLoader groovyClassLoader,String scriptText);
+    default Class<?> getClassFromCache(GroovyClassLoader groovyClassLoader, ScriptMetadata scriptMetadata) {
+        return null;
+    }
 }

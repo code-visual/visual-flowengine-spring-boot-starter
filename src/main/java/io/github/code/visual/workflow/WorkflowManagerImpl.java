@@ -17,21 +17,17 @@ package io.github.code.visual.workflow;
 
 import groovy.lang.Binding;
 import groovy.lang.GroovyClassLoader;
+import groovy.lang.GroovyCodeSource;
 import groovy.lang.Script;
-import io.github.code.visual.model.DebugRequest;
-import io.github.code.visual.model.Diagnostic;
-import io.github.code.visual.model.ScriptMetadata;
-import io.github.code.visual.model.ScriptRunStatus;
-import io.github.code.visual.model.ScriptType;
-import io.github.code.visual.model.WorkflowIdAndName;
-import io.github.code.visual.model.WorkflowMetadata;
-import io.github.code.visual.model.WorkflowTaskLog;
+import io.github.code.visual.model.*;
 import io.github.code.visual.ruleengine.Rule;
 import io.github.code.visual.ruleengine.RuleEngine;
 import io.github.code.visual.utils.CommonUtils;
+import org.codehaus.groovy.GroovyBugError;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.MultipleCompilationErrorsException;
 import org.codehaus.groovy.control.messages.Message;
+import org.codehaus.groovy.runtime.EncodingGroovyMethods;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,12 +37,8 @@ import org.springframework.util.CollectionUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.security.NoSuchAlgorithmException;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiFunction;
 
@@ -208,9 +200,9 @@ public class WorkflowManagerImpl implements WorkflowManager {
                 }
             }
         } else if (script.getScriptType() == ScriptType.Rule) {
-            WorkflowTaskLog runResult = logScriptExecution(script, binding, workflowTaskLogList, (scriptText, binding1) -> {
+            WorkflowTaskLog runResult = logScriptExecution(script, binding, workflowTaskLogList, (scriptText, inputBinding) -> {
                 List<Rule> rules = RuleEngine.parser(scriptText);
-                return RuleEngine.execute(rules, binding1);
+                return RuleEngine.execute(rules, inputBinding);
             }, workflowTaskLogMap, currentLevel);
 
             if (runResult.getScriptRunStatus() == ScriptRunStatus.Error) {
@@ -233,7 +225,7 @@ public class WorkflowManagerImpl implements WorkflowManager {
     private WorkflowTaskLog logScriptExecution(ScriptMetadata script,
                                                Binding binding,
                                                List<WorkflowTaskLog> workflowTaskLogList,
-                                               BiFunction<String, Binding, Object> scriptExecutor,
+                                               BiFunction<ScriptMetadata, Binding, Object> scriptExecutor,
                                                Map<Integer, List<WorkflowTaskLog>> workflowTaskLogMap, int currentLevel) {
         WorkflowTaskLog workflowTaskLog = new WorkflowTaskLog();
         workflowTaskLog.setScriptId(script.getScriptId());
@@ -243,7 +235,7 @@ public class WorkflowManagerImpl implements WorkflowManager {
         workflowTaskLog.setScriptRunTime(new Date());
 
         try {
-            Object result = scriptExecutor.apply(script.getScriptText(), binding);
+            Object result = scriptExecutor.apply(script, binding);
             workflowTaskLog.setScriptRunStatus(ScriptRunStatus.Success);
             if (result instanceof java.io.Serializable) {
                 workflowTaskLog.setScriptRunResult(result);
@@ -263,9 +255,22 @@ public class WorkflowManagerImpl implements WorkflowManager {
 
 
     @Override
-    public Object executeScript(String scriptText, Binding binding) {
-        Class<?> aClass = workflowMetadataRepository.getClassFromCache(groovyClassLoader, scriptText);
-        Script script = InvokerHelper.createScript(aClass, binding);
+    public Object executeScript(ScriptMetadata scriptMetadata, Binding binding) {
+        Class<?> aClass = workflowMetadataRepository.getClassFromCache(groovyClassLoader, scriptMetadata);
+        if (aClass != null) {
+            Script script = InvokerHelper.createScript(aClass, binding);
+            return script.run();
+        }
+
+        String filename;
+        try {
+            filename = "Script_" + scriptMetadata.getScriptName() + "_" + EncodingGroovyMethods.md5(scriptMetadata.getScriptText()) + ".groovy";
+        } catch (NoSuchAlgorithmException e) {
+            throw new GroovyBugError("Failed to generate md5", e);
+        }
+        GroovyCodeSource codeSource = new GroovyCodeSource(scriptMetadata.getScriptText(), filename, "/groovy/script");
+        Class parseClass = groovyClassLoader.parseClass(codeSource);
+        Script script = InvokerHelper.createScript(parseClass, binding);
         return script.run();
     }
 
