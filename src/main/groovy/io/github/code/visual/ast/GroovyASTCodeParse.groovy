@@ -34,7 +34,8 @@ import javax.script.ScriptException
 class GroovyASTCodeParse implements ASTTransformation {
     @Override
     void visit(ASTNode[] nodes, SourceUnit source) {
-        def flowProperties = SpringContext.getBean(VisualFlowProperties.class)
+        //使用这个 用户项目不能创建groovy 文件 不然编译报错
+//        def flowProperties = SpringContext.getBean(VisualFlowProperties.class)
         nodes.each { node ->
             if (node instanceof ModuleNode) {
 
@@ -60,10 +61,8 @@ class GroovyASTCodeParse implements ASTTransformation {
             }
         }
 
-        if (flowProperties.enableAST) {
-            for (final def aClass in source.getAST().getClasses()) {
-                aClass.visitContents(new GroovyShellVisitor(source))
-            }
+        for (final def aClass in source.getAST().getClasses()) {
+            aClass.visitContents(new GroovyShellVisitor(source))
         }
 
     }
