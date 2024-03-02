@@ -16,6 +16,7 @@
 package io.github.code.visual.workflow;
 
 import groovy.lang.GroovyClassLoader;
+import groovy.lang.GroovyCodeSource;
 import io.github.code.visual.model.WorkflowIdAndName;
 import io.github.code.visual.model.WorkflowMetadata;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -95,19 +96,6 @@ public class TempWorkflowMetadataRepositoryImpl implements WorkflowMetadataRepos
     @Override
     public WorkflowMetadata findByWorkflowName(String workflowName) {
         return workflowMetadataMap.values().stream().filter(workflowMetadata -> workflowMetadata.getWorkflowName().equals(workflowName)).findFirst().orElseThrow(() -> new RuntimeException("WorkflowMetadata with name " + workflowName + " does not exist"));
-    }
-
-    @Override
-    public Class<?> getClassFromCache(GroovyClassLoader groovyClassLoader, String scriptText) {
-
-        String md5 = DigestUtils.md5DigestAsHex(scriptText.getBytes());
-        Class aClass = parseClassCache.get(md5);
-        if (aClass == null) {
-            Class parseClass = groovyClassLoader.parseClass(scriptText);
-            parseClassCache.put(md5, parseClass);
-            return parseClass;
-        }
-        return aClass;
     }
 
 }

@@ -15,7 +15,7 @@
  */
 package io.github.code.visual.ruleengine
 
-
+import io.github.code.visual.model.ScriptMetadata
 import io.github.code.visual.utils.SpringContext
 import io.github.code.visual.workflow.WorkflowManager
 
@@ -53,7 +53,7 @@ class RuleEngine {
         return  decisionRules.toString()
     }
 
-    static List<Rule> parser(String rulesDefinition) {
+    static List<Rule> parser(ScriptMetadata rulesDefinition) {
         List<Rule> localRules = []
         def binding = new Binding();
         binding.setVariable("decision_rule", { String name, Closure cl ->

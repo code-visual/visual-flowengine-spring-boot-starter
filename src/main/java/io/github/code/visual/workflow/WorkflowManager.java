@@ -37,7 +37,7 @@ public interface WorkflowManager {
 
     void localTestScript(List<File> files, Binding binding) throws IOException;
 
-    Object executeScript(String scriptText, Binding binding);
+    Object executeScript(ScriptMetadata scriptText, Binding binding);
 
     List<Diagnostic> compileGroovyScript(String code);
 
