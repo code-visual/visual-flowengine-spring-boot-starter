@@ -19,6 +19,7 @@ import groovy.lang.Binding;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyCodeSource;
 import groovy.lang.Script;
+import io.github.code.visual.config.VisualFlowProperties;
 import io.github.code.visual.model.*;
 import io.github.code.visual.ruleengine.Rule;
 import io.github.code.visual.ruleengine.RuleEngine;
@@ -53,16 +54,18 @@ public class WorkflowManagerImpl implements WorkflowManager {
 
     private final CompilerConfiguration config;
     private final WorkflowMetadataRepository workflowMetadataRepository;
+    private final VisualFlowProperties visualFlowProperties;
     private GroovyClassLoader groovyClassLoader;
 
-    private Map<String, Class> parseClassCache = new ConcurrentHashMap<>();
 
     @Autowired
-    public WorkflowManagerImpl(CompilerConfiguration config, WorkflowMetadataRepository workflowMetadataRepository) {
+    public WorkflowManagerImpl(CompilerConfiguration config,
+                               WorkflowMetadataRepository workflowMetadataRepository,
+                               VisualFlowProperties visualFlowProperties) {
         this.config = config;
         this.workflowMetadataRepository = workflowMetadataRepository;
-        groovyClassLoader = new GroovyClassLoader(Thread.currentThread().getContextClassLoader(), config);
-//        groovyClassLoader = new GroovyClassLoader(this.getClass().getClassLoader(),config);
+        this.groovyClassLoader = new GroovyClassLoader(Thread.currentThread().getContextClassLoader(), config);
+        this.visualFlowProperties = visualFlowProperties;
     }
 
 
@@ -248,7 +251,6 @@ public class WorkflowManagerImpl implements WorkflowManager {
             if (e instanceof Error) {
                 workflowTaskLog.setScriptRunStatus(ScriptRunStatus.Error);
                 if (e.getCause() != null) {
-
                     if (e.getCause().getCause() != null) {
                         workflowTaskLog.setScriptRunError(e.getCause().getCause().getMessage());
                     } else {
@@ -257,11 +259,7 @@ public class WorkflowManagerImpl implements WorkflowManager {
                 }else{
                     workflowTaskLog.setScriptRunError(e.getMessage());
                 }
-
-
-
                 logger.error("Error trace", e);
-
             }
 
         } finally {
@@ -288,7 +286,7 @@ public class WorkflowManagerImpl implements WorkflowManager {
             throw new GroovyBugError("Failed to generate md5", e);
         }
         GroovyCodeSource codeSource = new GroovyCodeSource(scriptMetadata.getScriptText(), filename, "/groovy/script");
-        Class parseClass = groovyClassLoader.parseClass(codeSource, false);
+        Class parseClass = groovyClassLoader.parseClass(codeSource, visualFlowProperties.isEnableCacheSource());
         Script script = InvokerHelper.createScript(parseClass, binding);
         return script.run();
     }
@@ -348,7 +346,6 @@ public class WorkflowManagerImpl implements WorkflowManager {
             this.groovyClassLoader.close();
         }
         this.groovyClassLoader = new GroovyClassLoader(Thread.currentThread().getContextClassLoader(), config);
-        parseClassCache.clear();
     }
 
     @Override

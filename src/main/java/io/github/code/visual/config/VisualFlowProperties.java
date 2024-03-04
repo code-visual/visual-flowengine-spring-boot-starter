@@ -30,6 +30,7 @@ public class VisualFlowProperties {
     private boolean enableDefaultApi;
     private boolean enableWebUIPath;
     private boolean enableAST=true;
+    private boolean enableCacheSource = true;
 
     private String executeWorkflowApiPath = "/api/engine/workflow/execute";
     private String debugWorkflowApiPath = "/api/engine/workflow/debug";
@@ -44,6 +45,14 @@ public class VisualFlowProperties {
 
     public boolean isEnableAST() {
         return enableAST;
+    }
+
+    public boolean isEnableCacheSource() {
+        return enableCacheSource;
+    }
+
+    public void setEnableCacheSource(boolean enableCacheSource) {
+        this.enableCacheSource = enableCacheSource;
     }
 
     public void setEnableAST(boolean enableAST) {
