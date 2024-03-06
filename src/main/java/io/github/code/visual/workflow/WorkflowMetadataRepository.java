@@ -19,8 +19,10 @@ import groovy.lang.GroovyClassLoader;
 import io.github.code.visual.model.ScriptMetadata;
 import io.github.code.visual.model.WorkflowIdAndName;
 import io.github.code.visual.model.WorkflowMetadata;
+import io.github.code.visual.model.WorkflowTaskLog;
 
 import java.util.List;
+import java.util.Map;
 
 public interface WorkflowMetadataRepository {
 
@@ -39,4 +41,9 @@ public interface WorkflowMetadataRepository {
     default Class<?> getClassFromCache(GroovyClassLoader groovyClassLoader, ScriptMetadata scriptMetadata) {
         return null;
     }
+
+    default void asyncSaveWorkflowTaskLog(Map<Integer, List<WorkflowTaskLog>> workflowTaskLogMap) {
+
+    }
+
 }

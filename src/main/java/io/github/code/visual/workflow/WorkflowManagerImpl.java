@@ -20,7 +20,14 @@ import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyCodeSource;
 import groovy.lang.Script;
 import io.github.code.visual.config.VisualFlowProperties;
-import io.github.code.visual.model.*;
+import io.github.code.visual.model.DebugRequest;
+import io.github.code.visual.model.Diagnostic;
+import io.github.code.visual.model.ScriptMetadata;
+import io.github.code.visual.model.ScriptRunStatus;
+import io.github.code.visual.model.ScriptType;
+import io.github.code.visual.model.WorkflowIdAndName;
+import io.github.code.visual.model.WorkflowMetadata;
+import io.github.code.visual.model.WorkflowTaskLog;
 import io.github.code.visual.ruleengine.Rule;
 import io.github.code.visual.ruleengine.RuleEngine;
 import io.github.code.visual.utils.CommonUtils;
@@ -39,8 +46,12 @@ import org.springframework.util.CollectionUtils;
 import java.io.File;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.function.BiFunction;
 
 /**
@@ -82,10 +93,12 @@ public class WorkflowManagerImpl implements WorkflowManager {
         return executeWorkflow(inputVariables, workflowMetadata);
     }
 
+
     private Map<Integer, List<WorkflowTaskLog>> executeWorkflow(Map inputVariables, WorkflowMetadata workflowMetadata) {
         ScriptMetadata scriptMetadata = workflowMetadata.getScriptMetadata();
         Map<Integer, List<WorkflowTaskLog>> workflowTaskLogMap = new HashMap<>();
         this.recursiveAndExecute(scriptMetadata, new Binding(inputVariables), workflowTaskLogMap, 1);
+        workflowMetadataRepository.asyncSaveWorkflowTaskLog(workflowTaskLogMap);
         return workflowTaskLogMap;
     }
 
@@ -107,6 +120,7 @@ public class WorkflowManagerImpl implements WorkflowManager {
         }
         Map<Integer, List<WorkflowTaskLog>> workflowTaskLogMap = new HashMap<>();
         this.recursiveAndExecute(debugRequest.getScriptMetadata(), new Binding(debugRequest.getInputValues()), workflowTaskLogMap, 1);
+        workflowMetadataRepository.asyncSaveWorkflowTaskLog(workflowTaskLogMap);
         return workflowTaskLogMap;
 
     }
@@ -256,7 +270,7 @@ public class WorkflowManagerImpl implements WorkflowManager {
                     } else {
                         workflowTaskLog.setScriptRunError(e.getCause().getMessage());
                     }
-                }else{
+                } else {
                     workflowTaskLog.setScriptRunError(e.getMessage());
                 }
                 logger.error("Error trace", e);

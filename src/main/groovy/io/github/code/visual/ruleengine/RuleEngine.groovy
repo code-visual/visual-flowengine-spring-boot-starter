@@ -27,7 +27,7 @@ class RuleEngine {
         List<Rule> matchedRules = rules.findAll { rule ->
             rule.when(inputData)
         }
-        List<String> decisionRules=['']
+        List<String> decisionRules = ['']
 
         if (matchedRules.isEmpty()) {
             def decisionRuleList = inputData.getVariables().get("decision_rule")
@@ -50,7 +50,7 @@ class RuleEngine {
                 inputData.setVariable("decision_rule", decisionRules)
             }
         }
-        return  decisionRules.toString()
+        return decisionRules.toString()
     }
 
     static List<Rule> parser(ScriptMetadata rulesDefinition) {

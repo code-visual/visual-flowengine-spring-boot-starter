@@ -16,17 +16,15 @@
 package io.github.code.visual.model;
 
 import java.util.Date;
-import java.util.Map;
 
-@SuppressWarnings({"rawtypes"})
-public class WorkflowTaskLog implements java.io.Serializable{
+public class WorkflowTaskLog implements java.io.Serializable {
     private String scriptId;
     private String scriptName;
     private ScriptType scriptType;
 
-    private String beforeRunBinding;
+    private Object beforeRunBinding;
 
-    private String afterRunBinding;
+    private Object afterRunBinding;
 
     private ScriptRunStatus scriptRunStatus;
 
@@ -67,19 +65,19 @@ public class WorkflowTaskLog implements java.io.Serializable{
         this.scriptId = scriptId;
     }
 
-    public String getBeforeRunBinding() {
+    public Object getBeforeRunBinding() {
         return beforeRunBinding;
     }
 
-    public void setBeforeRunBinding(String beforeRunBinding) {
+    public void setBeforeRunBinding(Object beforeRunBinding) {
         this.beforeRunBinding = beforeRunBinding;
     }
 
-    public String getAfterRunBinding() {
+    public Object getAfterRunBinding() {
         return afterRunBinding;
     }
 
-    public void setAfterRunBinding(String afterRunBinding) {
+    public void setAfterRunBinding(Object afterRunBinding) {
         this.afterRunBinding = afterRunBinding;
     }
 

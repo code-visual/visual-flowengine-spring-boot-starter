@@ -17,7 +17,7 @@ package io.github.code.visual.model;
 
 import java.util.List;
 
-public class ScriptMetadata implements java.io.Serializable{
+public class ScriptMetadata implements java.io.Serializable {
 
     private String scriptId;
     private String scriptName;

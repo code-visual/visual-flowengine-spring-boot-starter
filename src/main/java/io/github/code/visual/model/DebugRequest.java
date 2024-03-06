@@ -17,7 +17,7 @@ package io.github.code.visual.model;
 
 import java.util.Map;
 
-public class DebugRequest implements java.io.Serializable{
+public class DebugRequest implements java.io.Serializable {
 
 
     private ScriptMetadata scriptMetadata;

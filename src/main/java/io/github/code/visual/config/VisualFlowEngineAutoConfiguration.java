@@ -126,6 +126,6 @@ public class VisualFlowEngineAutoConfiguration {
     public WorkflowManager workflowManager(CompilerConfiguration compilerConfiguration,
                                            WorkflowMetadataRepository workflowMetadataRepository,
                                            VisualFlowProperties visualFlowProperties) {
-        return new WorkflowManagerImpl(compilerConfiguration, workflowMetadataRepository,visualFlowProperties);
+        return new WorkflowManagerImpl(compilerConfiguration, workflowMetadataRepository, visualFlowProperties);
     }
 }
