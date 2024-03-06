@@ -29,7 +29,7 @@ public class VisualFlowProperties {
     private String webUIPath;
     private boolean enableDefaultApi;
     private boolean enableWebUIPath;
-    private boolean enableAST=true;
+    private boolean enableAST = true;
     private boolean enableCacheSource = true;
 
     private String executeWorkflowApiPath = "/api/engine/workflow/execute";

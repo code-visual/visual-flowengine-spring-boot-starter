@@ -16,15 +16,9 @@
 package io.github.code.visual.ast
 
 import org.codehaus.groovy.ast.ClassCodeVisitorSupport
-import org.codehaus.groovy.ast.DynamicVariable
 import org.codehaus.groovy.ast.MethodNode
-import org.codehaus.groovy.ast.expr.ClosureExpression
-import org.codehaus.groovy.ast.expr.ConstructorCallExpression
-import org.codehaus.groovy.ast.expr.DeclarationExpression
-import org.codehaus.groovy.ast.expr.MethodCallExpression
-import org.codehaus.groovy.ast.expr.VariableExpression
+import org.codehaus.groovy.ast.expr.*
 import org.codehaus.groovy.control.SourceUnit
-import org.codehaus.groovy.control.messages.SyntaxErrorMessage
 import org.codehaus.groovy.syntax.SyntaxException
 
 class GroovyShellVisitor extends ClassCodeVisitorSupport {
@@ -58,6 +52,7 @@ class GroovyShellVisitor extends ClassCodeVisitorSupport {
         }
         super.visitMethod(methodNode)
     }
+
     @Override
     void visitMethodCallExpression(MethodCallExpression call) {
         if (FORBIDDEN_CLASSES.contains(call.objectExpression.type.toString())) {
@@ -67,6 +62,7 @@ class GroovyShellVisitor extends ClassCodeVisitorSupport {
         }
         super.visitMethodCallExpression(call)
     }
+
     @Override
     void visitConstructorCallExpression(ConstructorCallExpression call) {
         if (FORBIDDEN_CLASSES.contains(call.type.toString())) {
@@ -75,6 +71,7 @@ class GroovyShellVisitor extends ClassCodeVisitorSupport {
         }
         super.visitConstructorCallExpression(call)
     }
+
     @Override
     void visitDeclarationExpression(DeclarationExpression expression) {
         super.visitDeclarationExpression(expression)
@@ -85,7 +82,6 @@ class GroovyShellVisitor extends ClassCodeVisitorSupport {
     void visitClosureExpression(ClosureExpression expression) {
         super.visitClosureExpression(expression)
     }
-
 
 
     @Override

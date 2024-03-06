@@ -15,7 +15,7 @@
  */
 package io.github.code.visual.model;
 
-public class WorkflowIdAndName implements java.io.Serializable{
+public class WorkflowIdAndName implements java.io.Serializable {
 
     private Integer workflowId;
     private String workflowName;
