@@ -15,7 +15,7 @@
  */
 package io.github.code.visual.model;
 
-public class WorkflowParameters implements java.io.Serializable{
+public class WorkflowParameters implements java.io.Serializable {
 
 
     private String parameterName;

@@ -22,7 +22,7 @@ import java.util.List;
  * @author Levi Li
  * @since 01/22/2024
  */
-public class WorkflowMetadata implements java.io.Serializable{
+public class WorkflowMetadata implements java.io.Serializable {
 
     private Integer workflowId;
     private String workflowName;

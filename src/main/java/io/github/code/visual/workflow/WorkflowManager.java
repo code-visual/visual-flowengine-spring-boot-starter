@@ -16,9 +16,13 @@
 package io.github.code.visual.workflow;
 
 
-
-import io.github.code.visual.model.*;
 import groovy.lang.Binding;
+import io.github.code.visual.model.DebugRequest;
+import io.github.code.visual.model.Diagnostic;
+import io.github.code.visual.model.ScriptMetadata;
+import io.github.code.visual.model.WorkflowIdAndName;
+import io.github.code.visual.model.WorkflowMetadata;
+import io.github.code.visual.model.WorkflowTaskLog;
 
 import java.io.File;
 import java.io.IOException;
