@@ -19,6 +19,7 @@ package io.github.code.visual.ast
 import org.codehaus.groovy.ast.ASTNode
 import org.codehaus.groovy.ast.ModuleNode
 import org.codehaus.groovy.ast.expr.ConstantExpression
+import org.codehaus.groovy.ast.expr.Expression
 import org.codehaus.groovy.ast.expr.MethodCallExpression
 import org.codehaus.groovy.ast.expr.VariableExpression
 import org.codehaus.groovy.ast.stmt.ExpressionStatement
@@ -33,19 +34,17 @@ import javax.script.ScriptException
 class GroovyASTCodeParse implements ASTTransformation {
     @Override
     void visit(ASTNode[] nodes, SourceUnit source) {
-        //使用这个 用户项目不能创建groovy 文件 不然编译报错
-//        def flowProperties = SpringContext.getBean(VisualFlowProperties.class)
         nodes.each { node ->
             if (node instanceof ModuleNode) {
 
-                def moduleNode = (ModuleNode) node
+                ModuleNode moduleNode = (ModuleNode) node
 
                 if (moduleNode.mainClassName.startsWith("Condition")) {
                     moduleNode.statementBlock?.statements?.each { statement ->
                         if (statement instanceof ExpressionStatement) {
-                            def expression = ((ExpressionStatement) statement).expression
+                            Expression expression = ((ExpressionStatement) statement).expression
                             if (expression instanceof MethodCallExpression) {
-                                def methodCall = ((MethodCallExpression) expression)
+                                MethodCallExpression methodCall = ((MethodCallExpression) expression)
                                 if (methodCall.method instanceof ConstantExpression && methodCall.objectExpression instanceof VariableExpression) {
 
                                     if (((ConstantExpression) methodCall.method).value == "setVariable"
