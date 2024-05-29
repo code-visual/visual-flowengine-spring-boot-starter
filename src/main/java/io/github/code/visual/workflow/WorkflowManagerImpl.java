@@ -43,9 +43,9 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.security.NoSuchAlgorithmException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -119,7 +119,7 @@ public class WorkflowManagerImpl implements WorkflowManager {
             return Collections.singletonMap(1, Collections.singletonList(workflowTaskLog));
         }
         Map<Integer, List<WorkflowTaskLog>> workflowTaskLogMap = new HashMap<>();
-        this.recursiveAndExecute(debugRequest.getScriptMetadata(), new Binding(debugRequest.getInputValues()), workflowTaskLogMap, 1);
+        this.recursiveAndExecute(debugRequest.getScriptMetadata(), new Binding(debugRequest.getInputValues()), workflowTaskLogMap, (Integer) 1);
         workflowMetadataRepository.asyncSaveWorkflowTaskLog(workflowTaskLogMap);
         return workflowTaskLogMap;
 
@@ -150,7 +150,7 @@ public class WorkflowManagerImpl implements WorkflowManager {
             workflowTaskLog.setScriptType(ScriptType.Start);
             workflowTaskLog.setScriptRunStatus(ScriptRunStatus.Start);
             workflowTaskLog.setScriptRunResult(null);
-            workflowTaskLog.setScriptRunTime(new Date());
+            workflowTaskLog.setScriptRunTime(LocalDateTime.now());
             workflowTaskLog.setScriptRunError(null);
             workflowTaskLogList.add(workflowTaskLog);
             workflowTaskLogMap.put(currentLevel, workflowTaskLogList);
@@ -174,7 +174,7 @@ public class WorkflowManagerImpl implements WorkflowManager {
             workflowTaskLog.setScriptType(ScriptType.End);
             workflowTaskLog.setScriptRunStatus(ScriptRunStatus.End);
             workflowTaskLog.setScriptRunResult(null);
-            workflowTaskLog.setScriptRunTime(new Date());
+            workflowTaskLog.setScriptRunTime(LocalDateTime.now());
             workflowTaskLog.setScriptRunError(null);
             workflowTaskLogList.add(workflowTaskLog);
             workflowTaskLogMap.put(currentLevel, workflowTaskLogList);
@@ -200,7 +200,7 @@ public class WorkflowManagerImpl implements WorkflowManager {
             }
 
         } else if (script.getScriptType() == ScriptType.Script) {
-            WorkflowTaskLog runResult = logScriptExecution(script, binding, workflowTaskLogList, this::executeScript, workflowTaskLogMap, currentLevel);
+            WorkflowTaskLog runResult = logScriptExecution(script, binding, workflowTaskLogList, this::executeScript, workflowTaskLogMap, (Integer) currentLevel);
             if (runResult.getScriptRunStatus() == ScriptRunStatus.Error) {
                 return false;
             }
@@ -240,13 +240,13 @@ public class WorkflowManagerImpl implements WorkflowManager {
                                                Binding binding,
                                                List<WorkflowTaskLog> workflowTaskLogList,
                                                BiFunction<ScriptMetadata, Binding, Object> scriptExecutor,
-                                               Map<Integer, List<WorkflowTaskLog>> workflowTaskLogMap, int currentLevel) {
+                                               Map<Integer, List<WorkflowTaskLog>> workflowTaskLogMap, Integer currentLevel) {
         WorkflowTaskLog workflowTaskLog = new WorkflowTaskLog();
         workflowTaskLog.setScriptId(script.getScriptId());
         workflowTaskLog.setScriptName(script.getScriptName());
         workflowTaskLog.setScriptType(script.getScriptType());
-        workflowTaskLog.setBeforeRunBinding(binding.getVariables().toString());
-        workflowTaskLog.setScriptRunTime(new Date());
+        workflowTaskLog.setBeforeRunBinding(deepCopy(binding.getVariables()));
+        workflowTaskLog.setScriptRunTime(LocalDateTime.now());
 
         try {
             Object result = scriptExecutor.apply(script, binding);
@@ -277,7 +277,7 @@ public class WorkflowManagerImpl implements WorkflowManager {
             }
 
         } finally {
-            workflowTaskLog.setAfterRunBinding(binding.getVariables().toString());
+            workflowTaskLog.setAfterRunBinding(deepCopy(binding.getVariables()));
             workflowTaskLogList.add(workflowTaskLog);
             workflowTaskLogMap.put(currentLevel, workflowTaskLogList);
         }
@@ -365,6 +365,27 @@ public class WorkflowManagerImpl implements WorkflowManager {
     @Override
     public WorkflowMetadata updateWorkflowMetadata(WorkflowMetadata workflowMetadata) {
         return workflowMetadataRepository.updateWorkflowMetadata(workflowMetadata);
+    }
+
+
+    public Object deepCopy(Map original) {
+        Object copy;
+        try {
+            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+            ObjectOutputStream oos = new ObjectOutputStream(bos);
+            oos.writeObject(original);
+            oos.flush();
+            oos.close();
+
+            ByteArrayInputStream bis = new ByteArrayInputStream(bos.toByteArray());
+            ObjectInputStream ois = new ObjectInputStream(bis);
+            copy = ois.readObject();
+            ois.close();
+        } catch (IOException | ClassNotFoundException e) {
+            logger.error("Failed to deep copy map", e);
+            return original.toString();
+        }
+        return copy;
     }
 
 }
