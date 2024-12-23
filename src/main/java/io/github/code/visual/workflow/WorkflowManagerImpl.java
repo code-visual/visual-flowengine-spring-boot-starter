@@ -44,7 +44,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import java.io.*;
+import java.security.AccessController;
 import java.security.NoSuchAlgorithmException;
+import java.security.PrivilegedAction;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -67,7 +69,6 @@ public class WorkflowManagerImpl implements WorkflowManager {
     private final WorkflowMetadataRepository workflowMetadataRepository;
     private final VisualFlowProperties visualFlowProperties;
     private GroovyClassLoader groovyClassLoader;
-
 
     @Autowired
     public WorkflowManagerImpl(CompilerConfiguration config,
@@ -245,15 +246,21 @@ public class WorkflowManagerImpl implements WorkflowManager {
         workflowTaskLog.setScriptId(script.getScriptId());
         workflowTaskLog.setScriptName(script.getScriptName());
         workflowTaskLog.setScriptType(script.getScriptType());
+        //
         workflowTaskLog.setBeforeRunBinding(deepCopy(binding.getVariables()));
         workflowTaskLog.setScriptRunTime(LocalDateTime.now());
 
         try {
             Object result = scriptExecutor.apply(script, binding);
             workflowTaskLog.setScriptRunStatus(ScriptRunStatus.Success);
-            if (result instanceof java.io.Serializable) {
-                workflowTaskLog.setScriptRunResult(result);
-            }
+
+//            if (result instanceof Serializable) {
+//                workflowTaskLog.setScriptRunResult(result);
+//            } else {
+//                workflowTaskLog.setScriptRunResult(result.toString());
+//            }
+            // 不能返回不能序列化的东西
+            workflowTaskLog.setScriptRunResult(result);
 
         } catch (Throwable e) {
 
@@ -293,14 +300,19 @@ public class WorkflowManagerImpl implements WorkflowManager {
             return script.run();
         }
 
-        String filename;
+        String fileName;
         try {
-            filename = scriptMetadata.getScriptType().name() + "_Id_" + scriptMetadata.getScriptId() + "_MD5_" + EncodingGroovyMethods.md5(scriptMetadata.getScriptText()) + ".groovy";
+            fileName = scriptMetadata.getScriptType().name() + "_Id_" + scriptMetadata.getScriptId() + "_MD5_" + EncodingGroovyMethods.md5(scriptMetadata.getScriptText()) + ".groovy";
         } catch (NoSuchAlgorithmException e) {
             throw new GroovyBugError("Failed to generate md5", e);
         }
-        GroovyCodeSource codeSource = new GroovyCodeSource(scriptMetadata.getScriptText(), filename, "/groovy/script");
-        Class parseClass = groovyClassLoader.parseClass(codeSource, visualFlowProperties.isEnableCacheSource());
+
+        GroovyCodeSource codeSource = AccessController.doPrivileged(
+                (PrivilegedAction<GroovyCodeSource>) () -> new GroovyCodeSource(scriptMetadata.getScriptText(), fileName, "/groovy/script")
+        );
+        codeSource.setCachable(visualFlowProperties.isEnableCacheSource());
+
+        Class parseClass = groovyClassLoader.parseClass(codeSource);
         Script script = InvokerHelper.createScript(parseClass, binding);
         return script.run();
     }
@@ -368,7 +380,12 @@ public class WorkflowManagerImpl implements WorkflowManager {
     }
 
 
-    public Object deepCopy(Map original) {
+    /**
+     * 由于序列化和反序列化的过程涉及 I/O 操作，因此性能相对较慢，
+     * @param original
+     * @return
+     */
+    public Object deepCopy(Object original) {
         Object copy;
         try {
             ByteArrayOutputStream bos = new ByteArrayOutputStream();
