@@ -1,0 +1,89 @@
+{
+  "groups": [
+    {
+      "name": "visual.flow",
+      "type": "io.github.code.visual.config.VisualFlowProperties",
+      "sourceType": "io.github.code.visual.config.VisualFlowProperties"
+    }
+  ],
+  "properties": [
+    {
+      "name": "visual.flow.compile-script-api-path",
+      "type": "java.lang.String",
+      "sourceType": "io.github.code.visual.config.VisualFlowProperties",
+      "defaultValue": "\/api\/engine\/groovyScript\/compile"
+    },
+    {
+      "name": "visual.flow.create-workflow-api-path",
+      "type": "java.lang.String",
+      "sourceType": "io.github.code.visual.config.VisualFlowProperties",
+      "defaultValue": "\/api\/engine\/workflow"
+    },
+    {
+      "name": "visual.flow.debug-workflow-api-path",
+      "type": "java.lang.String",
+      "sourceType": "io.github.code.visual.config.VisualFlowProperties",
+      "defaultValue": "\/api\/engine\/workflow\/debug"
+    },
+    {
+      "name": "visual.flow.delete-workflow-api-path",
+      "type": "java.lang.String",
+      "sourceType": "io.github.code.visual.config.VisualFlowProperties",
+      "defaultValue": "\/api\/engine\/workflow"
+    },
+    {
+      "name": "visual.flow.enable-a-s-t",
+      "type": "java.lang.Boolean",
+      "sourceType": "io.github.code.visual.config.VisualFlowProperties",
+      "defaultValue": true
+    },
+    {
+      "name": "visual.flow.enable-cache-source",
+      "type": "java.lang.Boolean",
+      "sourceType": "io.github.code.visual.config.VisualFlowProperties",
+      "defaultValue": true
+    },
+    {
+      "name": "visual.flow.enable-default-api",
+      "type": "java.lang.Boolean",
+      "sourceType": "io.github.code.visual.config.VisualFlowProperties",
+      "defaultValue": false
+    },
+    {
+      "name": "visual.flow.enable-web-u-i-path",
+      "type": "java.lang.Boolean",
+      "sourceType": "io.github.code.visual.config.VisualFlowProperties",
+      "defaultValue": false
+    },
+    {
+      "name": "visual.flow.execute-workflow-api-path",
+      "type": "java.lang.String",
+      "sourceType": "io.github.code.visual.config.VisualFlowProperties",
+      "defaultValue": "\/api\/engine\/workflow\/execute"
+    },
+    {
+      "name": "visual.flow.get-workflow-metadata-api-path",
+      "type": "java.lang.String",
+      "sourceType": "io.github.code.visual.config.VisualFlowProperties",
+      "defaultValue": "\/api\/engine\/workflow"
+    },
+    {
+      "name": "visual.flow.list-workflows-api-path",
+      "type": "java.lang.String",
+      "sourceType": "io.github.code.visual.config.VisualFlowProperties",
+      "defaultValue": "\/api\/engine\/workflowList"
+    },
+    {
+      "name": "visual.flow.update-workflow-api-path",
+      "type": "java.lang.String",
+      "sourceType": "io.github.code.visual.config.VisualFlowProperties",
+      "defaultValue": "\/api\/engine\/workflow"
+    },
+    {
+      "name": "visual.flow.web-u-i-path",
+      "type": "java.lang.String",
+      "sourceType": "io.github.code.visual.config.VisualFlowProperties"
+    }
+  ],
+  "hints": []
+}

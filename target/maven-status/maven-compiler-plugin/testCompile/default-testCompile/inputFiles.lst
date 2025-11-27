@@ -1,0 +1,3 @@
+/app/src/test/java/io/github/code/visual/BaseTest.java
+/app/src/test/java/io/github/code/visual/MyNonWebTests.java
+/app/src/test/java/io/github/code/visual/TestYamlInitializer.java
