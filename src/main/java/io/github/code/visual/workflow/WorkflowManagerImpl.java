@@ -17,9 +17,6 @@ package io.github.code.visual.workflow;
 
 import groovy.lang.Binding;
 import groovy.lang.GroovyClassLoader;
-import groovy.lang.GroovyCodeSource;
-import groovy.lang.Script;
-import io.github.code.visual.config.VisualFlowProperties;
 import io.github.code.visual.model.DebugRequest;
 import io.github.code.visual.model.Diagnostic;
 import io.github.code.visual.model.ScriptMetadata;
@@ -30,12 +27,8 @@ import io.github.code.visual.model.WorkflowMetadata;
 import io.github.code.visual.model.WorkflowTaskLog;
 import io.github.code.visual.ruleengine.Rule;
 import io.github.code.visual.ruleengine.RuleEngine;
-import io.github.code.visual.utils.CommonUtils;
-import org.codehaus.groovy.GroovyBugError;
+import io.github.code.visual.workflow.script.ScriptExecutionService;
 import org.codehaus.groovy.control.CompilerConfiguration;
-import org.codehaus.groovy.control.MultipleCompilationErrorsException;
-import org.codehaus.groovy.control.messages.Message;
-import org.codehaus.groovy.runtime.EncodingGroovyMethods;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,7 +38,6 @@ import org.springframework.util.CollectionUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -65,18 +57,16 @@ public class WorkflowManagerImpl implements WorkflowManager {
 
     private final CompilerConfiguration config;
     private final WorkflowMetadataRepository workflowMetadataRepository;
-    private final VisualFlowProperties visualFlowProperties;
-    private GroovyClassLoader groovyClassLoader;
+    private final ScriptExecutionService scriptExecutionService;
 
 
     @Autowired
     public WorkflowManagerImpl(CompilerConfiguration config,
                                WorkflowMetadataRepository workflowMetadataRepository,
-                               VisualFlowProperties visualFlowProperties) {
+                               ScriptExecutionService scriptExecutionService) {
         this.config = config;
         this.workflowMetadataRepository = workflowMetadataRepository;
-        this.groovyClassLoader = new GroovyClassLoader(Thread.currentThread().getContextClassLoader(), config);
-        this.visualFlowProperties = visualFlowProperties;
+        this.scriptExecutionService = scriptExecutionService;
     }
 
 
@@ -287,38 +277,13 @@ public class WorkflowManagerImpl implements WorkflowManager {
 
     @Override
     public Object executeScript(ScriptMetadata scriptMetadata, Binding binding) {
-        Class<?> aClass = workflowMetadataRepository.getClassFromCache(groovyClassLoader, scriptMetadata);
-        if (aClass != null) {
-            Script script = InvokerHelper.createScript(aClass, binding);
-            return script.run();
-        }
-
-        String filename;
-        try {
-            filename = scriptMetadata.getScriptType().name() + "_Id_" + scriptMetadata.getScriptId() + "_MD5_" + EncodingGroovyMethods.md5(scriptMetadata.getScriptText()) + ".groovy";
-        } catch (NoSuchAlgorithmException e) {
-            throw new GroovyBugError("Failed to generate md5", e);
-        }
-        GroovyCodeSource codeSource = new GroovyCodeSource(scriptMetadata.getScriptText(), filename, "/groovy/script");
-        Class parseClass = groovyClassLoader.parseClass(codeSource, visualFlowProperties.isEnableCacheSource());
-        Script script = InvokerHelper.createScript(parseClass, binding);
-        return script.run();
+        return scriptExecutionService.executeScript(scriptMetadata, binding);
     }
 
 
     @Override
     public List<Diagnostic> compileGroovyScript(String code) {
-
-        try (GroovyClassLoader tempGroovyClassLoader = new GroovyClassLoader(Thread.currentThread().getContextClassLoader(), config)) {
-            tempGroovyClassLoader.parseClass(code);
-            return new ArrayList<>();
-        } catch (Exception e) {
-            if (!(e instanceof MultipleCompilationErrorsException)) {
-                throw new RuntimeException(e);
-            }
-            List<? extends Message> errors = ((MultipleCompilationErrorsException) e).getErrorCollector().getErrors();
-            return CommonUtils.getDiagnostics(errors);
-        }
+        return scriptExecutionService.compileGroovyScript(code);
     }
 
     @Override
@@ -355,11 +320,7 @@ public class WorkflowManagerImpl implements WorkflowManager {
 
     @Override
     public void resetGroovyClassLoader() throws IOException {
-
-        if (this.groovyClassLoader != null) {
-            this.groovyClassLoader.close();
-        }
-        this.groovyClassLoader = new GroovyClassLoader(Thread.currentThread().getContextClassLoader(), config);
+       scriptExecutionService.resetGroovyClassLoader();
     }
 
     @Override

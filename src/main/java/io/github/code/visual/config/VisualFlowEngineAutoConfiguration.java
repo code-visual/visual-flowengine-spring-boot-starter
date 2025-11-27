@@ -125,7 +125,7 @@ public class VisualFlowEngineAutoConfiguration {
     @ConditionalOnMissingBean(WorkflowManager.class)
     public WorkflowManager workflowManager(CompilerConfiguration compilerConfiguration,
                                            WorkflowMetadataRepository workflowMetadataRepository,
-                                           VisualFlowProperties visualFlowProperties) {
-        return new WorkflowManagerImpl(compilerConfiguration, workflowMetadataRepository, visualFlowProperties);
+                                           io.github.code.visual.workflow.script.ScriptExecutionService scriptExecutionService) {
+        return new WorkflowManagerImpl(compilerConfiguration, workflowMetadataRepository, scriptExecutionService);
     }
 }
