@@ -111,13 +111,6 @@
             <artifactId>spring-boot-starter-thymeleaf</artifactId>
         </dependency>
 
-        <dependency>
-            <groupId>org.springdoc</groupId>
-            <artifactId>springdoc-openapi-ui</artifactId>
-            <version>1.8.0</version>
-            <optional>true</optional>
-        </dependency>
-
     </dependencies>
     <build>
         <plugins>
