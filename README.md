@@ -1,38 +1,126 @@
-<div align="center">
-  <img src="https://s11.ax1x.com/2024/02/20/pFtp2U1.png" alt="ManageMan Logo" style="width:40%;" />
-</div>
+# visual-flowengine-spring-boot-starter
 
-<h1 align="center">Visual-Flow-Engine</h1>
-<div align="center">
+![Visual Flow Engine Logo](https://s11.ax1x.com/2024/02/20/pFtp2U1.png)
 
-<a href="#"><img src="https://img.shields.io/badge/github-项目地址-yellow.svg?style=plasticr"></a>
-<a href="#"><img src="https://img.shields.io/badge/前端-项目地址-blueviolet.svg?style=plasticr"></a>
+一个开箱即用的 Spring Boot Starter，提供可视化流程编排 UI、默认 REST API、Groovy 脚本执行与轻量规则引擎，便于在业务系统中快速接入流程与规则能力。
 
-</div>
+## 快速体验
 
-**下一代流程管理与规则引擎平台：**
+- 在线体验：[https://www.ikuning.com/visualFlow-ui.html](https://www.ikuning.com/visualFlow-ui.html)
+- 项目交流：V **LeviJava**
 
- _Visual-Flow-Engine_ 专注于提供流程引擎与规则引擎服务。该工具主要特点如下：
+## 主要特性
 
-- 提供一个**可视化流程引擎编排**的直观界面，使用户能够简洁高效地设计、编辑和优化业务流程。其核心价值在于将复杂的流程逻辑轻松转化为图形化表示。
-- **规则引擎**的强大功能确保了业务规则的独立性。这意味着，即使是非技术背景的人员，也能够轻松定义和调整业务规则，保持业务逻辑的透明度和可维护性，而无需频繁地修改或重新部署应用程序。
+- 内置可视化 UI，访问一个路径即可使用流程编排界面
+- 默认提供流程管理与执行 REST API，可按需关闭或自定义路径
+- Groovy 脚本驱动流程节点，支持条件节点与规则节点
+- 默认内存仓库，支持替换为自定义持久化实现
+- Groovy 安全限制与 AST 校验，降低不可信脚本风险
 
+## 快速开始
 
-## 友情提示
+1. 引入依赖（Maven）
 
-> 1. **快速体验项目**：<a href="https://www.ikuning.com/visualFlow-ui.html" target="_blank" rel="noopener noreferrer">在线访问地址</a>
-> 2. **项目交流**：想要加群交流项目的朋友，可以加入V:**LeviJava** 。
+```xml
+<dependency>
+  <groupId>io.github.code-visual</groupId>
+  <artifactId>visual-flowengine-spring-boot-starter</artifactId>
+  <version>1.0.8</version>
+</dependency>
+```
 
-## 项目内容
+1. 确保你的应用是 Web 应用（需引入 `spring-boot-starter-web`），然后启动应用
+1. 打开默认 UI 地址：`http://localhost:8080/visualFlow-ui.html`
 
- **动态流程引擎**：结合Groovy和Java混编，我们实现了一个可视化的流程引擎编排。其中，Groovy 的性能优化确保了流程的高效执行，而
-   Groovy AST  的集成保证了代码的安全性和灵活性。
-- 可以在编译期在生成字节码之前修改代码增强逻辑，还可以定义允许和禁止操作
-- 安全地运行不受信任的 Groovy 脚本，而不必担心它们执行有害的操作或访问敏感资源。
+## 配置项
 
+| 配置项 | 默认值 | 说明 |
+| --- | --- | --- |
+| `visual.flow.enableDefaultApi` | `true` | 是否启用默认 REST API |
+| `visual.flow.enableWebUIPath` | `true` | 是否启用 UI 入口路径 |
+| `visual.flow.webUIPath` | `/visualFlow-ui.html` | UI 入口路径 |
+| `visual.flow.enableCacheSource` | `true` | 是否缓存 Groovy 编译结果 |
+| `visual.flow.executeWorkflowApiPath` | `/api/engine/workflow/execute` | 执行流程 |
+| `visual.flow.debugWorkflowApiPath` | `/api/engine/workflow/debug` | 调试流程 |
+| `visual.flow.createWorkflowApiPath` | `/api/engine/workflow` | 创建流程 |
+| `visual.flow.deleteWorkflowApiPath` | `/api/engine/workflow` | 删除流程 |
+| `visual.flow.updateWorkflowApiPath` | `/api/engine/workflow` | 更新流程 |
+| `visual.flow.listWorkflowsApiPath` | `/api/engine/workflowList` | 流程列表 |
+| `visual.flow.compileScriptApiPath` | `/api/engine/groovyScript/compile` | Groovy 编译诊断 |
+| `visual.flow.getWorkflowMetadataApiPath` | `/api/engine/workflow` | 获取流程详情 |
 
+示例配置：
 
+```yaml
+visual:
+  flow:
+    webUIPath: /visualFlow-ui.html
+    enableDefaultApi: true
+    enableWebUIPath: true
+    enableCacheSource: true
+```
 
+## 默认 API 说明
 
+- `POST /api/engine/workflow/execute`：执行流程，参数 `workflowId`
+- `POST /api/engine/workflow/debug`：调试流程（传入脚本与入参）
+- `POST /api/engine/workflow`：创建流程
+- `PUT /api/engine/workflow`：更新流程
+- `DELETE /api/engine/workflow`：删除流程
+- `GET /api/engine/workflowList`：获取流程列表
+- `GET /api/engine/workflow`：获取流程详情，参数 `workflowId`
+- `POST /api/engine/groovyScript/compile`：Groovy 语法诊断
 
+## 流程结构说明
 
+流程的核心是 `WorkflowMetadata`，其中 `scriptMetadata` 是一个树形结构节点：
+
+```json
+{
+  "workflowName": "demo",
+  "workflowPurpose": "示例流程",
+  "scriptMetadata": {
+    "scriptId": "1",
+    "scriptName": "Start",
+    "scriptType": "Start",
+    "scriptText": "",
+    "children": [
+      {
+        "scriptId": "2",
+        "scriptName": "检查额度",
+        "scriptType": "Condition",
+        "scriptText": "return amount > 100",
+        "children": []
+      }
+    ]
+  }
+}
+```
+
+节点类型以 `ScriptType` 为准，常用类型：`Start`、`Script`、`Condition`、`Rule`、`End`。
+
+## 规则引擎脚本示例
+
+规则节点脚本可以使用如下 DSL：
+
+```groovy
+decision_rule("HighAmount") {
+    when { amount > 100 }
+    then { binding.setVariable("tag", "high") }
+}
+```
+
+规则执行结果会写入 `decision_rule` 变量中（列表形式）。
+
+## 自定义持久化
+
+默认使用 `TempWorkflowMetadataRepositoryImpl` 进行内存存储。若需持久化，请提供一个 `WorkflowMetadataRepository` 的 Spring Bean，即可替换默认实现。
+
+## 安全说明
+
+- 使用 `SecureASTCustomizer` 禁止 `while`、`goto` 等危险语法与部分包导入
+- 条件节点脚本不允许调用 `binding.setVariable`
+
+## License
+
+Apache License 2.0
