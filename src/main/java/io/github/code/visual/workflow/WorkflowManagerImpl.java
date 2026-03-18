@@ -15,6 +15,7 @@
  */
 package io.github.code.visual.workflow;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import groovy.lang.Binding;
 import groovy.lang.GroovyClassLoader;
 import groovy.lang.GroovyCodeSource;
@@ -46,13 +47,16 @@ import org.springframework.util.CollectionUtils;
 import java.io.File;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
+import java.util.function.Predicate;
 
 /**
  * @author Levi Li
@@ -62,6 +66,8 @@ import java.util.function.BiFunction;
 @ConditionalOnMissingBean(WorkflowManager.class)
 public class WorkflowManagerImpl implements WorkflowManager {
     private final Logger logger = org.slf4j.LoggerFactory.getLogger(this.getClass());
+
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     private final CompilerConfiguration config;
     private final WorkflowMetadataRepository workflowMetadataRepository;
@@ -136,152 +142,130 @@ public class WorkflowManagerImpl implements WorkflowManager {
         }
     }
 
-    public boolean recursiveAndExecute(ScriptMetadata script, Binding binding, Map<Integer, List<WorkflowTaskLog>> workflowTaskLogMap, int currentLevel) {
+    @SuppressWarnings("unchecked")
+    public boolean recursiveAndExecute(ScriptMetadata script, Binding binding,
+                                       Map<Integer, List<WorkflowTaskLog>> workflowTaskLogMap, int currentLevel) {
 
-        List<WorkflowTaskLog> workflowTaskLogList = workflowTaskLogMap.getOrDefault(currentLevel, new ArrayList<>());
+        List<WorkflowTaskLog> logList = workflowTaskLogMap.computeIfAbsent(currentLevel, k -> new ArrayList<>());
 
-        if (script.getScriptType() == ScriptType.Start) {
-            String string = binding.getVariables().toString();
-            WorkflowTaskLog workflowTaskLog = new WorkflowTaskLog();
-            workflowTaskLog.setScriptId(script.getScriptId());
-            workflowTaskLog.setScriptName(script.getScriptName());
-            workflowTaskLog.setBeforeRunBinding(string);
-            workflowTaskLog.setAfterRunBinding(string);
-            workflowTaskLog.setScriptType(ScriptType.Start);
-            workflowTaskLog.setScriptRunStatus(ScriptRunStatus.Start);
-            workflowTaskLog.setScriptRunResult(null);
-            workflowTaskLog.setScriptRunTime(new Date());
-            workflowTaskLog.setScriptRunError(null);
-            workflowTaskLogList.add(workflowTaskLog);
-            workflowTaskLogMap.put(currentLevel, workflowTaskLogList);
-            if (!CollectionUtils.isEmpty(script.getChildren())) {
-                for (ScriptMetadata child : script.getChildren()) {
-                    boolean childSuccess = recursiveAndExecute(child, binding, workflowTaskLogMap, currentLevel + 1);
-                    if (!childSuccess) {
-                        return false;
-                    }
-                }
-            }
+        switch (script.getScriptType()) {
+            case Start:
+                logTerminalNode(script, binding, logList, ScriptRunStatus.Start);
+                return recurseChildren(script, binding, workflowTaskLogMap, currentLevel);
 
+            case End:
+                logTerminalNode(script, binding, logList, ScriptRunStatus.End);
+                return true;
 
-        } else if (script.getScriptType() == ScriptType.End) {
-            String string = binding.getVariables().toString();
-            WorkflowTaskLog workflowTaskLog = new WorkflowTaskLog();
-            workflowTaskLog.setScriptId(script.getScriptId());
-            workflowTaskLog.setScriptName(script.getScriptName());
-            workflowTaskLog.setBeforeRunBinding(string);
-            workflowTaskLog.setAfterRunBinding(string);
-            workflowTaskLog.setScriptType(ScriptType.End);
-            workflowTaskLog.setScriptRunStatus(ScriptRunStatus.End);
-            workflowTaskLog.setScriptRunResult(null);
-            workflowTaskLog.setScriptRunTime(new Date());
-            workflowTaskLog.setScriptRunError(null);
-            workflowTaskLogList.add(workflowTaskLog);
-            workflowTaskLogMap.put(currentLevel, workflowTaskLogList);
+            case Script:
+                return executeAndRecurse(script, binding, logList,
+                        this::executeScript, workflowTaskLogMap, currentLevel, result -> true);
 
-        } else if (script.getScriptType() == ScriptType.Condition) {
+            case Condition:
+                return executeAndRecurse(script, binding, logList,
+                        this::executeScript, workflowTaskLogMap, currentLevel,
+                        result -> result instanceof Boolean && (Boolean) result);
 
-            WorkflowTaskLog runResult = logScriptExecution(script, binding, workflowTaskLogList,
-                    this::executeScript,
-                    workflowTaskLogMap, currentLevel);
-            if (runResult.getScriptRunStatus() == ScriptRunStatus.Error) {
-                return false;
-            }
-            boolean trueCondition = runResult.getScriptRunResult() instanceof Boolean && (Boolean) runResult.getScriptRunResult();
+            case Rule:
+                return executeAndRecurse(script, binding, logList,
+                        (s, b) -> {
+                            List<Rule> rules = RuleEngine.parser(s);
+                            return RuleEngine.execute(rules, b);
+                        }, workflowTaskLogMap, currentLevel, result -> true);
 
-            if (trueCondition && !CollectionUtils.isEmpty(script.getChildren())) {
+            default:
+                return true;
+        }
+    }
 
-                for (ScriptMetadata child : script.getChildren()) {
-                    boolean childSuccess = recursiveAndExecute(child, binding, workflowTaskLogMap, currentLevel + 1);
-                    if (!childSuccess) {
-                        return false;
-                    }
-                }
-            }
+    private boolean executeAndRecurse(ScriptMetadata script, Binding binding,
+                                      List<WorkflowTaskLog> logList,
+                                      BiFunction<ScriptMetadata, Binding, Object> executor,
+                                      Map<Integer, List<WorkflowTaskLog>> workflowTaskLogMap,
+                                      int currentLevel, Predicate<Object> shouldRecurse) {
 
-        } else if (script.getScriptType() == ScriptType.Script) {
-            WorkflowTaskLog runResult = logScriptExecution(script, binding, workflowTaskLogList, this::executeScript, workflowTaskLogMap, currentLevel);
-            if (runResult.getScriptRunStatus() == ScriptRunStatus.Error) {
-                return false;
-            }
+        WorkflowTaskLog log = logScriptExecution(script, binding, logList, executor);
 
-            if (!CollectionUtils.isEmpty(script.getChildren())) {
-                for (ScriptMetadata child : script.getChildren()) {
-                    boolean childSuccess = recursiveAndExecute(child, binding, workflowTaskLogMap, currentLevel + 1);
-                    if (!childSuccess) {
-                        return false;
-                    }
-                }
-            }
-        } else if (script.getScriptType() == ScriptType.Rule) {
-            WorkflowTaskLog runResult = logScriptExecution(script, binding, workflowTaskLogList, (scriptText, inputBinding) -> {
-                List<Rule> rules = RuleEngine.parser(scriptText);
-                return RuleEngine.execute(rules, inputBinding);
-            }, workflowTaskLogMap, currentLevel);
+        if (log.getScriptRunStatus() == ScriptRunStatus.Error) {
+            return false;
+        }
+        if (shouldRecurse.test(log.getScriptRunResult())) {
+            return recurseChildren(script, binding, workflowTaskLogMap, currentLevel);
+        }
+        return true;
+    }
 
-            if (runResult.getScriptRunStatus() == ScriptRunStatus.Error) {
-                return false;
-            }
-
-            if (!CollectionUtils.isEmpty(script.getChildren())) {
-                for (ScriptMetadata child : script.getChildren()) {
-                    boolean childSuccess = recursiveAndExecute(child, binding, workflowTaskLogMap, currentLevel + 1);
-                    if (!childSuccess) {
-                        return false;
-                    }
+    private boolean recurseChildren(ScriptMetadata script, Binding binding,
+                                    Map<Integer, List<WorkflowTaskLog>> workflowTaskLogMap, int currentLevel) {
+        if (!CollectionUtils.isEmpty(script.getChildren())) {
+            for (ScriptMetadata child : script.getChildren()) {
+                if (!recursiveAndExecute(child, binding, workflowTaskLogMap, currentLevel + 1)) {
+                    return false;
                 }
             }
         }
         return true;
     }
 
-
-    private WorkflowTaskLog logScriptExecution(ScriptMetadata script,
-                                               Binding binding,
-                                               List<WorkflowTaskLog> workflowTaskLogList,
-                                               BiFunction<ScriptMetadata, Binding, Object> scriptExecutor,
-                                               Map<Integer, List<WorkflowTaskLog>> workflowTaskLogMap, int currentLevel) {
+    private void logTerminalNode(ScriptMetadata script, Binding binding,
+                                 List<WorkflowTaskLog> logList, ScriptRunStatus status) {
         WorkflowTaskLog workflowTaskLog = new WorkflowTaskLog();
         workflowTaskLog.setScriptId(script.getScriptId());
         workflowTaskLog.setScriptName(script.getScriptName());
         workflowTaskLog.setScriptType(script.getScriptType());
-        workflowTaskLog.setBeforeRunBinding(binding.getVariables().toString());
-        workflowTaskLog.setScriptRunTime(new Date());
+        Object snapshot = snapshotBinding(binding);
+        workflowTaskLog.setBeforeRunBinding(snapshot);
+        workflowTaskLog.setAfterRunBinding(snapshot);
+        workflowTaskLog.setScriptRunStatus(status);
+        workflowTaskLog.setScriptRunTime(LocalDateTime.now());
+        logList.add(workflowTaskLog);
+    }
+
+    @SuppressWarnings("unchecked")
+    private String snapshotBinding(Binding binding) {
+        try {
+            return OBJECT_MAPPER.writeValueAsString(binding.getVariables());
+        } catch (Exception e) {
+            return binding.getVariables().toString();
+        }
+    }
+
+    private WorkflowTaskLog logScriptExecution(ScriptMetadata script,
+                                               Binding binding,
+                                               List<WorkflowTaskLog> workflowTaskLogList,
+                                               BiFunction<ScriptMetadata, Binding, Object> scriptExecutor) {
+        WorkflowTaskLog workflowTaskLog = new WorkflowTaskLog();
+        workflowTaskLog.setScriptId(script.getScriptId());
+        workflowTaskLog.setScriptName(script.getScriptName());
+        workflowTaskLog.setScriptType(script.getScriptType());
+        workflowTaskLog.setBeforeRunBinding(snapshotBinding(binding));
+        workflowTaskLog.setScriptRunTime(LocalDateTime.now());
 
         try {
             Object result = scriptExecutor.apply(script, binding);
             workflowTaskLog.setScriptRunStatus(ScriptRunStatus.Success);
-            if (result instanceof java.io.Serializable) {
-                workflowTaskLog.setScriptRunResult(result);
-            }
+            workflowTaskLog.setScriptRunResult(result);
 
         } catch (Throwable e) {
-
-            if (e instanceof Exception) {
-                workflowTaskLog.setScriptRunStatus(ScriptRunStatus.Error);
-                workflowTaskLog.setScriptRunError(e.getMessage());
-                logger.error("Exception trace", e);
-            }
-            if (e instanceof Error) {
-                workflowTaskLog.setScriptRunStatus(ScriptRunStatus.Error);
-                if (e.getCause() != null) {
-                    if (e.getCause().getCause() != null) {
-                        workflowTaskLog.setScriptRunError(e.getCause().getCause().getMessage());
-                    } else {
-                        workflowTaskLog.setScriptRunError(e.getCause().getMessage());
-                    }
-                } else {
-                    workflowTaskLog.setScriptRunError(e.getMessage());
-                }
-                logger.error("Error trace", e);
-            }
+            workflowTaskLog.setScriptRunStatus(ScriptRunStatus.Error);
+            workflowTaskLog.setScriptRunError(extractErrorMessage(e));
+            logger.error("Script execution failed: {}", script.getScriptName(), e);
 
         } finally {
-            workflowTaskLog.setAfterRunBinding(binding.getVariables().toString());
+            workflowTaskLog.setAfterRunBinding(snapshotBinding(binding));
             workflowTaskLogList.add(workflowTaskLog);
-            workflowTaskLogMap.put(currentLevel, workflowTaskLogList);
         }
         return workflowTaskLog;
+    }
+
+    private String extractErrorMessage(Throwable e) {
+        if (e.getCause() != null && e.getCause().getCause() != null) {
+            return e.getCause().getCause().getMessage();
+        }
+        if (e.getCause() != null) {
+            return e.getCause().getMessage();
+        }
+        return e.getMessage();
     }
 
 

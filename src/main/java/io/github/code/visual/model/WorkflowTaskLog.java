@@ -15,7 +15,7 @@
  */
 package io.github.code.visual.model;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 public class WorkflowTaskLog implements java.io.Serializable {
     private String scriptId;
@@ -30,7 +30,7 @@ public class WorkflowTaskLog implements java.io.Serializable {
 
     private Object scriptRunResult;
 
-    private Date scriptRunTime;
+    private LocalDateTime scriptRunTime;
 
     private String scriptRunError;
 
@@ -97,11 +97,11 @@ public class WorkflowTaskLog implements java.io.Serializable {
         this.scriptRunResult = scriptRunResult;
     }
 
-    public Date getScriptRunTime() {
+    public LocalDateTime getScriptRunTime() {
         return scriptRunTime;
     }
 
-    public void setScriptRunTime(Date scriptRunTime) {
+    public void setScriptRunTime(LocalDateTime scriptRunTime) {
         this.scriptRunTime = scriptRunTime;
     }
 
