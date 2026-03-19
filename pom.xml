@@ -6,11 +6,11 @@
 
     <groupId>io.github.code-visual</groupId>
     <artifactId>visual-flowengine-spring-boot-starter</artifactId>
-    <version>1.0.8</version>
+    <version>1.0.9</version>
     <packaging>jar</packaging>
     <properties>
-        <maven.compiler.source>8</maven.compiler.source>
-        <maven.compiler.target>8</maven.compiler.target>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
     <licenses>
@@ -31,14 +31,14 @@
             <name>levi</name>
             <email>levi.lideng@gmail.com</email>
             <organization>code-visual</organization>
-            <organizationUrl>https://www.ikuning.com</organizationUrl>
-            <url>https://www.ikuning.com</url>
+            <organizationUrl>https://www.calyx-ai.com</organizationUrl>
+            <url>https://www.calyx-ai.com</url>
         </developer>
     </developers>
 
     <name>visual-flowengine Application</name>
     <description>visual-flowengine</description>
-    <url>https://www.ikuning.com</url>
+    <url>https://www.calyx-ai.com</url>
 
 
     <dependencies>
@@ -68,14 +68,14 @@
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-api</artifactId>
-            <version>2.0.9</version>
+            <version>1.7.36</version>
             <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-webmvc</artifactId>
-            <version>5.2.25.RELEASE</version>
+            <version>5.3.15</version>
             <scope>provided</scope>
         </dependency>
 
@@ -84,31 +84,6 @@
             <artifactId>jackson-databind</artifactId>
             <version>2.13.5</version>
             <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
-            <version>2.7.5</version>
-            <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.junit.jupiter</groupId>
-                    <artifactId>junit-jupiter-api</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.12</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.testng</groupId>
-            <artifactId>testng</artifactId>
-            <version>6.14.3</version>
-            <scope>test</scope>
         </dependency>
 
 
@@ -129,58 +104,13 @@
                         </goals>
                     </execution>
 
-                    <execution>
-                        <id>Copyright config</id>
-                        <phase>clean</phase>
-                        <goals>
-                            <goal>execute</goal>
-                        </goals>
-                        <configuration>
-                            <scripts>
-                                <script>
-                                    <![CDATA[
-void addCopyright(String path, String extension) {
-println("path: " + path)
-    def directory = new java.io.File(path)
-    directory.eachFileRecurse(groovy.io.FileType.FILES) { file ->
-        if (file.name.endsWith(extension)) {
-            def content = file.text
-            if (!content.contains("Copyright")) {
-                def newContent = "/*\n" +
-                    " * Copyright (c) 2023-2024, levi li (levi.lideng@gmail.com)\n" +
-                    " *\n" +
-                    " * Licensed under the Apache License, Version 2.0 (the \"License\");\n" +
-                    " * you may not use this file except in compliance with the License.\n" +
-                    " * You may obtain a copy of the License at\n" +
-                    " *\n" +
-                    " *      https://www.apache.org/licenses/LICENSE-2.0\n" +
-                    " *\n" +
-                    " * Unless required by applicable law or agreed to in writing, software\n" +
-                    " * distributed under the License is distributed on an \"AS IS\" BASIS,\n" +
-                    " * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n" +
-                    " * See the License for the specific language governing permissions and\n" +
-                    " * limitations under the License.\n" +
-                    " */\n" + content
-                file.text = newContent
-            }
-        }
-    }
-}
-
-addCopyright(project.basedir.toString() + "/src/main/java", ".java")
-addCopyright(project.basedir.toString() + "/src/main/groovy", ".groovy")
-                        ]]>
-                                </script>
-                            </scripts>
-                        </configuration>
-                    </execution>
 
                 </executions>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
-                <version>2.2.1</version>
+                <version>3.3.0</version>
                 <executions>
                     <execution>
                         <id>attach-sources</id>
@@ -193,7 +123,7 @@ addCopyright(project.basedir.toString() + "/src/main/groovy", ".groovy")
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>2.9.1</version>
+                <version>3.6.3</version>
                 <executions>
                     <execution>
                         <id>attach-javadocs</id>
@@ -206,7 +136,7 @@ addCopyright(project.basedir.toString() + "/src/main/groovy", ".groovy")
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-gpg-plugin</artifactId>
-                <version>1.5</version>
+                <version>3.1.0</version>
                 <executions>
                     <execution>
                         <id>sign-artifacts</id>
@@ -220,7 +150,7 @@ addCopyright(project.basedir.toString() + "/src/main/groovy", ".groovy")
             <plugin>
                 <groupId>org.sonatype.central</groupId>
                 <artifactId>central-publishing-maven-plugin</artifactId>
-                <version>0.3.0</version>
+                <version>0.6.0</version>
                 <extensions>true</extensions>
                 <configuration>
                     <publishingServerId>central</publishingServerId>
