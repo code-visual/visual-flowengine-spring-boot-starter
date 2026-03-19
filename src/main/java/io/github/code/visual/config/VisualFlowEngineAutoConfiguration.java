@@ -15,15 +15,16 @@
  */
 package io.github.code.visual.config;
 
-import io.github.code.visual.workflow.TempWorkflowMetadataRepositoryImpl;
-import io.github.code.visual.workflow.WorkflowManager;
-import io.github.code.visual.workflow.WorkflowManagerImpl;
-import io.github.code.visual.workflow.WorkflowMetadataRepository;
+import io.github.code.visual.workflow.InMemoryWorkflowRepository;
+import io.github.code.visual.workflow.WorkflowEngine;
+import io.github.code.visual.workflow.WorkflowExecutionListener;
+import io.github.code.visual.workflow.WorkflowRepository;
 import org.codehaus.groovy.ast.stmt.Statement;
 import org.codehaus.groovy.ast.stmt.WhileStatement;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.customizers.SecureASTCustomizer;
 import org.codehaus.groovy.syntax.Types;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication;
@@ -31,10 +32,6 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -43,6 +40,8 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
+ * Auto-configuration for Visual Flow Engine.
+ *
  * @author Levi Li
  * @since 12/19/2023
  */
@@ -52,39 +51,25 @@ import java.util.List;
 @EnableConfigurationProperties(VisualFlowProperties.class)
 public class VisualFlowEngineAutoConfiguration {
 
+    // ── UI: Static resource serving ──
 
-    @Controller
-    public static class VisualFlowUIController {
-
-        private final VisualFlowProperties visualFlowProperties;
-
-        public VisualFlowUIController(VisualFlowProperties visualFlowProperties) {
-            this.visualFlowProperties = visualFlowProperties;
-        }
-
-
-        @GetMapping("${visual.flow.webUIPath:/visualFlow-ui.html}")
-        @ConditionalOnProperty(name = "visual.flow.enableWebUIPath", havingValue = "true", matchIfMissing = true)
-        public ModelAndView visualFlow(Model model) {
-            model.addAttribute("visualFlowProperties", visualFlowProperties);
-            return new ModelAndView("index");
-        }
-    }
-
-    @Bean(name = "customLibraryWebConfigurer")
-    public WebMvcConfigurer customLibraryWebConfigurer() {
+    @Bean
+    @ConditionalOnProperty(name = "visual.flow.enable-ui", havingValue = "true", matchIfMissing = true)
+    public WebMvcConfigurer visualFlowUiConfigurer(VisualFlowProperties properties) {
         return new WebMvcConfigurer() {
-
+            @Override
             public void addResourceHandlers(ResourceHandlerRegistry registry) {
-                registry.addResourceHandler("/**")
+                String basePath = properties.getBasePath();
+                registry.addResourceHandler(basePath + "/**")
                         .addResourceLocations("classpath:/META-INF/resources/visualflow/");
             }
         };
     }
 
+    // ── Groovy security ──
+
     @Configuration
     static class GroovySecureConfig {
-
 
         @Bean
         @ConditionalOnMissingBean(SecureASTCustomizer.class)
@@ -96,9 +81,11 @@ public class VisualFlowEngineAutoConfiguration {
             tokensBlacklist.add(Types.KEYWORD_WHILE);
             tokensBlacklist.add(Types.KEYWORD_GOTO);
             secure.setDisallowedTokens(tokensBlacklist);
+
             List<Class<? extends Statement>> statementBlacklist = new ArrayList<>();
             statementBlacklist.add(WhileStatement.class);
             secure.setDisallowedStatements(statementBlacklist);
+
             secure.setIndirectImportCheckEnabled(false);
             secure.setDisallowedStaticImports(Arrays.asList("System", "Runtime", "Class"));
             secure.setDisallowedImports(Arrays.asList("org.codehaus.groovy.runtime.*", "groovy.json.*"));
@@ -115,17 +102,20 @@ public class VisualFlowEngineAutoConfiguration {
         }
     }
 
+    // ── Core beans ──
+
     @Bean
-    @ConditionalOnMissingBean(WorkflowMetadataRepository.class)
-    public WorkflowMetadataRepository workflowMetadataRepository() {
-        return new TempWorkflowMetadataRepositoryImpl();
+    @ConditionalOnMissingBean(WorkflowRepository.class)
+    public WorkflowRepository workflowRepository() {
+        return new InMemoryWorkflowRepository();
     }
 
     @Bean
-    @ConditionalOnMissingBean(WorkflowManager.class)
-    public WorkflowManager workflowManager(CompilerConfiguration compilerConfiguration,
-                                           WorkflowMetadataRepository workflowMetadataRepository,
-                                           VisualFlowProperties visualFlowProperties) {
-        return new WorkflowManagerImpl(compilerConfiguration, workflowMetadataRepository, visualFlowProperties);
+    @ConditionalOnMissingBean(WorkflowEngine.class)
+    public WorkflowEngine workflowEngine(CompilerConfiguration compilerConfiguration,
+                                         WorkflowRepository workflowRepository,
+                                         VisualFlowProperties properties,
+                                         @Autowired(required = false) List<WorkflowExecutionListener> listeners) {
+        return new WorkflowEngine(compilerConfiguration, workflowRepository, properties, listeners);
     }
 }

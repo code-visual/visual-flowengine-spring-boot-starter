@@ -17,7 +17,7 @@ package io.github.code.visual.ruleengine
 
 import io.github.code.visual.model.ScriptMetadata
 import io.github.code.visual.utils.SpringContext
-import io.github.code.visual.workflow.WorkflowManager
+import io.github.code.visual.workflow.WorkflowEngine
 
 class RuleEngine {
 
@@ -64,7 +64,7 @@ class RuleEngine {
             localRules.add(newRule)
         })
 
-        SpringContext.getBean(WorkflowManager.class).executeScript(rulesDefinition, binding)
+        SpringContext.getBean(WorkflowEngine.class).executeScript(rulesDefinition, binding)
         return localRules
     }
 }

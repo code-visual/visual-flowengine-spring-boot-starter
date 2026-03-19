@@ -15,36 +15,104 @@
  */
 package io.github.code.visual.config;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 /**
+ * Configuration properties for Visual Flow Engine.
+ *
  * @author Levi Li
  * @since 01/18/2024
  */
 @ConfigurationProperties(prefix = "visual.flow")
 public class VisualFlowProperties {
 
-    @Value("${visual.flow.webUIPath:/visualFlow-ui.html}")
-    private String webUIPath;
-    private boolean enableDefaultApi;
-    private boolean enableWebUIPath;
+    /**
+     * Base path for all Visual Flow endpoints (UI + API).
+     * Default: /visualflow
+     */
+    private String basePath = "/visualflow";
+
+    /**
+     * Whether to enable the built-in REST API.
+     */
+    private boolean enableApi = true;
+
+    /**
+     * Whether to enable the Web UI.
+     */
+    private boolean enableUi = true;
+
+    /**
+     * Whether to enable Groovy AST security checks.
+     */
     private boolean enableAST = true;
+
+    /**
+     * Whether to cache compiled Groovy classes.
+     */
     private boolean enableCacheSource = true;
 
-    private String executeWorkflowApiPath = "/api/engine/workflow/execute";
-    private String debugWorkflowApiPath = "/api/engine/workflow/debug";
-    private String createWorkflowApiPath = "/api/engine/workflow";
-    private String deleteWorkflowApiPath = "/api/engine/workflow";
-    private String updateWorkflowApiPath = "/api/engine/workflow";
+    // ── Per-endpoint path overrides (optional) ──
 
-    private String listWorkflowsApiPath = "/api/engine/workflowList";
-    private String compileScriptApiPath = "/api/engine/groovyScript/compile";
-    private String getWorkflowMetadataApiPath = "/api/engine/workflow";
+    private String workflowsApiPath;
+    private String executeApiPath;
+    private String debugApiPath;
+    private String compileApiPath;
 
+    // ── Derived paths (use override if set, otherwise derive from basePath) ──
+
+    public String getWorkflowsApiPath() {
+        return workflowsApiPath != null ? workflowsApiPath : basePath + "/api/workflows";
+    }
+
+    public String getExecuteApiPath() {
+        return executeApiPath != null ? executeApiPath : basePath + "/api/workflows/execute";
+    }
+
+    public String getDebugApiPath() {
+        return debugApiPath != null ? debugApiPath : basePath + "/api/workflows/debug";
+    }
+
+    public String getCompileApiPath() {
+        return compileApiPath != null ? compileApiPath : basePath + "/api/script/compile";
+    }
+
+    public String getConfigApiPath() {
+        return basePath + "/api/config";
+    }
+
+    // ── Getters and Setters ──
+
+    public String getBasePath() {
+        return basePath;
+    }
+
+    public void setBasePath(String basePath) {
+        this.basePath = basePath;
+    }
+
+    public boolean isEnableApi() {
+        return enableApi;
+    }
+
+    public void setEnableApi(boolean enableApi) {
+        this.enableApi = enableApi;
+    }
+
+    public boolean isEnableUi() {
+        return enableUi;
+    }
+
+    public void setEnableUi(boolean enableUi) {
+        this.enableUi = enableUi;
+    }
 
     public boolean isEnableAST() {
         return enableAST;
+    }
+
+    public void setEnableAST(boolean enableAST) {
+        this.enableAST = enableAST;
     }
 
     public boolean isEnableCacheSource() {
@@ -55,98 +123,19 @@ public class VisualFlowProperties {
         this.enableCacheSource = enableCacheSource;
     }
 
-    public void setEnableAST(boolean enableAST) {
-        this.enableAST = enableAST;
+    public void setWorkflowsApiPath(String workflowsApiPath) {
+        this.workflowsApiPath = workflowsApiPath;
     }
 
-    public String getDebugWorkflowApiPath() {
-        return debugWorkflowApiPath;
+    public void setExecuteApiPath(String executeApiPath) {
+        this.executeApiPath = executeApiPath;
     }
 
-    public void setDebugWorkflowApiPath(String debugWorkflowApiPath) {
-        this.debugWorkflowApiPath = debugWorkflowApiPath;
+    public void setDebugApiPath(String debugApiPath) {
+        this.debugApiPath = debugApiPath;
     }
 
-    public String getExecuteWorkflowApiPath() {
-        return executeWorkflowApiPath;
+    public void setCompileApiPath(String compileApiPath) {
+        this.compileApiPath = compileApiPath;
     }
-
-    public void setExecuteWorkflowApiPath(String executeWorkflowApiPath) {
-        this.executeWorkflowApiPath = executeWorkflowApiPath;
-    }
-
-    public String getUpdateWorkflowApiPath() {
-        return updateWorkflowApiPath;
-    }
-
-    public void setUpdateWorkflowApiPath(String updateWorkflowApiPath) {
-        this.updateWorkflowApiPath = updateWorkflowApiPath;
-    }
-
-    public boolean isEnableWebUIPath() {
-        return enableWebUIPath;
-    }
-
-    public void setEnableWebUIPath(boolean enableWebUIPath) {
-        this.enableWebUIPath = enableWebUIPath;
-    }
-
-    public String getCreateWorkflowApiPath() {
-        return createWorkflowApiPath;
-    }
-
-    public void setCreateWorkflowApiPath(String createWorkflowApiPath) {
-        this.createWorkflowApiPath = createWorkflowApiPath;
-    }
-
-    public String getDeleteWorkflowApiPath() {
-        return deleteWorkflowApiPath;
-    }
-
-    public void setDeleteWorkflowApiPath(String deleteWorkflowApiPath) {
-        this.deleteWorkflowApiPath = deleteWorkflowApiPath;
-    }
-
-    public String getListWorkflowsApiPath() {
-        return listWorkflowsApiPath;
-    }
-
-    public void setListWorkflowsApiPath(String listWorkflowsApiPath) {
-        this.listWorkflowsApiPath = listWorkflowsApiPath;
-    }
-
-    public String getGetWorkflowMetadataApiPath() {
-        return getWorkflowMetadataApiPath;
-    }
-
-    public void setGetWorkflowMetadataApiPath(String getWorkflowMetadataApiPath) {
-        this.getWorkflowMetadataApiPath = getWorkflowMetadataApiPath;
-    }
-
-    public String getCompileScriptApiPath() {
-        return compileScriptApiPath;
-    }
-
-    public void setCompileScriptApiPath(String compileScriptApiPath) {
-        this.compileScriptApiPath = compileScriptApiPath;
-    }
-
-    public boolean isEnableDefaultApi() {
-        return enableDefaultApi;
-    }
-
-    public void setEnableDefaultApi(boolean enableDefaultApi) {
-        this.enableDefaultApi = enableDefaultApi;
-    }
-
-    public String getWebUIPath() {
-        return webUIPath;
-    }
-
-
-    public void setWebUIPath(String webUIPath) {
-        this.webUIPath = webUIPath;
-    }
-
-
 }

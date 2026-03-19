@@ -29,8 +29,9 @@ public class WorkflowMetadata implements java.io.Serializable {
     private List<WorkflowParameters> workflowParameters;
     private String workflowPurpose;
     private String remark;
-    private Date createTime;
-    private Date updateTime;
+    private Integer revision;
+    private Date createdAt;
+    private Date updatedAt;
     private ScriptMetadata scriptMetadata;
 
     @Override
@@ -41,18 +42,11 @@ public class WorkflowMetadata implements java.io.Serializable {
                 ", workflowParameters=" + workflowParameters +
                 ", workflowPurpose='" + workflowPurpose + '\'' +
                 ", remark='" + remark + '\'' +
-                ", createTime=" + createTime +
-                ", updateTime=" + updateTime +
+                ", revision=" + revision +
+                ", createdAt=" + createdAt +
+                ", updatedAt=" + updatedAt +
                 ", scriptMetadata=" + scriptMetadata +
                 '}';
-    }
-
-    public List<WorkflowParameters> getWorkflowParameters() {
-        return workflowParameters;
-    }
-
-    public void setWorkflowParameters(List<WorkflowParameters> workflowParameters) {
-        this.workflowParameters = workflowParameters;
     }
 
     public Integer getWorkflowId() {
@@ -63,14 +57,6 @@ public class WorkflowMetadata implements java.io.Serializable {
         this.workflowId = workflowId;
     }
 
-    public String getRemark() {
-        return remark;
-    }
-
-    public void setRemark(String remark) {
-        this.remark = remark;
-    }
-
     public String getWorkflowName() {
         return workflowName;
     }
@@ -79,6 +65,13 @@ public class WorkflowMetadata implements java.io.Serializable {
         this.workflowName = workflowName;
     }
 
+    public List<WorkflowParameters> getWorkflowParameters() {
+        return workflowParameters;
+    }
+
+    public void setWorkflowParameters(List<WorkflowParameters> workflowParameters) {
+        this.workflowParameters = workflowParameters;
+    }
 
     public String getWorkflowPurpose() {
         return workflowPurpose;
@@ -88,20 +81,36 @@ public class WorkflowMetadata implements java.io.Serializable {
         this.workflowPurpose = workflowPurpose;
     }
 
-    public Date getCreateTime() {
-        return createTime;
+    public String getRemark() {
+        return remark;
     }
 
-    public void setCreateTime(Date createTime) {
-        this.createTime = createTime;
+    public void setRemark(String remark) {
+        this.remark = remark;
     }
 
-    public Date getUpdateTime() {
-        return updateTime;
+    public Integer getRevision() {
+        return revision;
     }
 
-    public void setUpdateTime(Date updateTime) {
-        this.updateTime = updateTime;
+    public void setRevision(Integer revision) {
+        this.revision = revision;
+    }
+
+    public Date getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Date createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public Date getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(Date updatedAt) {
+        this.updatedAt = updatedAt;
     }
 
     public ScriptMetadata getScriptMetadata() {
@@ -110,5 +119,30 @@ public class WorkflowMetadata implements java.io.Serializable {
 
     public void setScriptMetadata(ScriptMetadata scriptMetadata) {
         this.scriptMetadata = scriptMetadata;
+    }
+
+    // Backward compatibility aliases
+    /** @deprecated Use {@link #getCreatedAt()} */
+    @Deprecated
+    public Date getCreateTime() {
+        return createdAt;
+    }
+
+    /** @deprecated Use {@link #setCreatedAt(Date)} */
+    @Deprecated
+    public void setCreateTime(Date createTime) {
+        this.createdAt = createTime;
+    }
+
+    /** @deprecated Use {@link #getUpdatedAt()} */
+    @Deprecated
+    public Date getUpdateTime() {
+        return updatedAt;
+    }
+
+    /** @deprecated Use {@link #setUpdatedAt(Date)} */
+    @Deprecated
+    public void setUpdateTime(Date updateTime) {
+        this.updatedAt = updateTime;
     }
 }
