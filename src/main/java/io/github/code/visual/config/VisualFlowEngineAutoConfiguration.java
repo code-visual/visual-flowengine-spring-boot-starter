@@ -62,6 +62,8 @@ public class VisualFlowEngineAutoConfiguration {
                 String basePath = properties.getBasePath();
                 registry.addResourceHandler(basePath + "/**")
                         .addResourceLocations("classpath:/META-INF/resources/visualflow/");
+                registry.addResourceHandler("/favicon.ico")
+                        .addResourceLocations("classpath:/META-INF/resources/visualflow/favicon.ico");
             }
         };
     }
