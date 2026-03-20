@@ -16,6 +16,7 @@
 package io.github.code.visual.web;
 
 import io.github.code.visual.config.VisualFlowProperties;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import io.github.code.visual.model.DebugRequest;
 import io.github.code.visual.model.Diagnostic;
 import io.github.code.visual.model.ScriptRequest;
@@ -48,6 +49,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @since 09/18/2023
  */
 @RestController
+@ConditionalOnProperty(name = "visual.flow.enable-api", havingValue = "true", matchIfMissing = true)
 public class WorkflowController {
 
     private final ExecutorService sseExecutor = Executors.newCachedThreadPool();

@@ -45,7 +45,7 @@ public class VisualFlowProperties {
     /**
      * Whether to enable Groovy AST security checks.
      */
-    private boolean enableAST = true;
+    private boolean enableAst = true;
 
     /**
      * Whether to cache compiled Groovy classes.
@@ -59,10 +59,30 @@ public class VisualFlowProperties {
 
     // ── Per-endpoint path overrides (optional) ──
 
+    /**
+     * Override path for workflows CRUD API. Default: {basePath}/api/workflows
+     */
     private String workflowsApiPath;
+
+    /**
+     * Override path for workflow execution API. Default: {basePath}/api/workflows/execute
+     */
     private String executeApiPath;
+
+    /**
+     * Override path for workflow debug API. Default: {basePath}/api/workflows/debug
+     */
     private String debugApiPath;
+
+    /**
+     * Override path for script compile API. Default: {basePath}/api/script/compile
+     */
     private String compileApiPath;
+
+    /**
+     * Override path for debug SSE stream API. Default: {basePath}/api/workflows/debug/stream
+     */
+    private String debugStreamApiPath;
 
     // ── Derived paths (use override if set, otherwise derive from basePath) ──
 
@@ -79,7 +99,7 @@ public class VisualFlowProperties {
     }
 
     public String getDebugStreamApiPath() {
-        return basePath + "/api/workflows/debug/stream";
+        return debugStreamApiPath != null ? debugStreamApiPath : basePath + "/api/workflows/debug/stream";
     }
 
     public String getCompileApiPath() {
@@ -116,12 +136,12 @@ public class VisualFlowProperties {
         this.enableUi = enableUi;
     }
 
-    public boolean isEnableAST() {
-        return enableAST;
+    public boolean isEnableAst() {
+        return enableAst;
     }
 
-    public void setEnableAST(boolean enableAST) {
-        this.enableAST = enableAST;
+    public void setEnableAst(boolean enableAst) {
+        this.enableAst = enableAst;
     }
 
     public boolean isEnableCacheSource() {
@@ -146,6 +166,10 @@ public class VisualFlowProperties {
 
     public void setCompileApiPath(String compileApiPath) {
         this.compileApiPath = compileApiPath;
+    }
+
+    public void setDebugStreamApiPath(String debugStreamApiPath) {
+        this.debugStreamApiPath = debugStreamApiPath;
     }
 
     public int getScriptTimeoutSeconds() {
