@@ -47,6 +47,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
@@ -330,7 +331,22 @@ public class WorkflowEngine {
         try {
             return OBJECT_MAPPER.writeValueAsString(binding.getVariables());
         } catch (Exception e) {
-            return binding.getVariables().toString();
+            // Jackson serialization failed — build a safe JSON map with toString() for non-serializable values
+            Map<String, Object> safeMap = new LinkedHashMap<>();
+            binding.getVariables().forEach((k, v) -> {
+                try {
+                    OBJECT_MAPPER.writeValueAsString(v);
+                    safeMap.put(String.valueOf(k), v);
+                } catch (Exception ex) {
+                    safeMap.put(String.valueOf(k), String.valueOf(v));
+                }
+            });
+            try {
+                return OBJECT_MAPPER.writeValueAsString(safeMap);
+            } catch (Exception ex) {
+                logger.warn("Failed to snapshot binding", ex);
+                return "{}";
+            }
         }
     }
 

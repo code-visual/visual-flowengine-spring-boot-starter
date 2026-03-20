@@ -24,7 +24,6 @@ import io.github.code.visual.model.WorkflowMetadata;
 import io.github.code.visual.model.WorkflowTaskLog;
 import io.github.code.visual.workflow.WorkflowEngine;
 import io.github.code.visual.workflow.WorkflowRepository;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -34,11 +33,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Built-in REST controller for workflow management and execution.
@@ -49,7 +50,6 @@ import java.util.concurrent.Executors;
 @RestController
 public class WorkflowController {
 
-    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     private final ExecutorService sseExecutor = Executors.newCachedThreadPool();
 
     private final WorkflowEngine engine;
@@ -127,21 +127,33 @@ public class WorkflowController {
             produces = "text/event-stream")
     public SseEmitter debugWorkflowStream(@RequestBody DebugRequest debugRequest) {
         SseEmitter emitter = new SseEmitter(60_000L);
+        AtomicBoolean aborted = new AtomicBoolean(false);
+
+        emitter.onCompletion(() -> aborted.set(true));
+        emitter.onTimeout(() -> aborted.set(true));
+        emitter.onError(e -> aborted.set(true));
+
         sseExecutor.execute(() -> {
             try {
                 engine.debug(debugRequest, log -> {
+                    if (aborted.get()) return;
                     try {
+                        // .data(Object) lets Spring use Jackson — no manual serialization
                         emitter.send(SseEmitter.event()
                                 .name("node")
-                                .data(OBJECT_MAPPER.writeValueAsString(log)));
-                    } catch (Exception e) {
-                        emitter.completeWithError(e);
+                                .data(log));
+                    } catch (IOException e) {
+                        aborted.set(true);
                     }
                 });
-                emitter.send(SseEmitter.event().name("done").data(""));
-                emitter.complete();
+                if (!aborted.get()) {
+                    emitter.send(SseEmitter.event().name("done").data(""));
+                    emitter.complete();
+                }
             } catch (Exception e) {
-                emitter.completeWithError(e);
+                if (!aborted.get()) {
+                    emitter.completeWithError(e);
+                }
             }
         });
         return emitter;
