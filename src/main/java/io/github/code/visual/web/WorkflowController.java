@@ -24,6 +24,7 @@ import io.github.code.visual.model.WorkflowMetadata;
 import io.github.code.visual.model.WorkflowTaskLog;
 import io.github.code.visual.workflow.WorkflowEngine;
 import io.github.code.visual.workflow.WorkflowRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -31,10 +32,13 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * Built-in REST controller for workflow management and execution.
@@ -44,6 +48,9 @@ import java.util.Map;
  */
 @RestController
 public class WorkflowController {
+
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+    private final ExecutorService sseExecutor = Executors.newCachedThreadPool();
 
     private final WorkflowEngine engine;
     private final WorkflowRepository repository;
@@ -66,6 +73,7 @@ public class WorkflowController {
         config.put("workflowsApiPath", properties.getWorkflowsApiPath());
         config.put("executeApiPath", properties.getExecuteApiPath());
         config.put("debugApiPath", properties.getDebugApiPath());
+        config.put("debugStreamApiPath", properties.getDebugStreamApiPath());
         config.put("compileApiPath", properties.getCompileApiPath());
         return config;
     }
@@ -113,6 +121,30 @@ public class WorkflowController {
     @PostMapping("${visual.flow.basePath:/visualflow}/api/workflows/debug")
     public Map<Integer, List<WorkflowTaskLog>> debugWorkflow(@RequestBody DebugRequest debugRequest) {
         return engine.debug(debugRequest);
+    }
+
+    @PostMapping(value = "${visual.flow.basePath:/visualflow}/api/workflows/debug/stream",
+            produces = "text/event-stream")
+    public SseEmitter debugWorkflowStream(@RequestBody DebugRequest debugRequest) {
+        SseEmitter emitter = new SseEmitter(60_000L);
+        sseExecutor.execute(() -> {
+            try {
+                engine.debug(debugRequest, log -> {
+                    try {
+                        emitter.send(SseEmitter.event()
+                                .name("node")
+                                .data(OBJECT_MAPPER.writeValueAsString(log)));
+                    } catch (Exception e) {
+                        emitter.completeWithError(e);
+                    }
+                });
+                emitter.send(SseEmitter.event().name("done").data(""));
+                emitter.complete();
+            } catch (Exception e) {
+                emitter.completeWithError(e);
+            }
+        });
+        return emitter;
     }
 
     // ── Script compilation ──

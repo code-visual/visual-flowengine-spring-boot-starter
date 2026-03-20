@@ -73,6 +73,10 @@ public class VisualFlowProperties {
         return debugApiPath != null ? debugApiPath : basePath + "/api/workflows/debug";
     }
 
+    public String getDebugStreamApiPath() {
+        return basePath + "/api/workflows/debug/stream";
+    }
+
     public String getCompileApiPath() {
         return compileApiPath != null ? compileApiPath : basePath + "/api/script/compile";
     }

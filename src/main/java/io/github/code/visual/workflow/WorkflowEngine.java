@@ -50,6 +50,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 /**
@@ -118,15 +119,25 @@ public class WorkflowEngine {
      * Debug a workflow with provided script metadata and input values.
      */
     public Map<Integer, List<WorkflowTaskLog>> debug(DebugRequest debugRequest) {
+        return debug(debugRequest, null);
+    }
+
+    /**
+     * Debug a workflow with streaming callback.
+     * Each node execution result is pushed to the callback in real-time.
+     */
+    public Map<Integer, List<WorkflowTaskLog>> debug(DebugRequest debugRequest,
+                                                      Consumer<WorkflowTaskLog> onNodeComplete) {
         if (debugRequest.getScriptMetadata() == null) {
             WorkflowTaskLog errorLog = new WorkflowTaskLog();
             errorLog.setScriptName("");
             errorLog.setScriptId("");
             errorLog.setScriptRunStatus(ScriptRunStatus.Error);
             errorLog.setScriptRunError("ScriptMetadata is null");
+            if (onNodeComplete != null) onNodeComplete.accept(errorLog);
             return Collections.singletonMap(1, Collections.singletonList(errorLog));
         }
-        return doExecute(debugRequest.getScriptMetadata(), debugRequest.getInputValues());
+        return doExecute(debugRequest.getScriptMetadata(), debugRequest.getInputValues(), onNodeComplete);
     }
 
     /**
@@ -178,40 +189,47 @@ public class WorkflowEngine {
 
     @SuppressWarnings("rawtypes")
     private Map<Integer, List<WorkflowTaskLog>> doExecute(ScriptMetadata script, Map inputVariables) {
+        return doExecute(script, inputVariables, null);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private Map<Integer, List<WorkflowTaskLog>> doExecute(ScriptMetadata script, Map inputVariables,
+                                                           Consumer<WorkflowTaskLog> onNodeComplete) {
         Map<Integer, List<WorkflowTaskLog>> logs = new HashMap<>();
-        recursiveAndExecute(script, new Binding(inputVariables), logs, 1);
+        recursiveAndExecute(script, new Binding(inputVariables), logs, 1, onNodeComplete);
         return logs;
     }
 
     @SuppressWarnings("unchecked")
     private boolean recursiveAndExecute(ScriptMetadata script, Binding binding,
-                                        Map<Integer, List<WorkflowTaskLog>> logMap, int level) {
+                                        Map<Integer, List<WorkflowTaskLog>> logMap, int level,
+                                        Consumer<WorkflowTaskLog> onNodeComplete) {
         List<WorkflowTaskLog> logList = logMap.computeIfAbsent(level, k -> new ArrayList<>());
 
         switch (script.getScriptType()) {
             case Start:
-                logTerminalNode(script, binding, logList, ScriptRunStatus.Start);
-                return recurseChildren(script, binding, logMap, level);
+                logTerminalNode(script, binding, logList, ScriptRunStatus.Start, onNodeComplete);
+                return recurseChildren(script, binding, logMap, level, onNodeComplete);
 
             case End:
-                logTerminalNode(script, binding, logList, ScriptRunStatus.End);
+                logTerminalNode(script, binding, logList, ScriptRunStatus.End, onNodeComplete);
                 return true;
 
             case Script:
                 return executeAndRecurse(script, binding, logList,
-                        this::executeScript, logMap, level, result -> true);
+                        this::executeScript, logMap, level, result -> true, onNodeComplete);
 
             case Condition:
                 return executeAndRecurse(script, binding, logList,
                         this::executeScript, logMap, level,
-                        result -> result instanceof Boolean && (Boolean) result);
+                        result -> result instanceof Boolean && (Boolean) result, onNodeComplete);
 
             case Rule:
                 return executeAndRecurse(script, binding, logList,
                         (s, b) -> {
                             List<Rule> rules = RuleEngine.parser(s);
                             return RuleEngine.execute(rules, b);
-                        }, logMap, level, result -> true);
+                        }, logMap, level, result -> true, onNodeComplete);
 
             default:
                 return true;
@@ -222,22 +240,25 @@ public class WorkflowEngine {
                                       List<WorkflowTaskLog> logList,
                                       BiFunction<ScriptMetadata, Binding, Object> executor,
                                       Map<Integer, List<WorkflowTaskLog>> logMap,
-                                      int level, Predicate<Object> shouldRecurse) {
+                                      int level, Predicate<Object> shouldRecurse,
+                                      Consumer<WorkflowTaskLog> onNodeComplete) {
         WorkflowTaskLog log = logScriptExecution(script, binding, logList, executor);
+        if (onNodeComplete != null) onNodeComplete.accept(log);
         if (log.getScriptRunStatus() == ScriptRunStatus.Error) {
             return false;
         }
         if (shouldRecurse.test(log.getScriptRunResult())) {
-            return recurseChildren(script, binding, logMap, level);
+            return recurseChildren(script, binding, logMap, level, onNodeComplete);
         }
         return true;
     }
 
     private boolean recurseChildren(ScriptMetadata script, Binding binding,
-                                    Map<Integer, List<WorkflowTaskLog>> logMap, int level) {
+                                    Map<Integer, List<WorkflowTaskLog>> logMap, int level,
+                                    Consumer<WorkflowTaskLog> onNodeComplete) {
         if (!CollectionUtils.isEmpty(script.getChildren())) {
             for (ScriptMetadata child : script.getChildren()) {
-                if (!recursiveAndExecute(child, binding, logMap, level + 1)) {
+                if (!recursiveAndExecute(child, binding, logMap, level + 1, onNodeComplete)) {
                     return false;
                 }
             }
@@ -246,7 +267,8 @@ public class WorkflowEngine {
     }
 
     private void logTerminalNode(ScriptMetadata script, Binding binding,
-                                 List<WorkflowTaskLog> logList, ScriptRunStatus status) {
+                                 List<WorkflowTaskLog> logList, ScriptRunStatus status,
+                                 Consumer<WorkflowTaskLog> onNodeComplete) {
         WorkflowTaskLog log = new WorkflowTaskLog();
         log.setScriptId(script.getScriptId());
         log.setScriptName(script.getScriptName());
@@ -257,6 +279,7 @@ public class WorkflowEngine {
         log.setScriptRunStatus(status);
         log.setScriptRunTime(LocalDateTime.now());
         logList.add(log);
+        if (onNodeComplete != null) onNodeComplete.accept(log);
     }
 
     private WorkflowTaskLog logScriptExecution(ScriptMetadata script, Binding binding,
