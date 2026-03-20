@@ -31,4 +31,4 @@ bin/
 .idea
 /logs
 /target
-*.iml
+*.iml*.dmp
