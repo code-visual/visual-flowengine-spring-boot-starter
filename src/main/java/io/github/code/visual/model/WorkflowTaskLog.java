@@ -34,6 +34,8 @@ public class WorkflowTaskLog implements java.io.Serializable {
 
     private String scriptRunError;
 
+    private Long durationMs;
+
     @Override
     public String toString() {
         return "WorkflowTaskLog{" +
@@ -45,6 +47,7 @@ public class WorkflowTaskLog implements java.io.Serializable {
                 ", scriptRunStatus=" + scriptRunStatus +
                 ", scriptRunResult=" + scriptRunResult +
                 ", scriptRunTime=" + scriptRunTime +
+                ", durationMs=" + durationMs +
                 ", scriptRunError='" + scriptRunError + '\'' +
                 '}';
     }
@@ -119,5 +122,13 @@ public class WorkflowTaskLog implements java.io.Serializable {
 
     public void setScriptType(ScriptType scriptType) {
         this.scriptType = scriptType;
+    }
+
+    public Long getDurationMs() {
+        return durationMs;
+    }
+
+    public void setDurationMs(Long durationMs) {
+        this.durationMs = durationMs;
     }
 }

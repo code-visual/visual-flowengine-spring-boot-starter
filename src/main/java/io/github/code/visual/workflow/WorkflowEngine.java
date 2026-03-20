@@ -289,6 +289,7 @@ public class WorkflowEngine {
         log.setAfterRunBinding(snapshot);
         log.setScriptRunStatus(status);
         log.setScriptRunTime(LocalDateTime.now());
+        log.setDurationMs(0L);
         logList.add(log);
         if (onNodeComplete != null) onNodeComplete.accept(log);
     }
@@ -302,6 +303,7 @@ public class WorkflowEngine {
         log.setScriptType(script.getScriptType());
         log.setBeforeRunBinding(snapshotBinding(binding));
         log.setScriptRunTime(LocalDateTime.now());
+        long startNanos = System.nanoTime();
         try {
             Object result = executor.apply(script, binding);
             log.setScriptRunStatus(ScriptRunStatus.Success);
@@ -311,6 +313,7 @@ public class WorkflowEngine {
             log.setScriptRunError(extractErrorMessage(e));
             logger.error("Script execution failed: {}", script.getScriptName(), e);
         } finally {
+            log.setDurationMs((System.nanoTime() - startNanos) / 1_000_000);
             log.setAfterRunBinding(snapshotBinding(binding));
             logList.add(log);
         }
@@ -380,13 +383,9 @@ public class WorkflowEngine {
     }
 
     private String extractErrorMessage(Throwable e) {
-        if (e.getCause() != null && e.getCause().getCause() != null) {
-            return e.getCause().getCause().getMessage();
-        }
-        if (e.getCause() != null) {
-            return e.getCause().getMessage();
-        }
-        return e.getMessage();
+        java.io.StringWriter sw = new java.io.StringWriter();
+        e.printStackTrace(new java.io.PrintWriter(sw));
+        return sw.toString();
     }
 
     private void notifyListeners(Integer workflowId, Integer revision,
