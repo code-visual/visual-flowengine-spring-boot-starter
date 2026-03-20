@@ -73,6 +73,7 @@ public class VisualFlowIndexController {
                 + "\"workflowsApiPath\":\"" + fullBasePath + "/api/workflows\","
                 + "\"executeApiPath\":\"" + fullBasePath + "/api/workflows/execute\","
                 + "\"debugApiPath\":\"" + fullBasePath + "/api/workflows/debug\","
+                + "\"debugStreamApiPath\":\"" + fullBasePath + "/api/workflows/debug/stream\","
                 + "\"compileApiPath\":\"" + fullBasePath + "/api/script/compile\""
                 + "};</script>";
         html = html.replace("</head>", configScript + "</head>");
