@@ -50,6 +50,10 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -72,6 +76,7 @@ public class WorkflowEngine {
     private final WorkflowRepository repository;
     private final VisualFlowProperties properties;
     private final List<WorkflowExecutionListener> listeners;
+    private final ScheduledExecutorService timeoutScheduler;
     private GroovyClassLoader groovyClassLoader;
 
     public WorkflowEngine(CompilerConfiguration compilerConfig,
@@ -82,6 +87,11 @@ public class WorkflowEngine {
         this.repository = repository;
         this.properties = properties;
         this.listeners = listeners != null ? listeners : Collections.emptyList();
+        this.timeoutScheduler = Executors.newSingleThreadScheduledExecutor(r -> {
+            Thread t = new Thread(r, "script-timeout");
+            t.setDaemon(true);
+            return t;
+        });
         this.groovyClassLoader = new GroovyClassLoader(
                 Thread.currentThread().getContextClassLoader(), compilerConfig);
     }
@@ -323,7 +333,26 @@ public class WorkflowEngine {
         Class<?> parseClass = groovyClassLoader.parseClass(
                 codeSource, properties.isEnableCacheSource());
         Script script = InvokerHelper.createScript(parseClass, binding);
-        return script.run();
+
+        int timeout = properties.getScriptTimeoutSeconds();
+        if (timeout <= 0) {
+            return script.run();
+        }
+
+        Thread currentThread = Thread.currentThread();
+        ScheduledFuture<?> interruptor = timeoutScheduler.schedule(
+                currentThread::interrupt, timeout, TimeUnit.SECONDS);
+        try {
+            return script.run();
+        } catch (Exception e) {
+            if (Thread.interrupted() && !interruptor.isDone()) {
+                throw new RuntimeException("脚本执行超时（" + timeout + "秒），节点: " + scriptMetadata.getScriptName());
+            }
+            throw e;
+        } finally {
+            interruptor.cancel(false);
+            Thread.interrupted(); // 清除中断标志，避免影响后续逻辑
+        }
     }
 
     @SuppressWarnings("unchecked")

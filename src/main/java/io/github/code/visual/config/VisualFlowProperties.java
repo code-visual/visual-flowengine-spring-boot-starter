@@ -52,6 +52,11 @@ public class VisualFlowProperties {
      */
     private boolean enableCacheSource = true;
 
+    /**
+     * Script execution timeout in seconds. 0 means no timeout.
+     */
+    private int scriptTimeoutSeconds = 30;
+
     // ── Per-endpoint path overrides (optional) ──
 
     private String workflowsApiPath;
@@ -141,5 +146,13 @@ public class VisualFlowProperties {
 
     public void setCompileApiPath(String compileApiPath) {
         this.compileApiPath = compileApiPath;
+    }
+
+    public int getScriptTimeoutSeconds() {
+        return scriptTimeoutSeconds;
+    }
+
+    public void setScriptTimeoutSeconds(int scriptTimeoutSeconds) {
+        this.scriptTimeoutSeconds = scriptTimeoutSeconds;
     }
 }
