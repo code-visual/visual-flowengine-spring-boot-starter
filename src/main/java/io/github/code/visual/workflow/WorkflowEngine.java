@@ -230,10 +230,24 @@ public class WorkflowEngine {
                 return executeAndRecurse(script, binding, logList,
                         this::executeScript, logMap, level, result -> true, onNodeComplete);
 
-            case Condition:
-                return executeAndRecurse(script, binding, logList,
-                        this::executeScript, logMap, level,
-                        result -> result instanceof Boolean && (Boolean) result, onNodeComplete);
+            case Condition: {
+                WorkflowTaskLog condLog = logScriptExecution(script, binding, logList, this::executeScript);
+                if (onNodeComplete != null) onNodeComplete.accept(condLog);
+                if (condLog.getScriptRunStatus() == ScriptRunStatus.Error) {
+                    return false;
+                }
+                Object result = condLog.getScriptRunResult();
+                if (!(result instanceof Boolean)) {
+                    condLog.setScriptRunStatus(ScriptRunStatus.Error);
+                    condLog.setScriptRunError("Condition node must return a Boolean (true/false), but got: "
+                            + (result == null ? "null" : result.getClass().getSimpleName() + "(" + result + ")"));
+                    return false;
+                }
+                if ((Boolean) result) {
+                    return recurseChildren(script, binding, logMap, level, onNodeComplete);
+                }
+                return true;
+            }
 
             case Rule:
                 return executeAndRecurse(script, binding, logList,
