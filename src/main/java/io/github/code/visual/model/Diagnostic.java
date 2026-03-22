@@ -16,11 +16,18 @@
 package io.github.code.visual.model;
 
 public class Diagnostic implements java.io.Serializable {
+    /** Monaco MarkerSeverity: 1=Hint, 2=Info, 4=Warning, 8=Error */
+    public static final int SEVERITY_HINT = 1;
+    public static final int SEVERITY_INFO = 2;
+    public static final int SEVERITY_WARNING = 4;
+    public static final int SEVERITY_ERROR = 8;
+
     private int startLineNumber;
     private int startColumn;
     private int endLineNumber;
     private int endColumn;
     private String message;
+    private int severity = SEVERITY_ERROR;
 
 
     // Getters and Setters
@@ -64,7 +71,14 @@ public class Diagnostic implements java.io.Serializable {
         this.message = message;
     }
 
-    // Optional: Override toString method for easy printing
+    public int getSeverity() {
+        return severity;
+    }
+
+    public void setSeverity(int severity) {
+        this.severity = severity;
+    }
+
     @Override
     public String toString() {
         return "Diagnostic{" +
@@ -73,6 +87,7 @@ public class Diagnostic implements java.io.Serializable {
                 ", endLineNumber=" + endLineNumber +
                 ", endColumn=" + endColumn +
                 ", message='" + message + '\'' +
+                ", severity=" + severity +
                 '}';
     }
 }

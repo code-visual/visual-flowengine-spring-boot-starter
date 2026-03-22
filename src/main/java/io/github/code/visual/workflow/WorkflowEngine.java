@@ -32,9 +32,13 @@ import io.github.code.visual.ruleengine.Rule;
 import io.github.code.visual.ruleengine.RuleEngine;
 import io.github.code.visual.utils.CommonUtils;
 import org.codehaus.groovy.GroovyBugError;
+import org.codehaus.groovy.control.CompilationUnit;
 import org.codehaus.groovy.control.CompilerConfiguration;
+import org.codehaus.groovy.control.ErrorCollector;
 import org.codehaus.groovy.control.MultipleCompilationErrorsException;
+import org.codehaus.groovy.control.Phases;
 import org.codehaus.groovy.control.messages.Message;
+import org.codehaus.groovy.control.messages.WarningMessage;
 import org.codehaus.groovy.runtime.EncodingGroovyMethods;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.slf4j.Logger;
@@ -155,20 +159,40 @@ public class WorkflowEngine {
 
     /**
      * Compile and validate Groovy code without executing it.
+     * Returns errors and warnings from the Groovy compiler.
      */
     public List<Diagnostic> compileScript(String code) {
+        List<Diagnostic> diagnostics = new ArrayList<>();
+        CompilerConfiguration config = new CompilerConfiguration(compilerConfig);
+        config.setWarningLevel(WarningMessage.LIKELY_ERRORS);
+
         try (GroovyClassLoader tempLoader = new GroovyClassLoader(
-                Thread.currentThread().getContextClassLoader(), compilerConfig)) {
-            tempLoader.parseClass(code);
-            return new ArrayList<>();
-        } catch (Exception e) {
-            if (!(e instanceof MultipleCompilationErrorsException)) {
-                throw new RuntimeException(e);
+                Thread.currentThread().getContextClassLoader(), config)) {
+
+            CompilationUnit unit = new CompilationUnit(config, null, tempLoader);
+            unit.addSource("UserScript", code);
+
+            try {
+                unit.compile(Phases.CANONICALIZATION);
+            } catch (MultipleCompilationErrorsException e) {
+                List<? extends Message> errors = e.getErrorCollector().getErrors();
+                diagnostics.addAll(CommonUtils.getDiagnostics(errors, Diagnostic.SEVERITY_ERROR));
             }
-            List<? extends Message> errors =
-                    ((MultipleCompilationErrorsException) e).getErrorCollector().getErrors();
-            return CommonUtils.getDiagnostics(errors);
+
+            // Collect warnings from ErrorCollector (even if compilation succeeded)
+            ErrorCollector collector = unit.getErrorCollector();
+            if (collector.hasWarnings()) {
+                List<? extends Message> warnings = collector.getWarnings();
+                diagnostics.addAll(CommonUtils.getDiagnostics(warnings, Diagnostic.SEVERITY_WARNING));
+            }
+
+        } catch (Exception e) {
+            Diagnostic diagnostic = new Diagnostic();
+            diagnostic.setMessage(e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName());
+            diagnostic.setSeverity(Diagnostic.SEVERITY_ERROR);
+            diagnostics.add(diagnostic);
         }
+        return diagnostics;
     }
 
     // ── CRUD (delegated to repository, used by Controller) ──
