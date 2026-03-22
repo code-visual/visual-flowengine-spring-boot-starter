@@ -136,6 +136,7 @@ public class WorkflowEngine {
     /**
      * Debug a workflow with streaming callback.
      * Each node execution result is pushed to the callback in real-time.
+     * If breakpointNodeId is set, execution stops after that node completes.
      */
     public Map<Integer, List<WorkflowTaskLog>> debug(DebugRequest debugRequest,
                                                       Consumer<WorkflowTaskLog> onNodeComplete) {
@@ -148,7 +149,8 @@ public class WorkflowEngine {
             if (onNodeComplete != null) onNodeComplete.accept(errorLog);
             return Collections.singletonMap(1, Collections.singletonList(errorLog));
         }
-        return doExecute(debugRequest.getScriptMetadata(), debugRequest.getInputValues(), onNodeComplete);
+        return doExecute(debugRequest.getScriptMetadata(), debugRequest.getInputValues(),
+                onNodeComplete, debugRequest.getBreakpointNodeId());
     }
 
     /**
@@ -200,27 +202,30 @@ public class WorkflowEngine {
 
     @SuppressWarnings("rawtypes")
     private Map<Integer, List<WorkflowTaskLog>> doExecute(ScriptMetadata script, Map inputVariables) {
-        return doExecute(script, inputVariables, null);
+        return doExecute(script, inputVariables, null, null);
     }
 
     @SuppressWarnings("rawtypes")
     private Map<Integer, List<WorkflowTaskLog>> doExecute(ScriptMetadata script, Map inputVariables,
-                                                           Consumer<WorkflowTaskLog> onNodeComplete) {
+                                                           Consumer<WorkflowTaskLog> onNodeComplete,
+                                                           String breakpointNodeId) {
         Map<Integer, List<WorkflowTaskLog>> logs = new HashMap<>();
-        recursiveAndExecute(script, new Binding(inputVariables), logs, 1, onNodeComplete);
+        recursiveAndExecute(script, new Binding(inputVariables), logs, 1, onNodeComplete, breakpointNodeId);
         return logs;
     }
 
     @SuppressWarnings("unchecked")
     private boolean recursiveAndExecute(ScriptMetadata script, Binding binding,
                                         Map<Integer, List<WorkflowTaskLog>> logMap, int level,
-                                        Consumer<WorkflowTaskLog> onNodeComplete) {
+                                        Consumer<WorkflowTaskLog> onNodeComplete,
+                                        String breakpointNodeId) {
         List<WorkflowTaskLog> logList = logMap.computeIfAbsent(level, k -> new ArrayList<>());
 
         switch (script.getScriptType()) {
             case Start:
                 logTerminalNode(script, binding, logList, ScriptRunStatus.Start, onNodeComplete);
-                return recurseChildren(script, binding, logMap, level, onNodeComplete);
+                if (isBreakpoint(script, breakpointNodeId)) return false;
+                return recurseChildren(script, binding, logMap, level, onNodeComplete, breakpointNodeId);
 
             case End:
                 logTerminalNode(script, binding, logList, ScriptRunStatus.End, onNodeComplete);
@@ -228,7 +233,7 @@ public class WorkflowEngine {
 
             case Script:
                 return executeAndRecurse(script, binding, logList,
-                        this::executeScript, logMap, level, result -> true, onNodeComplete);
+                        this::executeScript, logMap, level, result -> true, onNodeComplete, breakpointNodeId);
 
             case Condition: {
                 WorkflowTaskLog condLog = logScriptExecution(script, binding, logList, this::executeScript);
@@ -236,6 +241,7 @@ public class WorkflowEngine {
                 if (condLog.getScriptRunStatus() == ScriptRunStatus.Error) {
                     return false;
                 }
+                if (isBreakpoint(script, breakpointNodeId)) return false;
                 Object result = condLog.getScriptRunResult();
                 if (!(result instanceof Boolean)) {
                     condLog.setScriptRunStatus(ScriptRunStatus.Error);
@@ -244,7 +250,7 @@ public class WorkflowEngine {
                     return false;
                 }
                 if ((Boolean) result) {
-                    return recurseChildren(script, binding, logMap, level, onNodeComplete);
+                    return recurseChildren(script, binding, logMap, level, onNodeComplete, breakpointNodeId);
                 }
                 return true;
             }
@@ -254,11 +260,15 @@ public class WorkflowEngine {
                         (s, b) -> {
                             List<Rule> rules = RuleEngine.parser(s);
                             return RuleEngine.execute(rules, b);
-                        }, logMap, level, result -> true, onNodeComplete);
+                        }, logMap, level, result -> true, onNodeComplete, breakpointNodeId);
 
             default:
                 return true;
         }
+    }
+
+    private boolean isBreakpoint(ScriptMetadata script, String breakpointNodeId) {
+        return breakpointNodeId != null && breakpointNodeId.equals(script.getScriptId());
     }
 
     private boolean executeAndRecurse(ScriptMetadata script, Binding binding,
@@ -266,24 +276,27 @@ public class WorkflowEngine {
                                       BiFunction<ScriptMetadata, Binding, Object> executor,
                                       Map<Integer, List<WorkflowTaskLog>> logMap,
                                       int level, Predicate<Object> shouldRecurse,
-                                      Consumer<WorkflowTaskLog> onNodeComplete) {
+                                      Consumer<WorkflowTaskLog> onNodeComplete,
+                                      String breakpointNodeId) {
         WorkflowTaskLog log = logScriptExecution(script, binding, logList, executor);
         if (onNodeComplete != null) onNodeComplete.accept(log);
         if (log.getScriptRunStatus() == ScriptRunStatus.Error) {
             return false;
         }
+        if (isBreakpoint(script, breakpointNodeId)) return false;
         if (shouldRecurse.test(log.getScriptRunResult())) {
-            return recurseChildren(script, binding, logMap, level, onNodeComplete);
+            return recurseChildren(script, binding, logMap, level, onNodeComplete, breakpointNodeId);
         }
         return true;
     }
 
     private boolean recurseChildren(ScriptMetadata script, Binding binding,
                                     Map<Integer, List<WorkflowTaskLog>> logMap, int level,
-                                    Consumer<WorkflowTaskLog> onNodeComplete) {
+                                    Consumer<WorkflowTaskLog> onNodeComplete,
+                                    String breakpointNodeId) {
         if (!CollectionUtils.isEmpty(script.getChildren())) {
             for (ScriptMetadata child : script.getChildren()) {
-                if (!recursiveAndExecute(child, binding, logMap, level + 1, onNodeComplete)) {
+                if (!recursiveAndExecute(child, binding, logMap, level + 1, onNodeComplete, breakpointNodeId)) {
                     return false;
                 }
             }

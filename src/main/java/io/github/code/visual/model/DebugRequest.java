@@ -22,6 +22,7 @@ public class DebugRequest implements java.io.Serializable {
 
     private ScriptMetadata scriptMetadata;
     private Map<String, Object> inputValues;
+    private String breakpointNodeId;
 
     public ScriptMetadata getScriptMetadata() {
         return scriptMetadata;
@@ -39,12 +40,20 @@ public class DebugRequest implements java.io.Serializable {
         this.inputValues = inputValues;
     }
 
+    public String getBreakpointNodeId() {
+        return breakpointNodeId;
+    }
+
+    public void setBreakpointNodeId(String breakpointNodeId) {
+        this.breakpointNodeId = breakpointNodeId;
+    }
 
     @Override
     public String toString() {
         return "DebugRequest{" +
                 "scriptMetadata=" + scriptMetadata +
                 ", inputValues=" + inputValues +
+                ", breakpointNodeId='" + breakpointNodeId + '\'' +
                 '}';
     }
 }
