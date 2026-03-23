@@ -261,18 +261,20 @@ public class WorkflowEngine {
 
             case Condition: {
                 WorkflowTaskLog condLog = logScriptExecution(script, binding, logList, this::executeScript);
-                if (onNodeComplete != null) onNodeComplete.accept(condLog);
                 if (condLog.getScriptRunStatus() == ScriptRunStatus.Error) {
+                    if (onNodeComplete != null) onNodeComplete.accept(condLog);
                     return false;
                 }
-                if (isBreakpoint(script, breakpointNodeId)) return false;
                 Object result = condLog.getScriptRunResult();
                 if (!(result instanceof Boolean)) {
                     condLog.setScriptRunStatus(ScriptRunStatus.Error);
                     condLog.setScriptRunError("Condition node must return a Boolean (true/false), but got: "
                             + (result == null ? "null" : result.getClass().getSimpleName() + "(" + result + ")"));
+                    if (onNodeComplete != null) onNodeComplete.accept(condLog);
                     return false;
                 }
+                if (onNodeComplete != null) onNodeComplete.accept(condLog);
+                if (isBreakpoint(script, breakpointNodeId)) return false;
                 if ((Boolean) result) {
                     return recurseChildren(script, binding, logMap, level, onNodeComplete, breakpointNodeId);
                 }
