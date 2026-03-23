@@ -6,7 +6,7 @@
 
     <groupId>io.github.code-visual</groupId>
     <artifactId>visual-flowengine-spring-boot-starter</artifactId>
-    <version>1.2.4</version>
+    <version>1.2.5</version>
     <packaging>jar</packaging>
     <properties>
         <maven.compiler.source>11</maven.compiler.source>
@@ -43,9 +43,9 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.codehaus.groovy</groupId>
+            <groupId>org.apache.groovy</groupId>
             <artifactId>groovy-all</artifactId>
-            <version>3.0.22</version>
+            <version>4.0.24</version>
             <type>pom</type>
         </dependency>
 
