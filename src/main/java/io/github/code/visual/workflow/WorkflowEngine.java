@@ -222,6 +222,42 @@ public class WorkflowEngine {
         repository.deleteById(workflowId);
     }
 
+    // ── Structure validation ──
+
+    /**
+     * Validate the tree structure before execution.
+     * Returns a list of error messages; empty means valid.
+     */
+    public List<String> validateStructure(ScriptMetadata node) {
+        List<String> errors = new ArrayList<>();
+        doValidateStructure(node, errors);
+        return errors;
+    }
+
+    private void doValidateStructure(ScriptMetadata node, List<String> errors) {
+        List<ScriptMetadata> children = node.getChildren();
+        if (CollectionUtils.isEmpty(children)) return;
+
+        boolean hasCondition = children.stream()
+                .anyMatch(c -> c.getScriptType() == ScriptType.Condition);
+        boolean hasNonCondition = children.stream()
+                .anyMatch(c -> c.getScriptType() != ScriptType.Condition
+                        && c.getScriptType() != ScriptType.End);
+        boolean hasEnd = children.stream()
+                .anyMatch(c -> c.getScriptType() == ScriptType.End);
+
+        if (hasCondition && hasNonCondition) {
+            errors.add("节点 [" + node.getScriptName() + "] 的子节点中 Condition 与非 Condition 类型混合，Condition 的兄弟只能是 Condition");
+        }
+        if (hasEnd && children.size() > 1) {
+            errors.add("节点 [" + node.getScriptName() + "] 的子节点中 End 节点不能有兄弟节点");
+        }
+
+        for (ScriptMetadata child : children) {
+            doValidateStructure(child, errors);
+        }
+    }
+
     // ── Internal execution logic ──
 
     @SuppressWarnings("rawtypes")
@@ -233,13 +269,29 @@ public class WorkflowEngine {
     private Map<Integer, List<WorkflowTaskLog>> doExecute(ScriptMetadata script, Map inputVariables,
                                                            Consumer<WorkflowTaskLog> onNodeComplete,
                                                            String breakpointNodeId) {
+        // Validate structure before execution
+        List<String> validationErrors = validateStructure(script);
+        if (!validationErrors.isEmpty()) {
+            Map<Integer, List<WorkflowTaskLog>> logs = new HashMap<>();
+            WorkflowTaskLog errorLog = new WorkflowTaskLog();
+            errorLog.setScriptId(script.getScriptId());
+            errorLog.setScriptName(script.getScriptName());
+            errorLog.setScriptRunStatus(ScriptRunStatus.Error);
+            errorLog.setScriptRunError("结构校验失败:\n" + String.join("\n", validationErrors));
+            errorLog.setScriptRunTime(LocalDateTime.now());
+            errorLog.setDurationMs(0L);
+            if (onNodeComplete != null) onNodeComplete.accept(errorLog);
+            logs.put(1, Collections.singletonList(errorLog));
+            return logs;
+        }
+
         Map<Integer, List<WorkflowTaskLog>> logs = new HashMap<>();
         recursiveAndExecute(script, new Binding(inputVariables), logs, 1, onNodeComplete, breakpointNodeId);
         return logs;
     }
 
     @SuppressWarnings("unchecked")
-    private boolean recursiveAndExecute(ScriptMetadata script, Binding binding,
+    private ExecutionSignal recursiveAndExecute(ScriptMetadata script, Binding binding,
                                         Map<Integer, List<WorkflowTaskLog>> logMap, int level,
                                         Consumer<WorkflowTaskLog> onNodeComplete,
                                         String breakpointNodeId) {
@@ -248,12 +300,12 @@ public class WorkflowEngine {
         switch (script.getScriptType()) {
             case Start:
                 logTerminalNode(script, binding, logList, ScriptRunStatus.Start, onNodeComplete);
-                if (isBreakpoint(script, breakpointNodeId)) return false;
+                if (isBreakpoint(script, breakpointNodeId)) return ExecutionSignal.STOP;
                 return recurseChildren(script, binding, logMap, level, onNodeComplete, breakpointNodeId);
 
             case End:
                 logTerminalNode(script, binding, logList, ScriptRunStatus.End, onNodeComplete);
-                return true;
+                return ExecutionSignal.CONTINUE;
 
             case Script:
                 return executeAndRecurse(script, binding, logList,
@@ -263,7 +315,7 @@ public class WorkflowEngine {
                 WorkflowTaskLog condLog = logScriptExecution(script, binding, logList, this::executeScript);
                 if (condLog.getScriptRunStatus() == ScriptRunStatus.Error) {
                     if (onNodeComplete != null) onNodeComplete.accept(condLog);
-                    return false;
+                    return ExecutionSignal.STOP;
                 }
                 Object result = condLog.getScriptRunResult();
                 if (!(result instanceof Boolean)) {
@@ -271,14 +323,16 @@ public class WorkflowEngine {
                     condLog.setScriptRunError("Condition node must return a Boolean (true/false), but got: "
                             + (result == null ? "null" : result.getClass().getSimpleName() + "(" + result + ")"));
                     if (onNodeComplete != null) onNodeComplete.accept(condLog);
-                    return false;
+                    return ExecutionSignal.STOP;
                 }
                 if (onNodeComplete != null) onNodeComplete.accept(condLog);
-                if (isBreakpoint(script, breakpointNodeId)) return false;
+                if (isBreakpoint(script, breakpointNodeId)) return ExecutionSignal.STOP;
                 if ((Boolean) result) {
-                    return recurseChildren(script, binding, logMap, level, onNodeComplete, breakpointNodeId);
+                    ExecutionSignal childSignal = recurseChildren(script, binding, logMap, level, onNodeComplete, breakpointNodeId);
+                    if (childSignal == ExecutionSignal.STOP) return ExecutionSignal.STOP;
+                    return ExecutionSignal.CONDITION_HIT;
                 }
-                return true;
+                return ExecutionSignal.CONTINUE;
             }
 
             case Rule:
@@ -289,7 +343,7 @@ public class WorkflowEngine {
                         }, logMap, level, result -> true, onNodeComplete, breakpointNodeId);
 
             default:
-                return true;
+                return ExecutionSignal.CONTINUE;
         }
     }
 
@@ -297,7 +351,7 @@ public class WorkflowEngine {
         return breakpointNodeId != null && breakpointNodeId.equals(script.getScriptId());
     }
 
-    private boolean executeAndRecurse(ScriptMetadata script, Binding binding,
+    private ExecutionSignal executeAndRecurse(ScriptMetadata script, Binding binding,
                                       List<WorkflowTaskLog> logList,
                                       BiFunction<ScriptMetadata, Binding, Object> executor,
                                       Map<Integer, List<WorkflowTaskLog>> logMap,
@@ -307,27 +361,27 @@ public class WorkflowEngine {
         WorkflowTaskLog log = logScriptExecution(script, binding, logList, executor);
         if (onNodeComplete != null) onNodeComplete.accept(log);
         if (log.getScriptRunStatus() == ScriptRunStatus.Error) {
-            return false;
+            return ExecutionSignal.STOP;
         }
-        if (isBreakpoint(script, breakpointNodeId)) return false;
+        if (isBreakpoint(script, breakpointNodeId)) return ExecutionSignal.STOP;
         if (shouldRecurse.test(log.getScriptRunResult())) {
             return recurseChildren(script, binding, logMap, level, onNodeComplete, breakpointNodeId);
         }
-        return true;
+        return ExecutionSignal.CONTINUE;
     }
 
-    private boolean recurseChildren(ScriptMetadata script, Binding binding,
+    private ExecutionSignal recurseChildren(ScriptMetadata script, Binding binding,
                                     Map<Integer, List<WorkflowTaskLog>> logMap, int level,
                                     Consumer<WorkflowTaskLog> onNodeComplete,
                                     String breakpointNodeId) {
         if (!CollectionUtils.isEmpty(script.getChildren())) {
             for (ScriptMetadata child : script.getChildren()) {
-                if (!recursiveAndExecute(child, binding, logMap, level + 1, onNodeComplete, breakpointNodeId)) {
-                    return false;
-                }
+                ExecutionSignal signal = recursiveAndExecute(child, binding, logMap, level + 1, onNodeComplete, breakpointNodeId);
+                if (signal == ExecutionSignal.STOP) return ExecutionSignal.STOP;
+                if (signal == ExecutionSignal.CONDITION_HIT) break;
             }
         }
-        return true;
+        return ExecutionSignal.CONTINUE;
     }
 
     private void logTerminalNode(ScriptMetadata script, Binding binding,
