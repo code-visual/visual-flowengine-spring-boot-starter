@@ -274,8 +274,9 @@ public class WorkflowEngine {
     private Map<Integer, List<WorkflowTaskLog>> doExecute(ScriptMetadata script, Map inputVariables,
                                                            Consumer<WorkflowTaskLog> onNodeComplete,
                                                            String breakpointNodeId) {
-        // Validate structure before execution
-        List<String> validationErrors = validateStructure(script);
+        // Validate structure only for full workflow execution (root is Start)
+        List<String> validationErrors = script.getScriptType() == ScriptType.Start
+                ? validateStructure(script) : Collections.emptyList();
         if (!validationErrors.isEmpty()) {
             Map<Integer, List<WorkflowTaskLog>> logs = new HashMap<>();
             WorkflowTaskLog errorLog = new WorkflowTaskLog();
