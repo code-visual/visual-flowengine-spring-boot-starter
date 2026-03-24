@@ -247,10 +247,10 @@ public class WorkflowEngine {
                 .anyMatch(c -> c.getScriptType() == ScriptType.End);
 
         if (hasCondition && hasNonCondition) {
-            errors.add("节点 [" + node.getScriptName() + "] 的子节点中 Condition 与非 Condition 类型混合，Condition 的兄弟只能是 Condition");
+            errors.add("Node [" + node.getScriptName() + "]: Condition siblings must all be Condition type");
         }
         if (hasEnd && children.size() > 1) {
-            errors.add("节点 [" + node.getScriptName() + "] 的子节点中 End 节点不能有兄弟节点");
+            errors.add("Node [" + node.getScriptName() + "]: End node cannot have siblings");
         }
 
         for (ScriptMetadata child : children) {
@@ -277,7 +277,7 @@ public class WorkflowEngine {
             errorLog.setScriptId(script.getScriptId());
             errorLog.setScriptName(script.getScriptName());
             errorLog.setScriptRunStatus(ScriptRunStatus.Error);
-            errorLog.setScriptRunError("结构校验失败:\n" + String.join("\n", validationErrors));
+            errorLog.setScriptRunError("Structure validation failed:\n" + String.join("\n", validationErrors));
             errorLog.setScriptRunTime(LocalDateTime.now());
             errorLog.setDurationMs(0L);
             if (onNodeComplete != null) onNodeComplete.accept(errorLog);
@@ -456,12 +456,12 @@ public class WorkflowEngine {
             return script.run();
         } catch (Exception e) {
             if (Thread.interrupted() && !interruptor.isDone()) {
-                throw new RuntimeException("脚本执行超时（" + timeout + "秒），节点: " + scriptMetadata.getScriptName());
+                throw new RuntimeException("Script execution timed out (" + timeout + "s), node: " + scriptMetadata.getScriptName());
             }
             throw e;
         } finally {
             interruptor.cancel(false);
-            Thread.interrupted(); // 清除中断标志，避免影响后续逻辑
+            Thread.interrupted(); // Clear interrupt flag to avoid affecting subsequent logic
         }
     }
 
