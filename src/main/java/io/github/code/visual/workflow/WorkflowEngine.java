@@ -236,7 +236,12 @@ public class WorkflowEngine {
 
     private void doValidateStructure(ScriptMetadata node, List<String> errors) {
         List<ScriptMetadata> children = node.getChildren();
-        if (CollectionUtils.isEmpty(children)) return;
+        if (CollectionUtils.isEmpty(children)) {
+            if (node.getScriptType() != ScriptType.End) {
+                errors.add("Node [" + node.getScriptName() + "]: missing End node (leaf node must be End type)");
+            }
+            return;
+        }
 
         boolean hasCondition = children.stream()
                 .anyMatch(c -> c.getScriptType() == ScriptType.Condition);
