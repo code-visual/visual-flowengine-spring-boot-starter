@@ -461,13 +461,15 @@ public class WorkflowEngine {
         try {
             return script.run();
         } catch (Exception e) {
-            if (Thread.interrupted() && !interruptor.isDone()) {
+            if (Thread.interrupted() && interruptor.isDone()) {
                 throw new RuntimeException("Script execution timed out (" + timeout + "s), node: " + scriptMetadata.getScriptName());
             }
             throw e;
         } finally {
-            interruptor.cancel(false);
-            Thread.interrupted(); // Clear interrupt flag to avoid affecting subsequent logic
+            boolean cancelled = interruptor.cancel(false);
+            if (!cancelled) {
+                Thread.interrupted();
+            }
         }
     }
 
