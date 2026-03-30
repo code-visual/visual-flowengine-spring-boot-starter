@@ -1,6 +1,6 @@
 # Visual FlowEngine — 故障排查与已知修复
 
-> 最后更新：2026-03-24
+> 最后更新：2026-03-31
 
 ---
 
@@ -124,6 +124,62 @@ filename = scriptType + "_Id_" + scriptId + "_MD5_" + md5(scriptText) + ".groovy
 **问题：** Condition 节点修改了 Binding 变量，影响了其他兄弟 Condition 节点的判断结果（Condition 节点全部共享同一 Binding，若第一个 Condition 修改了变量，后续 Condition 的判断依据就被污染）。
 
 **修复：** 在 AST 转换层（`GroovyASTCodeParse`）禁止 `Condition_*` 文件名的脚本调用 `binding.setVariable()`。
+
+---
+
+### FIX-011：脚本超时检测条件取反（永远不会触发超时异常）
+**Commit：** `fec3966` `fix: correct script timeout detection logic (inverted condition)` — 版本 1.2.8
+
+**问题：**
+`WorkflowEngine.runScriptWithTimeout()` 中，超时判断条件写成了 `!interruptor.isDone()`，逻辑完全取反。`interruptor` 是一个定时 Future，超时触发时 `isDone()` 返回 `true`，取反后变为 `false`，导致 `if` 分支永远不进入，超时异常永远不会被抛出。同时，`finally` 块无条件调用 `Thread.interrupted()` 清除中断标志，会吞掉与超时无关的外部中断信号（如线程池关闭时的 interrupt）。
+
+**修复：**
+```java
+// 修复前（错误）：
+if (Thread.interrupted() && !interruptor.isDone()) {
+    throw new RuntimeException("Script execution timed out ...");
+}
+// finally 中无条件清除中断标志
+interruptor.cancel(false);
+Thread.interrupted();
+
+// 修复后（正确）：
+if (Thread.interrupted() && interruptor.isDone()) {  // 去掉 !
+    throw new RuntimeException("Script execution timed out ...");
+}
+// finally 中只在超时确实发生（cancel 失败）时才清除中断标志
+boolean cancelled = interruptor.cancel(false);
+if (!cancelled) {
+    Thread.interrupted();
+}
+```
+`interruptor.cancel(false)` 返回 `false` 说明超时任务已经执行过（已触发中断），此时才清除中断标志；若 `cancel` 返回 `true` 说明超时未发生，不应清除中断标志。
+
+**影响文件：** `src/main/java/io/github/code/visual/workflow/WorkflowEngine.java`
+
+**经验教训：**
+- 布尔条件取反是极隐蔽的 Bug，行为上表现为"功能完全不起作用"而非"功能出错"，难以在正常测试中被发现
+- `Future.isDone()` 在 `cancel()` 后也返回 `true`，使用时需结合 `isCancelled()` 区分"完成"和"取消"
+- `Thread.interrupted()` 具有副作用（清除标志），只应在确认是本业务产生的中断时才调用，不可滥用
+
+---
+
+### FIX-012：全屏退出图标不可见（前端相对路径问题）
+**Commit：** `1b6c8da` `1.2.7: fix fullscreen exit icon not visible, rebuild with relative base path` — 版本 1.2.7
+
+**问题：**
+Visual FlowEngine 前端在全屏模式下，退出全屏按钮的图标无法显示（icon 资源 404）。根本原因是前端构建时使用了绝对路径（以 `/` 开头）作为静态资源基础路径，导致在有 context-path 的部署环境（或嵌入 Spring Boot starter 后路径前缀为 `/visualflow/` 的场景）下，图标资源路径拼接错误，加载失败。
+
+**修复：**
+以相对路径（`./`）重新构建前端，所有 JS/CSS/图标资源均使用相对路径引用。`index.html` 中的资源标签从绝对路径改为相对路径，重新打包 `META-INF/resources/visualflow/` 下的静态文件。
+
+**影响文件：**
+- `src/main/resources/META-INF/resources/visualflow/index.html`
+- `src/main/resources/META-INF/resources/visualflow/assets/`（全量重建，文件名 hash 更新）
+
+**经验教训：**
+- Spring Boot starter 内嵌前端时，构建基础路径（`base`）必须用相对路径（`./`），否则只能在根路径部署时正常工作
+- 每次前端重建应验证：① 根路径访问正常；② 带 context-path 访问正常；③ 全屏/弹框内的图标资源正常加载
 
 ---
 
