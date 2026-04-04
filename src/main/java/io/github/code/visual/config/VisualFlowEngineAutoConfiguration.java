@@ -17,6 +17,7 @@ package io.github.code.visual.config;
 
 import io.github.code.visual.workflow.InMemoryWorkflowRepository;
 import io.github.code.visual.workflow.WorkflowEngine;
+import io.github.code.visual.workflow.WorkflowExecutionEventListener;
 import io.github.code.visual.workflow.WorkflowExecutionListener;
 import io.github.code.visual.workflow.WorkflowRepository;
 import org.codehaus.groovy.ast.stmt.Statement;
@@ -115,7 +116,8 @@ public class VisualFlowEngineAutoConfiguration {
     public WorkflowEngine workflowEngine(CompilerConfiguration compilerConfiguration,
                                          WorkflowRepository workflowRepository,
                                          VisualFlowProperties properties,
-                                         @Autowired(required = false) List<WorkflowExecutionListener> listeners) {
-        return new WorkflowEngine(compilerConfiguration, workflowRepository, properties, listeners);
+                                         @Autowired(required = false) List<WorkflowExecutionListener> listeners,
+                                         @Autowired(required = false) List<WorkflowExecutionEventListener> eventListeners) {
+        return new WorkflowEngine(compilerConfiguration, workflowRepository, properties, listeners, eventListeners);
     }
 }

@@ -80,6 +80,7 @@ public class WorkflowEngine {
     private final WorkflowRepository repository;
     private final VisualFlowProperties properties;
     private final List<WorkflowExecutionListener> listeners;
+    private final List<WorkflowExecutionEventListener> eventListeners;
     private final ScheduledExecutorService timeoutScheduler;
     private GroovyClassLoader groovyClassLoader;
 
@@ -87,10 +88,19 @@ public class WorkflowEngine {
                           WorkflowRepository repository,
                           VisualFlowProperties properties,
                           List<WorkflowExecutionListener> listeners) {
+        this(compilerConfig, repository, properties, listeners, null);
+    }
+
+    public WorkflowEngine(CompilerConfiguration compilerConfig,
+                          WorkflowRepository repository,
+                          VisualFlowProperties properties,
+                          List<WorkflowExecutionListener> listeners,
+                          List<WorkflowExecutionEventListener> eventListeners) {
         this.compilerConfig = compilerConfig;
         this.repository = repository;
         this.properties = properties;
         this.listeners = listeners != null ? listeners : Collections.emptyList();
+        this.eventListeners = eventListeners != null ? eventListeners : Collections.emptyList();
         this.timeoutScheduler = Executors.newSingleThreadScheduledExecutor(r -> {
             Thread t = new Thread(r, "script-timeout");
             t.setDaemon(true);
@@ -111,9 +121,7 @@ public class WorkflowEngine {
         if (metadata == null) {
             throw new IllegalArgumentException("Workflow not found: " + workflowId);
         }
-        Map<Integer, List<WorkflowTaskLog>> logs = doExecute(metadata.getScriptMetadata(), inputVariables);
-        notifyListeners(workflowId, metadata.getRevision(), logs);
-        return logs;
+        return executeAndNotify(metadata, inputVariables);
     }
 
     /**
@@ -125,8 +133,39 @@ public class WorkflowEngine {
         if (metadata == null) {
             throw new IllegalArgumentException("Workflow not found: " + workflowName);
         }
-        Map<Integer, List<WorkflowTaskLog>> logs = doExecute(metadata.getScriptMetadata(), inputVariables);
-        notifyListeners(metadata.getWorkflowId(), metadata.getRevision(), logs);
+        return executeAndNotify(metadata, inputVariables);
+    }
+
+    @SuppressWarnings("rawtypes")
+    private Map<Integer, List<WorkflowTaskLog>> executeAndNotify(WorkflowMetadata metadata, Map inputVariables) {
+        long startTime = System.currentTimeMillis();
+        String errorMessage = null;
+        boolean success = true;
+        Map<Integer, List<WorkflowTaskLog>> logs = null;
+        try {
+            logs = doExecute(metadata.getScriptMetadata(), inputVariables);
+            // Check if any node failed
+            if (logs != null) {
+                for (List<WorkflowTaskLog> level : logs.values()) {
+                    for (WorkflowTaskLog log : level) {
+                        if (log.getScriptRunStatus() == ScriptRunStatus.Error) {
+                            success = false;
+                            errorMessage = log.getScriptRunError();
+                            break;
+                        }
+                    }
+                    if (!success) break;
+                }
+            }
+        } catch (Exception e) {
+            success = false;
+            errorMessage = e.getMessage();
+            throw e;
+        } finally {
+            long durationMs = System.currentTimeMillis() - startTime;
+            notifyListeners(metadata.getWorkflowId(), metadata.getRevision(), logs);
+            notifyEventListeners(metadata, logs, success, durationMs, errorMessage);
+        }
         return logs;
     }
 
@@ -510,6 +549,29 @@ public class WorkflowEngine {
                 listener.onExecutionComplete(workflowId, revision, logs);
             } catch (Exception e) {
                 logger.error("Execution listener failed", e);
+            }
+        }
+    }
+
+    private void notifyEventListeners(WorkflowMetadata metadata,
+                                       Map<Integer, List<WorkflowTaskLog>> logs,
+                                       boolean success, long durationMs, String errorMessage) {
+        if (eventListeners.isEmpty()) return;
+        WorkflowExecutionEvent event = WorkflowExecutionEvent.builder()
+                .workflowId(metadata.getWorkflowId())
+                .workflowName(metadata.getWorkflowName())
+                .revision(metadata.getRevision())
+                .success(success)
+                .durationMs(durationMs)
+                .executedAt(java.time.LocalDateTime.now())
+                .errorMessage(errorMessage)
+                .logs(logs)
+                .build();
+        for (WorkflowExecutionEventListener listener : eventListeners) {
+            try {
+                listener.onExecutionComplete(event);
+            } catch (Exception e) {
+                logger.error("Execution event listener failed", e);
             }
         }
     }
