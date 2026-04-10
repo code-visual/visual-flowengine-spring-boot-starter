@@ -1,13 +1,21 @@
 # Visual FlowEngine — 变更日志
 
-> 最后更新：2026-03-31
+> 最后更新：2026-04-10
 > 数据来源：`git log --oneline --all`
 
 ---
 
 ## 版本 1.2.8（当前版本）
 
-**HEAD Commit：** `fec396650ad16ec8422a51f8e2f3bc2f4099e475`
+> **注意**：下方 1.3.0 新特性在未升级版本号的情况下合入，实际 pom.xml 仍为 1.2.8
+
+**HEAD Commit：** `92cf7654e56e1f079557ce08023dd27e6fba6a83`
+
+| Commit | 说明 |
+|--------|------|
+| `92cf765` | **feat**: 新增 `WorkflowExecutionEvent` + `WorkflowExecutionEventListener` 回调机制（for Hub 集成）；`WorkflowEngine` 新增 `executeAndNotify()` 统一执行入口，在 finally 中同时触发旧版和新版回调；`AutoConfiguration` 支持注入多个 `WorkflowExecutionEventListener` Bean |
+
+**之前 HEAD Commit：** `fec396650ad16ec8422a51f8e2f3bc2f4099e475`
 
 | Commit | 说明 |
 |--------|------|

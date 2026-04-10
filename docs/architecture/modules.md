@@ -1,6 +1,6 @@
 # Visual FlowEngine — 模块详解
 
-> 最后更新：2026-03-24
+> 最后更新：2026-04-10
 
 ---
 
@@ -13,11 +13,20 @@
 
 #### 构造函数
 ```java
+// 向后兼容构造（旧版 listener）
 public WorkflowEngine(
     CompilerConfiguration compilerConfig,
     WorkflowRepository repository,
     VisualFlowProperties properties,
     List<WorkflowExecutionListener> listeners)
+
+// 新版构造（since 1.3.0，同时支持旧版和新版 listener）
+public WorkflowEngine(
+    CompilerConfiguration compilerConfig,
+    WorkflowRepository repository,
+    VisualFlowProperties properties,
+    List<WorkflowExecutionListener> listeners,
+    List<WorkflowExecutionEventListener> eventListeners)
 ```
 构造时创建：
 - `GroovyClassLoader`（持有编译器配置，含安全沙箱）
@@ -53,6 +62,8 @@ public WorkflowEngine(
 | `extractErrorMessage(Throwable)` | 提取完整异常堆栈字符串 |
 | `validateStructure / doValidateStructure` | 树结构合法性递归校验 |
 | `notifyListeners(...)` | 遍历所有 `WorkflowExecutionListener`，异常不抛出只打日志 |
+| `notifyEventListeners(...)` | 构建 `WorkflowExecutionEvent` 并通知所有 `WorkflowExecutionEventListener` |
+| `executeAndNotify(metadata, inputVariables)` | 内部统一执行入口：计时 → `doExecute` → `notifyListeners` + `notifyEventListeners`（在 finally 中执行，保证即使执行异常也会回调）|
 
 #### 脚本超时机制
 当 `scriptTimeoutSeconds > 0` 时：
@@ -92,7 +103,7 @@ List<WorkflowIdAndName> findAll();
 ### 1.4 `WorkflowExecutionListener`（接口）
 **文件路径：** `src/main/java/io/github/code/visual/workflow/WorkflowExecutionListener.java`
 
-执行完成回调。实现为 Spring Bean 后自动被注入 `WorkflowEngine`。
+旧版执行完成回调。实现为 Spring Bean 后自动被注入 `WorkflowEngine`。
 
 ```java
 void onExecutionComplete(
@@ -100,6 +111,51 @@ void onExecutionComplete(
     Integer revision,
     Map<Integer, List<WorkflowTaskLog>> logs);
 ```
+
+> **注意**：新代码建议使用 `WorkflowExecutionEventListener`（1.3.0+），它提供更完整的上下文。
+
+---
+
+### 1.4b `WorkflowExecutionEventListener`（接口，since 1.3.0）
+**文件路径：** `src/main/java/io/github/code/visual/workflow/WorkflowExecutionEventListener.java`
+
+增强版执行完成回调，提供完整执行上下文（工作流名称、成功/失败状态、耗时、错误信息）。实现为 Spring Bean 后自动被注入 `WorkflowEngine`。
+
+```java
+void onExecutionComplete(WorkflowExecutionEvent event);
+```
+
+**使用方式：**
+```java
+@Component
+public class MyListener implements WorkflowExecutionEventListener {
+    @Override
+    public void onExecutionComplete(WorkflowExecutionEvent event) {
+        log.info("Workflow {} finished in {}ms, success={}",
+            event.getWorkflowName(), event.getDurationMs(), event.isSuccess());
+    }
+}
+```
+
+> **注意**：回调为同步调用，实现应快速返回，耗时操作请提交异步线程池。
+
+---
+
+### 1.4c `WorkflowExecutionEvent`（值对象，since 1.3.0）
+**文件路径：** `src/main/java/io/github/code/visual/workflow/WorkflowExecutionEvent.java`
+
+不可变事件对象，通过 Builder 构造：
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| `workflowId` | `Integer` | 工作流 ID |
+| `workflowName` | `String` | 工作流名称 |
+| `revision` | `Integer` | 工作流版本号 |
+| `success` | `boolean` | 执行是否成功（任一节点 Error 状态则为 false）|
+| `durationMs` | `long` | 总耗时（毫秒）|
+| `executedAt` | `LocalDateTime` | 执行时刻 |
+| `errorMessage` | `String` | 失败原因（null 表示成功）|
+| `logs` | `Map<Integer, List<WorkflowTaskLog>>` | 完整执行日志（按层次分组）|
 
 ---
 
@@ -162,7 +218,11 @@ execute(workflowId, inputVars)
                             └─ CONDITION_HIT → break（跳过后续兄弟 Condition）
                       └─ recursiveAndExecute(End, ..., level=2)
                             └─ logTerminalNode(End)
-    └─ notifyListeners(workflowId, revision, logs)
+    └─ executeAndNotify(metadata, inputVariables)     # since 1.3.0 统一入口
+          ├─ doExecute(scriptMetadata, inputVariables)
+          └─ [finally]
+                ├─ notifyListeners(workflowId, revision, logs)           # 旧版回调
+                └─ notifyEventListeners(metadata, logs, success, durationMs, errorMessage) # 新版回调
     return Map<Integer(level), List<WorkflowTaskLog>>
 ```
 
